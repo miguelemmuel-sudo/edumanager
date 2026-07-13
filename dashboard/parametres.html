@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Paramètres – EduManager</title>
+  <link rel="icon" type="image/png" href="../../1/img/favicon.png"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+  <link href="../css/dashboard.css" rel="stylesheet"/>
+</head>
+<body>
+<aside class="sidebar" id="sidebar">
+  <a href="index.html" class="sidebar-brand"><i class="fas fa-graduation-cap brand-icon"></i><span class="brand-name">EduManager</span></a>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Principal</div>
+    <a href="index.html" class="nav-item-link"><i class="fas fa-th-large nav-icon"></i><span class="nav-item-label">Tableau de bord</span></a>
+    <div class="nav-section-label mt-2">Gestion</div>
+    <a href="eleves.html" class="nav-item-link"><i class="fas fa-user-graduate nav-icon"></i><span class="nav-item-label">Élèves</span></a>
+    <a href="enseignants.html" class="nav-item-link"><i class="fas fa-chalkboard-teacher nav-icon"></i><span class="nav-item-label">Enseignants</span></a>
+    <a href="classes.html" class="nav-item-link"><i class="fas fa-door-open nav-icon"></i><span class="nav-item-label">Classes</span></a>
+    <a href="notes.html" class="nav-item-link"><i class="fas fa-clipboard-list nav-icon"></i><span class="nav-item-label">Notes & Bulletins</span></a>
+    <a href="emploi-du-temps.html" class="nav-item-link"><i class="fas fa-calendar-alt nav-icon"></i><span class="nav-item-label">Emplois du temps</span></a>
+    <div class="nav-section-label mt-2">Finance</div>
+    <a href="paiements.html" class="nav-item-link"><i class="fas fa-credit-card nav-icon"></i><span class="nav-item-label">Paiements</span><span class="nav-badge bg-danger-soft text-danger">12</span></a>
+    <div class="nav-section-label mt-2">Communication</div>
+    <a href="messages.html" class="nav-item-link"><i class="fas fa-comments nav-icon"></i><span class="nav-item-label">Messages</span></a>
+    <a href="notifications.html" class="nav-item-link"><i class="fas fa-bell nav-icon"></i><span class="nav-item-label">Notifications</span></a>
+    <div class="nav-section-label mt-2">Administration</div>
+    <a href="utilisateurs.html" class="nav-item-link"><i class="fas fa-users-cog nav-icon"></i><span class="nav-item-label">Utilisateurs</span></a>
+    <a href="parametres.html" class="nav-item-link active"><i class="fas fa-cog nav-icon"></i><span class="nav-item-label">Paramètres</span></a>
+  </nav>
+  <div class="sidebar-footer"><div class="user-info"><div class="user-av">D</div><div><div class="user-name">M. Directeur</div><div class="user-role">Administrateur</div></div></div></div>
+</aside>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<header class="topbar" id="topbar">
+  <button class="topbar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+  <div class="topbar-search"><i class="fas fa-search"></i><input type="text" placeholder="Rechercher…"/></div>
+  <div class="topbar-actions"><button class="topbar-btn"><i class="fas fa-bell"></i><span class="notif-dot"></span></button><div class="topbar-divider"></div><div class="user-av" style="cursor:pointer">D</div></div>
+</header>
+
+<main class="main-content" id="mainContent">
+  <div class="page-header">
+    <h1 class="page-title">Paramètres</h1>
+    <p class="page-subtitle mb-0">Configurez votre établissement et vos préférences.</p>
+  </div>
+
+  <div class="row g-4">
+    <!-- Menu paramètres -->
+    <div class="col-lg-3">
+      <div class="dash-card">
+        <div class="dash-card-body p-2">
+          <div class="settings-nav">
+            <a href="#" class="sn-item active" onclick="showTab('etablissement',this)"><i class="fas fa-school me-2 text-primary"></i>Établissement</a>
+            <a href="#" class="sn-item" onclick="showTab('annee',this)"><i class="fas fa-calendar me-2 text-success"></i>Année scolaire</a>
+            <a href="#" class="sn-item" onclick="showTab('matieres',this)"><i class="fas fa-book me-2 text-warning"></i>Matières</a>
+            <a href="#" class="sn-item" onclick="showTab('frais',this)"><i class="fas fa-euro-sign me-2 text-info"></i>Frais scolaires</a>
+            <a href="#" class="sn-item" onclick="showTab('notifications',this)"><i class="fas fa-bell me-2 text-purple"></i>Notifications</a>
+            <a href="#" class="sn-item" onclick="showTab('securite',this)"><i class="fas fa-shield-alt me-2 text-danger"></i>Sécurité</a>
+            <a href="#" class="sn-item" onclick="showTab('abonnement',this)"><i class="fas fa-crown me-2 text-warning"></i>Abonnement</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contenu paramètres -->
+    <div class="col-lg-9">
+      <!-- Établissement -->
+      <div id="tab-etablissement" class="settings-tab">
+        <div class="form-section">
+          <div class="form-section-title"><i class="fas fa-school text-primary me-2"></i>Informations de l'établissement</div>
+          <div class="row g-3">
+            <div class="col-md-8"><label class="form-label">Nom de l'établissement</label><input type="text" class="form-control" value="Collège Saint-Joseph"/></div>
+            <div class="col-md-4"><label class="form-label">Type</label><select class="form-select"><option selected>Collège</option><option>Lycée</option><option>Primaire</option></select></div>
+            <div class="col-md-6"><label class="form-label">Email</label><input type="email" class="form-control" value="contact@saint-joseph.ci"/></div>
+            <div class="col-md-6"><label class="form-label">Téléphone</label><input type="tel" class="form-control" value="+225 27 00 00 00"/></div>
+            <div class="col-md-6"><label class="form-label">Pays</label><input type="text" class="form-control" value="Côte d'Ivoire"/></div>
+            <div class="col-md-6"><label class="form-label">Ville</label><input type="text" class="form-control" value="Abidjan"/></div>
+            <div class="col-12"><label class="form-label">Adresse</label><input type="text" class="form-control" value="Cocody, Rue des Jardins"/></div>
+            <div class="col-12"><label class="form-label">Site web</label><input type="url" class="form-control" value="https://saint-joseph.ci"/></div>
+          </div>
+        </div>
+        <div class="form-section">
+          <div class="form-section-title"><i class="fas fa-palette text-primary me-2"></i>Logo & Apparence</div>
+          <div class="d-flex align-items-center gap-4">
+            <div class="table-av" style="width:72px;height:72px;font-size:1.8rem;background:#2563EB">SJ</div>
+            <div>
+              <button class="btn btn-outline-primary rounded-pill btn-sm px-3 d-block mb-2"><i class="fas fa-upload me-1"></i>Changer le logo</button>
+              <div class="text-muted" style="font-size:.78rem">PNG ou JPG · max 2MB · recommandé 200×200px</div>
+            </div>
+          </div>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-primary rounded-pill px-4 fw-semibold"><i class="fas fa-save me-2"></i>Enregistrer</button>
+          <button class="btn btn-outline-secondary rounded-pill px-4">Annuler</button>
+        </div>
+      </div>
+
+      <!-- Abonnement -->
+      <div id="tab-abonnement" class="settings-tab d-none">
+        <div class="form-section">
+          <div class="form-section-title"><i class="fas fa-crown text-warning me-2"></i>Mon abonnement actuel</div>
+          <div class="d-flex align-items-center justify-content-between p-3 rounded-3 mb-4" style="background:rgba(37,99,235,.06);border:1.5px solid rgba(37,99,235,.2)">
+            <div>
+              <div class="fw-bold text-primary fs-5">Plan Standard</div>
+              <div class="text-muted small">35€/mois · Renouvellement le 01/02/2026</div>
+            </div>
+            <span class="status-badge success">Actif</span>
+          </div>
+          <div class="row g-3">
+            <div class="col-md-4">
+              <div class="p-3 rounded-3 border text-center">
+                <div class="fw-bold mb-1">Starter</div>
+                <div class="display-6 fw-bold text-dark">15€<span class="fs-6 text-muted">/mois</span></div>
+                <div class="text-muted small mb-3">300 élèves max</div>
+                <button class="btn btn-outline-secondary btn-sm rounded-pill w-100" disabled>Plan inférieur</button>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="p-3 rounded-3 text-center" style="background:rgba(37,99,235,.08);border:2px solid var(--primary)">
+                <div class="fw-bold mb-1 text-primary">Standard <span class="badge bg-primary ms-1" style="font-size:.65rem">Actuel</span></div>
+                <div class="display-6 fw-bold text-primary">35€<span class="fs-6 text-muted">/mois</span></div>
+                <div class="text-muted small mb-3">1 000 élèves</div>
+                <button class="btn btn-primary btn-sm rounded-pill w-100" disabled>Plan actuel</button>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="p-3 rounded-3 border text-center">
+                <div class="fw-bold mb-1">Premium</div>
+                <div class="display-6 fw-bold text-dark">80€<span class="fs-6 text-muted">/mois</span></div>
+                <div class="text-muted small mb-3">Illimité + App mobile</div>
+                <button class="btn btn-outline-primary btn-sm rounded-pill w-100">Passer au Premium</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<style>
+.settings-nav { display:flex; flex-direction:column; gap:2px; }
+.sn-item { display:flex; align-items:center; padding:.6rem .75rem; border-radius:.5rem; color:var(--muted); text-decoration:none; font-size:.875rem; font-weight:500; transition:background .2s, color .2s; }
+.sn-item:hover { background:var(--bg); color:var(--text); }
+.sn-item.active { background:rgba(37,99,235,.08); color:var(--primary); font-weight:600; }
+.settings-tab {}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../js/dashboard.js"></script>
+<script>
+function showTab(name, el) {
+  document.querySelectorAll('.settings-tab').forEach(t => t.classList.add('d-none'));
+  const tab = document.getElementById('tab-' + name);
+  if (tab) tab.classList.remove('d-none');
+  document.querySelectorAll('.sn-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+  event.preventDefault();
+}
+</script>
+</body>
+</html>

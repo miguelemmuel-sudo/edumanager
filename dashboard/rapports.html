@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Rapports & Statistiques – EduManager</title>
+  <link rel="icon" type="image/png" href="../../1/img/favicon.png"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+  <link href="../css/dashboard.css" rel="stylesheet"/>
+  <style>
+    .chart-bar-h { display:flex; align-items:center; gap:.75rem; margin-bottom:.6rem; }
+    .chart-bar-h .bar-label { width:120px; font-size:.8rem; color:var(--muted); text-align:right; flex-shrink:0; }
+    .chart-bar-h .bar-track { flex:1; height:10px; background:var(--border); border-radius:5px; overflow:hidden; }
+    .chart-bar-h .bar-val { font-size:.8rem; font-weight:600; width:45px; }
+  </style>
+</head>
+<body>
+<aside class="sidebar" id="sidebar">
+  <a href="index.html" class="sidebar-brand"><i class="fas fa-graduation-cap brand-icon"></i><span class="brand-name">EduManager</span></a>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Principal</div>
+    <a href="index.html" class="nav-item-link"><i class="fas fa-th-large nav-icon"></i><span class="nav-item-label">Tableau de bord</span></a>
+    <div class="nav-section-label mt-2">Gestion</div>
+    <a href="eleves.html" class="nav-item-link"><i class="fas fa-user-graduate nav-icon"></i><span class="nav-item-label">Élèves</span></a>
+    <a href="enseignants.html" class="nav-item-link"><i class="fas fa-chalkboard-teacher nav-icon"></i><span class="nav-item-label">Enseignants</span></a>
+    <a href="classes.html" class="nav-item-link"><i class="fas fa-door-open nav-icon"></i><span class="nav-item-label">Classes</span></a>
+    <a href="notes.html" class="nav-item-link"><i class="fas fa-clipboard-list nav-icon"></i><span class="nav-item-label">Notes & Bulletins</span></a>
+    <a href="emploi-du-temps.html" class="nav-item-link"><i class="fas fa-calendar-alt nav-icon"></i><span class="nav-item-label">Emplois du temps</span></a>
+    <div class="nav-section-label mt-2">Finance</div>
+    <a href="paiements.html" class="nav-item-link"><i class="fas fa-credit-card nav-icon"></i><span class="nav-item-label">Paiements</span></a>
+    <div class="nav-section-label mt-2">Communication</div>
+    <a href="messages.html" class="nav-item-link"><i class="fas fa-comments nav-icon"></i><span class="nav-item-label">Messages</span></a>
+    <a href="notifications.html" class="nav-item-link"><i class="fas fa-bell nav-icon"></i><span class="nav-item-label">Notifications</span></a>
+    <div class="nav-section-label mt-2">Administration</div>
+    <a href="utilisateurs.html" class="nav-item-link"><i class="fas fa-users-cog nav-icon"></i><span class="nav-item-label">Utilisateurs</span></a>
+    <a href="rapports.html" class="nav-item-link active"><i class="fas fa-chart-line nav-icon"></i><span class="nav-item-label">Rapports</span></a>
+    <a href="parametres.html" class="nav-item-link"><i class="fas fa-cog nav-icon"></i><span class="nav-item-label">Paramètres</span></a>
+  </nav>
+  <div class="sidebar-footer"><div class="user-info"><div class="user-av">D</div><div><div class="user-name">M. Directeur</div><div class="user-role">Administrateur</div></div></div></div>
+</aside>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<header class="topbar" id="topbar">
+  <button class="topbar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+  <div class="topbar-search"><i class="fas fa-search"></i><input type="text" placeholder="Rechercher…"/></div>
+  <div class="topbar-actions">
+    <button class="topbar-btn"><i class="fas fa-bell"></i><span class="notif-dot"></span></button>
+    <div class="topbar-divider"></div>
+    <div class="user-av" style="cursor:pointer">D</div>
+  </div>
+</header>
+
+<main class="main-content" id="mainContent">
+  <div class="page-header d-flex flex-wrap align-items-center justify-content-between gap-3">
+    <div>
+      <h1 class="page-title">Rapports & Statistiques</h1>
+      <p class="page-subtitle mb-0">Analyse complète de votre établissement · Année scolaire 2025-2026</p>
+    </div>
+    <div class="d-flex gap-2">
+      <select class="form-select form-select-sm" style="width:160px">
+        <option>Année 2025-2026</option>
+        <option>Année 2024-2025</option>
+      </select>
+      <button class="btn btn-outline-secondary btn-sm rounded-pill px-3"><i class="fas fa-download me-1"></i>PDF</button>
+      <button class="btn btn-primary btn-sm rounded-pill px-3"><i class="fas fa-print me-1"></i>Imprimer</button>
+    </div>
+  </div>
+
+  <!-- KPIs globaux -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <div class="sc-icon bg-primary-soft"><i class="fas fa-user-graduate text-primary"></i></div>
+          <span class="sc-trend up"><i class="fas fa-arrow-up me-1"></i>+15%</span>
+        </div>
+        <div class="sc-value">1 248</div>
+        <div class="sc-label">Élèves inscrits</div>
+        <div class="prog-bar mt-2"><div class="prog-fill" style="width:83%;background:var(--primary)"></div></div>
+        <div class="text-muted mt-1" style="font-size:.72rem">83% de l'objectif annuel</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <div class="sc-icon bg-success-soft"><i class="fas fa-euro-sign text-success"></i></div>
+          <span class="sc-trend up"><i class="fas fa-arrow-up me-1"></i>+8%</span>
+        </div>
+        <div class="sc-value">98 750€</div>
+        <div class="sc-label">Revenus collectés</div>
+        <div class="prog-bar mt-2"><div class="prog-fill" style="width:72%;background:var(--success)"></div></div>
+        <div class="text-muted mt-1" style="font-size:.72rem">72% des frais encaissés</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <div class="sc-icon bg-warning-soft"><i class="fas fa-star text-warning"></i></div>
+          <span class="sc-trend up"><i class="fas fa-arrow-up me-1"></i>+0.4</span>
+        </div>
+        <div class="sc-value">13.6</div>
+        <div class="sc-label">Moyenne générale / 20</div>
+        <div class="prog-bar mt-2"><div class="prog-fill" style="width:68%;background:var(--warning)"></div></div>
+        <div class="text-muted mt-1" style="font-size:.72rem">Tous niveaux confondus</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <div class="sc-icon bg-info-soft"><i class="fas fa-calendar-check text-info"></i></div>
+          <span class="sc-trend up"><i class="fas fa-arrow-up me-1"></i>+2%</span>
+        </div>
+        <div class="sc-value">95.4%</div>
+        <div class="sc-label">Taux d'assiduité</div>
+        <div class="prog-bar mt-2"><div class="prog-fill" style="width:95%;background:var(--info)"></div></div>
+        <div class="text-muted mt-1" style="font-size:.72rem">Excellent niveau</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Graphiques principaux -->
+  <div class="row g-3 mb-4">
+    <!-- Évolution inscriptions -->
+    <div class="col-lg-8">
+      <div class="dash-card h-100">
+        <div class="dash-card-header">
+          <span class="dash-card-title"><i class="fas fa-chart-line text-primary me-2"></i>Évolution des inscriptions</span>
+          <div class="d-flex gap-2 ms-auto">
+            <button class="btn btn-sm btn-primary rounded-pill px-3 active" id="bAnnuel">Annuel</button>
+            <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" id="bMensuel">Mensuel</button>
+          </div>
+        </div>
+        <div class="dash-card-body">
+          <div class="bar-chart mb-3" style="height:150px">
+            <div class="bar-item" style="height:35%;background:linear-gradient(180deg,#2563EB,#93C5FD)" title="Sep: 85"></div>
+            <div class="bar-item" style="height:48%;background:linear-gradient(180deg,#2563EB,#93C5FD)" title="Oct: 118"></div>
+            <div class="bar-item" style="height:62%;background:linear-gradient(180deg,#10B981,#6EE7B7)" title="Nov: 152"></div>
+            <div class="bar-item" style="height:44%;background:linear-gradient(180deg,#2563EB,#93C5FD)" title="Déc: 108"></div>
+            <div class="bar-item" style="height:78%;background:linear-gradient(180deg,#10B981,#6EE7B7)" title="Jan: 192"></div>
+            <div class="bar-item" style="height:66%;background:linear-gradient(180deg,#2563EB,#93C5FD)" title="Fév: 162"></div>
+            <div class="bar-item" style="height:88%;background:linear-gradient(180deg,#10B981,#6EE7B7)" title="Mar: 216"></div>
+            <div class="bar-item" style="height:100%;background:linear-gradient(180deg,#10B981,#6EE7B7)" title="Avr: 245"></div>
+            <div class="bar-item" style="height:72%;background:linear-gradient(180deg,#2563EB,#93C5FD)" title="Mai: 177"></div>
+            <div class="bar-item" style="height:55%;background:linear-gradient(180deg,#2563EB,#93C5FD)" title="Jun: 135"></div>
+          </div>
+          <div class="d-flex justify-content-between px-1" style="font-size:.72rem;color:var(--muted)">
+            <span>Sep</span><span>Oct</span><span>Nov</span><span>Déc</span><span>Jan</span><span>Fév</span><span>Mar</span><span>Avr</span><span>Mai</span><span>Jun</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Répartition par niveau -->
+    <div class="col-lg-4">
+      <div class="dash-card h-100">
+        <div class="dash-card-header"><span class="dash-card-title"><i class="fas fa-layer-group text-success me-2"></i>Répartition par niveau</span></div>
+        <div class="dash-card-body">
+          <div class="chart-bar-h"><div class="bar-label">6ème</div><div class="bar-track"><div class="prog-fill" style="width:85%;background:#2563EB;height:100%"></div></div><div class="bar-val text-primary">310</div></div>
+          <div class="chart-bar-h"><div class="bar-label">5ème</div><div class="bar-track"><div class="prog-fill" style="width:72%;background:#10B981;height:100%"></div></div><div class="bar-val text-success">264</div></div>
+          <div class="chart-bar-h"><div class="bar-label">4ème</div><div class="bar-track"><div class="prog-fill" style="width:68%;background:#F59E0B;height:100%"></div></div><div class="bar-val text-warning">250</div></div>
+          <div class="chart-bar-h"><div class="bar-label">3ème</div><div class="bar-track"><div class="prog-fill" style="width:60%;background:#8B5CF6;height:100%"></div></div><div class="bar-val text-purple">220</div></div>
+          <div class="chart-bar-h"><div class="bar-label">2nde</div><div class="bar-track"><div class="prog-fill" style="width:42%;background:#EF4444;height:100%"></div></div><div class="bar-val text-danger">154</div></div>
+          <div class="chart-bar-h"><div class="bar-label">1ère</div><div class="bar-track"><div class="prog-fill" style="width:30%;background:#06B6D4;height:100%"></div></div><div class="bar-val text-info">110</div></div>
+          <div class="chart-bar-h"><div class="bar-label">Terminale</div><div class="bar-track"><div class="prog-fill" style="width:38%;background:#1E293B;height:100%"></div></div><div class="bar-val">140</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Résultats académiques + finances -->
+  <div class="row g-3 mb-4">
+    <!-- Résultats par matière -->
+    <div class="col-lg-6">
+      <div class="dash-card h-100">
+        <div class="dash-card-header"><span class="dash-card-title"><i class="fas fa-graduation-cap text-warning me-2"></i>Moyennes par matière</span></div>
+        <div class="dash-card-body">
+          <div class="chart-bar-h"><div class="bar-label">Mathématiques</div><div class="bar-track"><div class="prog-fill" style="width:62%;background:#2563EB;height:100%"></div></div><div class="bar-val text-primary">12.4</div></div>
+          <div class="chart-bar-h"><div class="bar-label">Français</div><div class="bar-track"><div class="prog-fill" style="width:68%;background:#10B981;height:100%"></div></div><div class="bar-val text-success">13.6</div></div>
+          <div class="chart-bar-h"><div class="bar-label">Anglais</div><div class="bar-track"><div class="prog-fill" style="width:72%;background:#06B6D4;height:100%"></div></div><div class="bar-val text-info">14.4</div></div>
+          <div class="chart-bar-h"><div class="bar-label">Histoire-Géo</div><div class="bar-track"><div class="prog-fill" style="width:70%;background:#F59E0B;height:100%"></div></div><div class="bar-val text-warning">14.0</div></div>
+          <div class="chart-bar-h"><div class="bar-label">Physique-Chim.</div><div class="bar-track"><div class="prog-fill" style="width:58%;background:#EF4444;height:100%"></div></div><div class="bar-val text-danger">11.6</div></div>
+          <div class="chart-bar-h"><div class="bar-label">SVT</div><div class="bar-track"><div class="prog-fill" style="width:65%;background:#8B5CF6;height:100%"></div></div><div class="bar-val text-purple">13.0</div></div>
+          <div class="chart-bar-h"><div class="bar-label">EPS</div><div class="bar-track"><div class="prog-fill" style="width:88%;background:#10B981;height:100%"></div></div><div class="bar-val text-success">17.6</div></div>
+        </div>
+      </div>
+    </div>
+    <!-- Analyse financière -->
+    <div class="col-lg-6">
+      <div class="dash-card h-100">
+        <div class="dash-card-header"><span class="dash-card-title"><i class="fas fa-euro-sign text-success me-2"></i>Analyse financière</span></div>
+        <div class="dash-card-body">
+          <div class="row g-3 mb-3 text-center">
+            <div class="col-4">
+              <div class="p-2 rounded-2 bg-success-soft">
+                <div class="fw-bold text-success">137 000€</div>
+                <div class="text-muted" style="font-size:.72rem">Total attendu</div>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="p-2 rounded-2 bg-primary-soft">
+                <div class="fw-bold text-primary">98 750€</div>
+                <div class="text-muted" style="font-size:.72rem">Encaissé</div>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="p-2 rounded-2 bg-danger-soft">
+                <div class="fw-bold text-danger">38 250€</div>
+                <div class="text-muted" style="font-size:.72rem">Reste à collecter</div>
+              </div>
+            </div>
+          </div>
+          <div style="font-size:.82rem;font-weight:600;margin-bottom:.5rem">Évolution des encaissements</div>
+          <div class="bar-chart" style="height:80px">
+            <div class="bar-item" style="height:38%;background:linear-gradient(180deg,#10B981,#34D399)"></div>
+            <div class="bar-item" style="height:52%;background:linear-gradient(180deg,#10B981,#34D399)"></div>
+            <div class="bar-item" style="height:71%;background:linear-gradient(180deg,#10B981,#34D399)"></div>
+            <div class="bar-item" style="height:48%;background:linear-gradient(180deg,#10B981,#34D399)"></div>
+            <div class="bar-item" style="height:85%;background:linear-gradient(180deg,#10B981,#34D399)"></div>
+            <div class="bar-item" style="height:64%;background:linear-gradient(180deg,#10B981,#34D399)"></div>
+            <div class="bar-item" style="height:100%;background:linear-gradient(180deg,#10B981,#34D399)"></div>
+          </div>
+          <div class="d-flex justify-content-between mt-1" style="font-size:.7rem;color:var(--muted)">
+            <span>Oct</span><span>Nov</span><span>Déc</span><span>Jan</span><span>Fév</span><span>Mar</span><span>Avr</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rapports téléchargeables -->
+  <div class="dash-card">
+    <div class="dash-card-header">
+      <span class="dash-card-title"><i class="fas fa-file-alt text-primary me-2"></i>Rapports disponibles</span>
+    </div>
+    <div class="dash-card-body">
+      <div class="row g-3">
+        <div class="col-md-6 col-lg-4">
+          <div class="d-flex align-items-center justify-content-between p-3 rounded-3 border hover-shadow">
+            <div class="d-flex align-items-center gap-3">
+              <div class="sc-icon bg-primary-soft" style="width:40px;height:40px"><i class="fas fa-file-pdf text-primary"></i></div>
+              <div><div class="fw-semibold" style="font-size:.875rem">Rapport général T1</div><div class="text-muted" style="font-size:.75rem">Toutes classes · PDF · 2.3 MB</div></div>
+            </div>
+            <button class="btn btn-sm btn-outline-primary rounded-pill px-3" style="font-size:.78rem"><i class="fas fa-download me-1"></i>PDF</button>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+          <div class="d-flex align-items-center justify-content-between p-3 rounded-3 border hover-shadow">
+            <div class="d-flex align-items-center gap-3">
+              <div class="sc-icon bg-success-soft" style="width:40px;height:40px"><i class="fas fa-file-excel text-success"></i></div>
+              <div><div class="fw-semibold" style="font-size:.875rem">Rapport financier</div><div class="text-muted" style="font-size:.75rem">Paiements · Excel · 890 KB</div></div>
+            </div>
+            <button class="btn btn-sm btn-outline-success rounded-pill px-3" style="font-size:.78rem"><i class="fas fa-download me-1"></i>Excel</button>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+          <div class="d-flex align-items-center justify-content-between p-3 rounded-3 border hover-shadow">
+            <div class="d-flex align-items-center gap-3">
+              <div class="sc-icon bg-warning-soft" style="width:40px;height:40px"><i class="fas fa-file-pdf text-warning"></i></div>
+              <div><div class="fw-semibold" style="font-size:.875rem">Bulletins – 3ème B</div><div class="text-muted" style="font-size:.75rem">28 bulletins · PDF · 4.1 MB</div></div>
+            </div>
+            <button class="btn btn-sm btn-outline-warning rounded-pill px-3" style="font-size:.78rem"><i class="fas fa-download me-1"></i>PDF</button>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+          <div class="d-flex align-items-center justify-content-between p-3 rounded-3 border hover-shadow">
+            <div class="d-flex align-items-center gap-3">
+              <div class="sc-icon bg-info-soft" style="width:40px;height:40px"><i class="fas fa-file-csv text-info"></i></div>
+              <div><div class="fw-semibold" style="font-size:.875rem">Liste des élèves</div><div class="text-muted" style="font-size:.75rem">Tous niveaux · CSV · 145 KB</div></div>
+            </div>
+            <button class="btn btn-sm btn-outline-info rounded-pill px-3" style="font-size:.78rem"><i class="fas fa-download me-1"></i>CSV</button>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+          <div class="d-flex align-items-center justify-content-between p-3 rounded-3 border hover-shadow">
+            <div class="d-flex align-items-center gap-3">
+              <div class="sc-icon bg-danger-soft" style="width:40px;height:40px"><i class="fas fa-file-pdf text-danger"></i></div>
+              <div><div class="fw-semibold" style="font-size:.875rem">Impayés & relances</div><div class="text-muted" style="font-size:.75rem">148 élèves · PDF · 1.2 MB</div></div>
+            </div>
+            <button class="btn btn-sm btn-outline-danger rounded-pill px-3" style="font-size:.78rem"><i class="fas fa-download me-1"></i>PDF</button>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+          <div class="d-flex align-items-center justify-content-between p-3 rounded-3 border hover-shadow">
+            <div class="d-flex align-items-center gap-3">
+              <div class="sc-icon bg-purple-soft" style="width:40px;height:40px"><i class="fas fa-file-alt text-purple"></i></div>
+              <div><div class="fw-semibold" style="font-size:.875rem">Planning enseignants</div><div class="text-muted" style="font-size:.75rem">87 profs · PDF · 780 KB</div></div>
+            </div>
+            <button class="btn btn-sm rounded-pill px-3" style="font-size:.78rem;border:1px solid #8B5CF6;color:#8B5CF6"><i class="fas fa-download me-1"></i>PDF</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<style>
+.hover-shadow { transition:box-shadow .2s, transform .2s; }
+.hover-shadow:hover { box-shadow:0 6px 20px rgba(0,0,0,.08); transform:translateY(-2px); }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../js/dashboard.js"></script>
+</body>
+</html>

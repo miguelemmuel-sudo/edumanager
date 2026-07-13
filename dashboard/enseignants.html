@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Enseignants – EduManager</title>
+  <link rel="icon" type="image/png" href="../../1/img/favicon.png"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+  <link href="../css/dashboard.css" rel="stylesheet"/>
+</head>
+<body>
+<aside class="sidebar" id="sidebar">
+  <a href="index.html" class="sidebar-brand"><i class="fas fa-graduation-cap brand-icon"></i><span class="brand-name">EduManager</span></a>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Principal</div>
+    <a href="index.html" class="nav-item-link"><i class="fas fa-th-large nav-icon"></i><span class="nav-item-label">Tableau de bord</span></a>
+    <div class="nav-section-label mt-2">Gestion</div>
+    <a href="eleves.html" class="nav-item-link"><i class="fas fa-user-graduate nav-icon"></i><span class="nav-item-label">Élèves</span></a>
+    <a href="enseignants.html" class="nav-item-link active"><i class="fas fa-chalkboard-teacher nav-icon"></i><span class="nav-item-label">Enseignants</span></a>
+    <a href="classes.html" class="nav-item-link"><i class="fas fa-door-open nav-icon"></i><span class="nav-item-label">Classes</span></a>
+    <a href="notes.html" class="nav-item-link"><i class="fas fa-clipboard-list nav-icon"></i><span class="nav-item-label">Notes & Bulletins</span></a>
+    <a href="emploi-du-temps.html" class="nav-item-link"><i class="fas fa-calendar-alt nav-icon"></i><span class="nav-item-label">Emplois du temps</span></a>
+    <div class="nav-section-label mt-2">Finance</div>
+    <a href="paiements.html" class="nav-item-link"><i class="fas fa-credit-card nav-icon"></i><span class="nav-item-label">Paiements</span><span class="nav-badge bg-danger-soft text-danger">12</span></a>
+    <div class="nav-section-label mt-2">Communication</div>
+    <a href="messages.html" class="nav-item-link"><i class="fas fa-comments nav-icon"></i><span class="nav-item-label">Messages</span><span class="nav-badge bg-primary-soft text-primary">5</span></a>
+    <a href="notifications.html" class="nav-item-link"><i class="fas fa-bell nav-icon"></i><span class="nav-item-label">Notifications</span></a>
+    <div class="nav-section-label mt-2">Administration</div>
+    <a href="utilisateurs.html" class="nav-item-link"><i class="fas fa-users-cog nav-icon"></i><span class="nav-item-label">Utilisateurs</span></a>
+    <a href="parametres.html" class="nav-item-link"><i class="fas fa-cog nav-icon"></i><span class="nav-item-label">Paramètres</span></a>
+  </nav>
+  <div class="sidebar-footer"><div class="user-info"><div class="user-av">D</div><div><div class="user-name">M. Directeur</div><div class="user-role">Administrateur</div></div></div></div>
+</aside>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<header class="topbar" id="topbar">
+  <button class="topbar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+  <div class="topbar-search"><i class="fas fa-search"></i><input type="text" placeholder="Rechercher un enseignant…" id="searchInput" oninput="filterTable()"/></div>
+  <div class="topbar-actions">
+    <button class="topbar-btn"><i class="fas fa-bell"></i><span class="notif-dot"></span></button>
+    <div class="topbar-divider"></div>
+    <div class="user-av" style="cursor:pointer">D</div>
+  </div>
+</header>
+
+<main class="main-content" id="mainContent">
+  <div class="page-header d-flex flex-wrap align-items-center justify-content-between gap-3">
+    <div>
+      <h1 class="page-title">Enseignants</h1>
+      <nav aria-label="breadcrumb"><ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="index.html">Accueil</a></li>
+        <li class="breadcrumb-item active">Enseignants</li>
+      </ol></nav>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-secondary btn-sm rounded-pill px-3"><i class="fas fa-file-export me-1"></i>Exporter</button>
+      <button class="btn btn-primary btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#addEnsModal">
+        <i class="fas fa-plus me-1"></i>Ajouter un enseignant
+      </button>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <div class="sc-icon bg-primary-soft"><i class="fas fa-chalkboard-teacher text-primary"></i></div>
+          <span class="sc-trend up">+3</span>
+        </div>
+        <div class="sc-value">87</div><div class="sc-label">Total enseignants</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <div class="sc-icon bg-success-soft"><i class="fas fa-check-circle text-success"></i></div>
+        </div>
+        <div class="sc-value">82</div><div class="sc-label">Actifs cette semaine</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <div class="sc-icon bg-warning-soft"><i class="fas fa-book text-warning"></i></div>
+        </div>
+        <div class="sc-value">12</div><div class="sc-label">Matières enseignées</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <div class="sc-icon bg-info-soft"><i class="fas fa-clock text-info"></i></div>
+        </div>
+        <div class="sc-value">1 044h</div><div class="sc-label">Heures planifiées</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vue cartes + tableau -->
+  <div class="dash-card mb-3 p-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div class="d-flex gap-2">
+      <button class="btn btn-sm btn-primary rounded-pill px-3" id="btnGrid" onclick="setView('grid')"><i class="fas fa-th me-1"></i>Cartes</button>
+      <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" id="btnList" onclick="setView('list')"><i class="fas fa-list me-1"></i>Tableau</button>
+    </div>
+    <select class="form-select form-select-sm" style="width:160px" id="filterMatiere" onchange="filterTable()">
+      <option value="">Toutes les matières</option>
+      <option>Mathématiques</option><option>Français</option>
+      <option>Histoire-Géo</option><option>SVT</option>
+      <option>Physique-Chimie</option><option>Anglais</option><option>EPS</option>
+    </select>
+  </div>
+
+  <!-- Vue Cartes -->
+  <div id="viewGrid">
+    <div class="row g-3" id="ensBody">
+
+      <!-- Carte enseignant 1 -->
+      <div class="col-md-6 col-lg-4 ens-card" data-matiere="Mathématiques" data-name="koné">
+        <div class="dash-card p-4 h-100">
+          <div class="d-flex align-items-start justify-content-between mb-3">
+            <div class="d-flex align-items-center gap-3">
+              <div class="table-av" style="width:48px;height:48px;font-size:1.2rem;background:#2563EB">K</div>
+              <div>
+                <div class="fw-bold" style="font-size:.95rem">M. Koné Abdoulaye</div>
+                <div class="text-muted" style="font-size:.8rem">Mathématiques</div>
+              </div>
+            </div>
+            <span class="status-badge success">Actif</span>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <div style="font-size:.72rem;color:var(--muted)">Classes</div>
+              <div style="font-size:.82rem;font-weight:600">3ème B, 4ème A</div>
+            </div>
+            <div class="col-6">
+              <div style="font-size:.72rem;color:var(--muted)">Heures/semaine</div>
+              <div style="font-size:.82rem;font-weight:600">18h</div>
+            </div>
+            <div class="col-6">
+              <div style="font-size:.72rem;color:var(--muted)">Email</div>
+              <div style="font-size:.78rem">kone@ecole.ci</div>
+            </div>
+            <div class="col-6">
+              <div style="font-size:.72rem;color:var(--muted)">Tél.</div>
+              <div style="font-size:.78rem">07 10 00 01</div>
+            </div>
+          </div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm rounded-pill flex-1" style="background:rgba(37,99,235,.1);color:var(--primary);font-size:.8rem" data-bs-toggle="modal" data-bs-target="#viewEnsModal"><i class="fas fa-eye me-1"></i>Voir</button>
+            <button class="btn btn-sm rounded-pill flex-1" style="background:rgba(245,158,11,.1);color:var(--warning);font-size:.8rem"><i class="fas fa-edit me-1"></i>Modifier</button>
+          </div>
+        </div>
+      </div>
+      <!-- Carte enseignant 2 -->
+      <div class="col-md-6 col-lg-4 ens-card" data-matiere="Français" data-name="diallo">
+        <div class="dash-card p-4 h-100">
+          <div class="d-flex align-items-start justify-content-between mb-3">
+            <div class="d-flex align-items-center gap-3">
+              <div class="table-av" style="width:48px;height:48px;font-size:1.2rem;background:#10B981">D</div>
+              <div>
+                <div class="fw-bold" style="font-size:.95rem">Mme Diallo Aminata</div>
+                <div class="text-muted" style="font-size:.8rem">Français</div>
+              </div>
+            </div>
+            <span class="status-badge success">Actif</span>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Classes</div><div style="font-size:.82rem;font-weight:600">3ème A, 3ème B</div></div>
+            <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Heures/semaine</div><div style="font-size:.82rem;font-weight:600">16h</div></div>
+            <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Email</div><div style="font-size:.78rem">diallo@ecole.ci</div></div>
+            <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Tél.</div><div style="font-size:.78rem">07 10 00 02</div></div>
+          </div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm rounded-pill flex-1" style="background:rgba(37,99,235,.1);color:var(--primary);font-size:.8rem"><i class="fas fa-eye me-1"></i>Voir</button>
+            <button class="btn btn-sm rounded-pill flex-1" style="background:rgba(245,158,11,.1);color:var(--warning);font-size:.8rem"><i class="fas fa-edit me-1"></i>Modifier</button>
+          </div>
+        </div>
+      </div>
+      <!-- Carte enseignant 3 -->
+      <div class="col-md-6 col-lg-4 ens-card" data-matiere="SVT" data-name="bah">
+        <div class="dash-card p-4 h-100">
+          <div class="d-flex align-items-start justify-content-between mb-3">
+            <div class="d-flex align-items-center gap-3">
+              <div class="table-av" style="width:48px;height:48px;font-size:1.2rem;background:#8B5CF6">B</div>
+              <div>
+                <div class="fw-bold" style="font-size:.95rem">Mme Bah Fatoumata</div>
+                <div class="text-muted" style="font-size:.8rem">SVT</div>
+              </div>
+            </div>
+            <span class="status-badge success">Actif</span>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Classes</div><div style="font-size:.82rem;font-weight:600">6ème A, 6ème B</div></div>
+            <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Heures/semaine</div><div style="font-size:.82rem;font-weight:600">14h</div></div>
+            <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Email</div><div style="font-size:.78rem">bah@ecole.ci</div></div>
+            <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Tél.</div><div style="font-size:.78rem">07 10 00 03</div></div>
+          </div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm rounded-pill flex-1" style="background:rgba(37,99,235,.1);color:var(--primary);font-size:.8rem"><i class="fas fa-eye me-1"></i>Voir</button>
+            <button class="btn btn-sm rounded-pill flex-1" style="background:rgba(245,158,11,.1);color:var(--warning);font-size:.8rem"><i class="fas fa-edit me-1"></i>Modifier</button>
+          </div>
+        </div>
+      </div>
+      <!-- Carte enseignant 4 -->
+      <div class="col-md-6 col-lg-4 ens-card" data-matiere="Physique-Chimie" data-name="ouédraogo">
+        <div class="dash-card p-4 h-100">
+          <div class="d-flex align-items-start justify-content-between mb-3">
+            <div class="d-flex align-items-center gap-3">
+              <div class="table-av" style="width:48px;height:48px;font-size:1.2rem;background:#EF4444">O</div>
+              <div>
+                <div class="fw-bold" style="font-size:.95rem">M. Ouédraogo Pascal</div>
+                <div class="text-muted" style="font-size:.8rem">Physique-Chimie</div>
+              </div>
+            </div>
+            <span class="status-badge warning">Congé</span>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Classes</div><div style="font-size:.82rem;font-weight:600">Terminale, 1ère</div></div>
+            <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Heures/semaine</div><div style="font-size:.82rem;font-weight:600">20h</div></div>
+            <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Email</div><div style="font-size:.78rem">ouedraogo@ecole.ci</div></div>
+            <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Tél.</div><div style="font-size:.78rem">07 10 00 04</div></div>
+          </div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm rounded-pill flex-1" style="background:rgba(37,99,235,.1);color:var(--primary);font-size:.8rem"><i class="fas fa-eye me-1"></i>Voir</button>
+            <button class="btn btn-sm rounded-pill flex-1" style="background:rgba(245,158,11,.1);color:var(--warning);font-size:.8rem"><i class="fas fa-edit me-1"></i>Modifier</button>
+          </div>
+        </div>
+      </div>
+      <!-- Carte enseignant 5 -->
+      <div class="col-md-6 col-lg-4 ens-card" data-matiere="Anglais" data-name="smith">
+        <div class="dash-card p-4 h-100">
+          <div class="d-flex align-items-start justify-content-between mb-3">
+            <div class="d-flex align-items-center gap-3">
+              <div class="table-av" style="width:48px;height:48px;font-size:1.2rem;background:#06B6D4">S</div>
+              <div>
+                <div class="fw-bold" style="font-size:.95rem">Mme Smith Grace</div>
+                <div class="text-muted" style="font-size:.8rem">Anglais</div>
+              </div>
+            </div>
+            <span class="status-badge success">Actif</span>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Classes</div><div style="font-size:.82rem;font-weight:600">Toutes niveaux</div></div>
+            <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Heures/semaine</div><div style="font-size:.82rem;font-weight:600">22h</div></div>
+            <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Email</div><div style="font-size:.78rem">smith@ecole.ci</div></div>
+            <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Tél.</div><div style="font-size:.78rem">07 10 00 05</div></div>
+          </div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm rounded-pill flex-1" style="background:rgba(37,99,235,.1);color:var(--primary);font-size:.8rem"><i class="fas fa-eye me-1"></i>Voir</button>
+            <button class="btn btn-sm rounded-pill flex-1" style="background:rgba(245,158,11,.1);color:var(--warning);font-size:.8rem"><i class="fas fa-edit me-1"></i>Modifier</button>
+          </div>
+        </div>
+      </div>
+      <!-- Carte enseignant 6 -->
+      <div class="col-md-6 col-lg-4 ens-card" data-matiere="Histoire-Géo" data-name="traoré">
+        <div class="dash-card p-4 h-100">
+          <div class="d-flex align-items-start justify-content-between mb-3">
+            <div class="d-flex align-items-center gap-3">
+              <div class="table-av" style="width:48px;height:48px;font-size:1.2rem;background:#F59E0B">T</div>
+              <div>
+                <div class="fw-bold" style="font-size:.95rem">M. Traoré Seydou</div>
+                <div class="text-muted" style="font-size:.8rem">Histoire-Géo</div>
+              </div>
+            </div>
+            <span class="status-badge success">Actif</span>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Classes</div><div style="font-size:.82rem;font-weight:600">3ème A, B, 4ème</div></div>
+            <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Heures/semaine</div><div style="font-size:.82rem;font-weight:600">15h</div></div>
+            <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Email</div><div style="font-size:.78rem">traore@ecole.ci</div></div>
+            <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Tél.</div><div style="font-size:.78rem">07 10 00 06</div></div>
+          </div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm rounded-pill flex-1" style="background:rgba(37,99,235,.1);color:var(--primary);font-size:.8rem"><i class="fas fa-eye me-1"></i>Voir</button>
+            <button class="btn btn-sm rounded-pill flex-1" style="background:rgba(245,158,11,.1);color:var(--warning);font-size:.8rem"><i class="fas fa-edit me-1"></i>Modifier</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /viewGrid -->
+
+  <!-- Vue Tableau -->
+  <div id="viewList" class="d-none">
+    <div class="dash-card">
+      <div class="dash-card-body p-0" style="overflow-x:auto">
+        <table class="dash-table">
+          <thead><tr>
+            <th>Enseignant</th><th>Matière</th><th>Classes</th>
+            <th>Heures/sem.</th><th>Contact</th><th>Statut</th><th>Actions</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td><div class="d-flex align-items-center gap-2"><div class="table-av" style="background:#2563EB">K</div><div><div style="font-weight:600;font-size:.85rem">M. Koné Abdoulaye</div><div style="font-size:.75rem;color:var(--muted)">kone@ecole.ci</div></div></div></td>
+              <td><span class="status-badge primary">Mathématiques</span></td>
+              <td style="font-size:.82rem">3ème B, 4ème A</td>
+              <td style="font-size:.82rem;font-weight:600">18h</td>
+              <td style="font-size:.8rem">07 10 00 01</td>
+              <td><span class="status-badge success">Actif</span></td>
+              <td><div class="d-flex gap-1">
+                <button class="btn btn-sm" style="padding:3px 8px;background:rgba(37,99,235,.1);color:var(--primary);border-radius:6px;font-size:.75rem"><i class="fas fa-eye"></i></button>
+                <button class="btn btn-sm" style="padding:3px 8px;background:rgba(245,158,11,.1);color:var(--warning);border-radius:6px;font-size:.75rem"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-sm" style="padding:3px 8px;background:rgba(239,68,68,.1);color:var(--danger);border-radius:6px;font-size:.75rem"><i class="fas fa-trash"></i></button>
+              </div></td>
+            </tr>
+            <tr>
+              <td><div class="d-flex align-items-center gap-2"><div class="table-av" style="background:#10B981">D</div><div><div style="font-weight:600;font-size:.85rem">Mme Diallo Aminata</div><div style="font-size:.75rem;color:var(--muted)">diallo@ecole.ci</div></div></div></td>
+              <td><span class="status-badge success">Français</span></td>
+              <td style="font-size:.82rem">3ème A, 3ème B</td>
+              <td style="font-size:.82rem;font-weight:600">16h</td>
+              <td style="font-size:.8rem">07 10 00 02</td>
+              <td><span class="status-badge success">Actif</span></td>
+              <td><div class="d-flex gap-1">
+                <button class="btn btn-sm" style="padding:3px 8px;background:rgba(37,99,235,.1);color:var(--primary);border-radius:6px;font-size:.75rem"><i class="fas fa-eye"></i></button>
+                <button class="btn btn-sm" style="padding:3px 8px;background:rgba(245,158,11,.1);color:var(--warning);border-radius:6px;font-size:.75rem"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-sm" style="padding:3px 8px;background:rgba(239,68,68,.1);color:var(--danger);border-radius:6px;font-size:.75rem"><i class="fas fa-trash"></i></button>
+              </div></td>
+            </tr>
+            <tr>
+              <td><div class="d-flex align-items-center gap-2"><div class="table-av" style="background:#EF4444">O</div><div><div style="font-weight:600;font-size:.85rem">M. Ouédraogo Pascal</div><div style="font-size:.75rem;color:var(--muted)">ouedraogo@ecole.ci</div></div></div></td>
+              <td><span class="status-badge danger">Physique-Chimie</span></td>
+              <td style="font-size:.82rem">Terminale, 1ère</td>
+              <td style="font-size:.82rem;font-weight:600">20h</td>
+              <td style="font-size:.8rem">07 10 00 04</td>
+              <td><span class="status-badge warning">Congé</span></td>
+              <td><div class="d-flex gap-1">
+                <button class="btn btn-sm" style="padding:3px 8px;background:rgba(37,99,235,.1);color:var(--primary);border-radius:6px;font-size:.75rem"><i class="fas fa-eye"></i></button>
+                <button class="btn btn-sm" style="padding:3px 8px;background:rgba(245,158,11,.1);color:var(--warning);border-radius:6px;font-size:.75rem"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-sm" style="padding:3px 8px;background:rgba(239,68,68,.1);color:var(--danger);border-radius:6px;font-size:.75rem"><i class="fas fa-trash"></i></button>
+              </div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- Modal Ajouter enseignant -->
+<div class="modal fade" id="addEnsModal" tabindex="-1">
+  <div class="modal-dialog modal-lg"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title fw-bold"><i class="fas fa-chalkboard-teacher text-primary me-2"></i>Ajouter un enseignant</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+      <div class="row g-3">
+        <div class="col-md-4"><label class="form-label">Prénom *</label><input type="text" class="form-control" placeholder="Prénom"/></div>
+        <div class="col-md-4"><label class="form-label">Nom *</label><input type="text" class="form-control" placeholder="Nom"/></div>
+        <div class="col-md-4"><label class="form-label">Sexe</label><select class="form-select"><option>Masculin</option><option>Féminin</option></select></div>
+        <div class="col-md-6"><label class="form-label">Email professionnel *</label><input type="email" class="form-control" placeholder="ens@ecole.ci"/></div>
+        <div class="col-md-6"><label class="form-label">Téléphone *</label><input type="tel" class="form-control" placeholder="07 00 00 00"/></div>
+        <div class="col-md-6"><label class="form-label">Matière principale *</label>
+          <select class="form-select"><option>Mathématiques</option><option>Français</option><option>Histoire-Géo</option><option>SVT</option><option>Physique-Chimie</option><option>Anglais</option><option>EPS</option></select>
+        </div>
+        <div class="col-md-6"><label class="form-label">Heures/semaine</label><input type="number" class="form-control" placeholder="18" min="1" max="40"/></div>
+        <div class="col-12"><label class="form-label">Classes assignées</label>
+          <div class="d-flex flex-wrap gap-2">
+            <label class="d-flex align-items-center gap-1 border rounded-2 px-2 py-1 cursor-pointer" style="font-size:.82rem"><input type="checkbox" class="me-1"/>6ème A</label>
+            <label class="d-flex align-items-center gap-1 border rounded-2 px-2 py-1 cursor-pointer" style="font-size:.82rem"><input type="checkbox" class="me-1"/>6ème B</label>
+            <label class="d-flex align-items-center gap-1 border rounded-2 px-2 py-1 cursor-pointer" style="font-size:.82rem"><input type="checkbox" class="me-1"/>3ème A</label>
+            <label class="d-flex align-items-center gap-1 border rounded-2 px-2 py-1 cursor-pointer" style="font-size:.82rem"><input type="checkbox" class="me-1"/>3ème B</label>
+            <label class="d-flex align-items-center gap-1 border rounded-2 px-2 py-1 cursor-pointer" style="font-size:.82rem"><input type="checkbox" class="me-1"/>Terminale</label>
+          </div>
+        </div>
+        <div class="col-12"><label class="form-label">Notes / Remarques</label><textarea class="form-control" rows="2" placeholder="Optionnel…"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer"><button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Annuler</button><button type="button" class="btn btn-primary rounded-pill px-4 fw-semibold">Enregistrer</button></div>
+  </div></div>
+</div>
+
+<!-- Modal Voir enseignant -->
+<div class="modal fade" id="viewEnsModal" tabindex="-1">
+  <div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title fw-bold"><i class="fas fa-chalkboard-teacher text-primary me-2"></i>Profil enseignant</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+      <div class="text-center mb-4">
+        <div class="table-av mx-auto mb-2" style="width:72px;height:72px;font-size:1.8rem;background:#2563EB">K</div>
+        <h6 class="fw-bold mb-0">M. Koné Abdoulaye</h6>
+        <span class="status-badge success mt-1 d-inline-block">Actif</span>
+      </div>
+      <div class="row g-3">
+        <div class="col-6"><div class="text-muted" style="font-size:.75rem">Matière</div><div class="fw-semibold">Mathématiques</div></div>
+        <div class="col-6"><div class="text-muted" style="font-size:.75rem">Classes</div><div class="fw-semibold">3ème B, 4ème A</div></div>
+        <div class="col-6"><div class="text-muted" style="font-size:.75rem">Heures/semaine</div><div class="fw-semibold">18h</div></div>
+        <div class="col-6"><div class="text-muted" style="font-size:.75rem">Email</div><div class="fw-semibold">kone@ecole.ci</div></div>
+        <div class="col-6"><div class="text-muted" style="font-size:.75rem">Téléphone</div><div class="fw-semibold">07 10 00 01</div></div>
+        <div class="col-6"><div class="text-muted" style="font-size:.75rem">Date d'embauche</div><div class="fw-semibold">01/09/2020</div></div>
+      </div>
+      <div class="mt-3 p-3 rounded-3 bg-light">
+        <div style="font-size:.8rem;font-weight:600;margin-bottom:.5rem">Performances récentes</div>
+        <div class="d-flex justify-content-between mb-1" style="font-size:.8rem"><span>Taux de saisie des notes</span><span class="fw-bold text-success">100%</span></div>
+        <div class="prog-bar mb-2"><div class="prog-fill" style="width:100%;background:var(--success)"></div></div>
+        <div class="d-flex justify-content-between mb-1" style="font-size:.8rem"><span>Assiduité cours</span><span class="fw-bold text-primary">97%</span></div>
+        <div class="prog-bar"><div class="prog-fill" style="width:97%;background:var(--primary)"></div></div>
+      </div>
+    </div>
+    <div class="modal-footer"><button type="button" class="btn btn-outline-primary rounded-pill px-4"><i class="fas fa-calendar me-1"></i>Voir planning</button><button type="button" class="btn btn-primary rounded-pill px-4 fw-semibold" data-bs-dismiss="modal">Fermer</button></div>
+  </div></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../js/dashboard.js"></script>
+<script>
+/* ---- Vue grid / liste ---- */
+function setView(v) {
+  document.getElementById('viewGrid').classList.toggle('d-none', v === 'list');
+  document.getElementById('viewList').classList.toggle('d-none', v === 'grid');
+  document.getElementById('btnGrid').className = v === 'grid' ? 'btn btn-sm btn-primary rounded-pill px-3' : 'btn btn-sm btn-outline-secondary rounded-pill px-3';
+  document.getElementById('btnList').className = v === 'list' ? 'btn btn-sm btn-primary rounded-pill px-3' : 'btn btn-sm btn-outline-secondary rounded-pill px-3';
+}
+
+/* ---- Filtre ---- */
+function filterTable() {
+  const s = document.getElementById('searchInput').value.toLowerCase();
+  const m = document.getElementById('filterMatiere').value.toLowerCase();
+  document.querySelectorAll('.ens-card').forEach(c => {
+    const mat = (c.dataset.matiere || '').toLowerCase();
+    const txt = c.textContent.toLowerCase();
+    c.style.display = txt.includes(s) && (!m || mat === m) ? '' : 'none';
+  });
+}
+
+/* ---- Couleurs avatars ---- */
+const ensColors = ['#2563EB','#10B981','#F59E0B','#8B5CF6','#EF4444','#06B6D4','#EC4899','#1E293B'];
+let ensCount = 6;
+
+/* ---- Supprimer une carte ---- */
+function deleteEns(btn) {
+  if (!confirm('Supprimer cet enseignant ?')) return;
+  const card = btn.closest('.ens-card');
+  card.style.transition = 'opacity .3s, transform .3s';
+  card.style.opacity = '0';
+  card.style.transform = 'scale(.95)';
+  setTimeout(() => card.remove(), 300);
+  showToast('Enseignant supprimé.', 'success');
+}
+
+/* ---- Ajouter un enseignant ---- */
+document.querySelector('#addEnsModal .modal-footer .btn-primary').addEventListener('click', function () {
+  const modal   = document.getElementById('addEnsModal');
+  const inputs  = modal.querySelectorAll('input, select, textarea');
+
+  const prenom  = inputs[0].value.trim();
+  const nom     = inputs[1].value.trim();
+  const sexe    = inputs[2].value;
+  const email   = inputs[3].value.trim();
+  const tel     = inputs[4].value.trim();
+  const matiere = inputs[5].value;
+  const heures  = inputs[6].value || '0';
+
+  /* Validation */
+  if (!prenom || !nom || !matiere) {
+    if (!prenom) inputs[0].style.borderColor = '#EF4444';
+    if (!nom)    inputs[1].style.borderColor = '#EF4444';
+    if (!matiere) inputs[5].style.borderColor = '#EF4444';
+    showToast('Veuillez remplir les champs obligatoires (Prénom, Nom, Matière).', 'warning');
+    return;
+  }
+
+  ensCount++;
+  const titre    = sexe === 'Féminin' ? 'Mme' : 'M.';
+  const fullName = `${titre} ${prenom} ${nom}`;
+  const initiale = prenom.charAt(0).toUpperCase();
+  const color    = ensColors[ensCount % ensColors.length];
+  const slug     = nom.toLowerCase();
+
+  /* Créer la carte */
+  const col = document.createElement('div');
+  col.className = 'col-md-6 col-lg-4 ens-card';
+  col.dataset.matiere = matiere;
+  col.dataset.name = slug;
+  col.innerHTML = `
+    <div class="dash-card p-4 h-100">
+      <div class="d-flex align-items-start justify-content-between mb-3">
+        <div class="d-flex align-items-center gap-3">
+          <div class="table-av" style="width:48px;height:48px;font-size:1.2rem;background:${color}">${initiale}</div>
+          <div>
+            <div class="fw-bold" style="font-size:.95rem">${fullName}</div>
+            <div class="text-muted" style="font-size:.8rem">${matiere}</div>
+          </div>
+        </div>
+        <span class="status-badge success">Actif</span>
+      </div>
+      <div class="row g-2 mb-3">
+        <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Email</div><div style="font-size:.78rem">${email || '—'}</div></div>
+        <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Tél.</div><div style="font-size:.78rem">${tel || '—'}</div></div>
+        <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Heures/semaine</div><div style="font-size:.82rem;font-weight:600">${heures}h</div></div>
+        <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Classes</div><div style="font-size:.82rem;font-weight:600">—</div></div>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-sm rounded-pill flex-1" style="background:rgba(37,99,235,.1);color:var(--primary);font-size:.8rem"><i class="fas fa-eye me-1"></i>Voir</button>
+        <button class="btn btn-sm rounded-pill flex-1" style="background:rgba(245,158,11,.1);color:var(--warning);font-size:.8rem"><i class="fas fa-edit me-1"></i>Modifier</button>
+        <button class="btn btn-sm rounded-pill" onclick="deleteEns(this)" style="background:rgba(239,68,68,.1);color:var(--danger);font-size:.8rem;padding:0 .6rem"><i class="fas fa-trash"></i></button>
+      </div>
+    </div>`;
+
+  col.style.opacity = '0';
+  col.style.transform = 'scale(.95)';
+  col.style.transition = 'opacity .35s, transform .35s';
+  document.getElementById('ensBody').prepend(col);
+  requestAnimationFrame(() => {
+    col.style.opacity = '1';
+    col.style.transform = 'scale(1)';
+  });
+
+  /* Reset + fermer */
+  bootstrap.Modal.getInstance(modal).hide();
+  modal.querySelectorAll('input, textarea').forEach(i => { i.value = ''; i.style.borderColor = ''; });
+  modal.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
+  modal.querySelectorAll('input[type=checkbox]').forEach(c => c.checked = false);
+
+  /* KPI update */
+  const kpi = document.querySelector('.sc-value');
+  if (kpi) kpi.textContent = String(parseInt(kpi.textContent.replace(/\s/g,'')) + 1);
+
+  showToast(`✅ ${fullName} ajouté(e) avec succès !`, 'success');
+});
+</script>
+</body>
+</html>

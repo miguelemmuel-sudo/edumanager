@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Emplois du temps – EduManager</title>
+  <link rel="icon" type="image/png" href="../../1/img/favicon.png"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+  <link href="../css/dashboard.css" rel="stylesheet"/>
+  <style>
+    .timetable { border-collapse:collapse; width:100%; }
+    .timetable th, .timetable td { border:1px solid var(--border); padding:.5rem .6rem; font-size:.8rem; min-width:110px; }
+    .timetable thead th { background:#FAFBFC; font-weight:700; color:var(--muted); text-align:center; text-transform:uppercase; font-size:.7rem; }
+    .timetable td.time-col { background:#FAFBFC; font-weight:600; color:var(--muted); font-size:.75rem; text-align:center; white-space:nowrap; width:80px; }
+    .tt-slot { border-radius:6px; padding:6px 8px; font-size:.78rem; font-weight:500; cursor:pointer; transition:opacity .2s; }
+    .tt-slot:hover { opacity:.8; }
+    .tt-math { background:rgba(37,99,235,.12); color:#1D4ED8; }
+    .tt-french { background:rgba(16,185,129,.12); color:#059669; }
+    .tt-hist { background:rgba(245,158,11,.12); color:#D97706; }
+    .tt-svt { background:rgba(139,92,246,.12); color:#7C3AED; }
+    .tt-phys { background:rgba(239,68,68,.12); color:#DC2626; }
+    .tt-eng  { background:rgba(6,182,212,.12); color:#0891B2; }
+    .tt-eps  { background:rgba(16,185,129,.15); color:#059669; }
+    .tt-break { background:#F8FAFC; color:var(--muted); text-align:center; font-style:italic; }
+  </style>
+</head>
+<body>
+<aside class="sidebar" id="sidebar">
+  <a href="index.html" class="sidebar-brand"><i class="fas fa-graduation-cap brand-icon"></i><span class="brand-name">EduManager</span></a>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Principal</div>
+    <a href="index.html" class="nav-item-link"><i class="fas fa-th-large nav-icon"></i><span class="nav-item-label">Tableau de bord</span></a>
+    <div class="nav-section-label mt-2">Gestion</div>
+    <a href="eleves.html" class="nav-item-link"><i class="fas fa-user-graduate nav-icon"></i><span class="nav-item-label">Élèves</span></a>
+    <a href="enseignants.html" class="nav-item-link"><i class="fas fa-chalkboard-teacher nav-icon"></i><span class="nav-item-label">Enseignants</span></a>
+    <a href="classes.html" class="nav-item-link"><i class="fas fa-door-open nav-icon"></i><span class="nav-item-label">Classes</span></a>
+    <a href="notes.html" class="nav-item-link"><i class="fas fa-clipboard-list nav-icon"></i><span class="nav-item-label">Notes & Bulletins</span></a>
+    <a href="emploi-du-temps.html" class="nav-item-link active"><i class="fas fa-calendar-alt nav-icon"></i><span class="nav-item-label">Emplois du temps</span></a>
+    <div class="nav-section-label mt-2">Finance</div>
+    <a href="paiements.html" class="nav-item-link"><i class="fas fa-credit-card nav-icon"></i><span class="nav-item-label">Paiements</span><span class="nav-badge bg-danger-soft text-danger">12</span></a>
+    <div class="nav-section-label mt-2">Communication</div>
+    <a href="messages.html" class="nav-item-link"><i class="fas fa-comments nav-icon"></i><span class="nav-item-label">Messages</span></a>
+    <a href="notifications.html" class="nav-item-link"><i class="fas fa-bell nav-icon"></i><span class="nav-item-label">Notifications</span></a>
+    <div class="nav-section-label mt-2">Administration</div>
+    <a href="utilisateurs.html" class="nav-item-link"><i class="fas fa-users-cog nav-icon"></i><span class="nav-item-label">Utilisateurs</span></a>
+    <a href="parametres.html" class="nav-item-link"><i class="fas fa-cog nav-icon"></i><span class="nav-item-label">Paramètres</span></a>
+  </nav>
+  <div class="sidebar-footer"><div class="user-info"><div class="user-av">D</div><div><div class="user-name">M. Directeur</div><div class="user-role">Administrateur</div></div></div></div>
+</aside>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<header class="topbar" id="topbar">
+  <button class="topbar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+  <div class="topbar-search"><i class="fas fa-search"></i><input type="text" placeholder="Rechercher…"/></div>
+  <div class="topbar-actions"><button class="topbar-btn"><i class="fas fa-bell"></i><span class="notif-dot"></span></button><div class="topbar-divider"></div><div class="user-av" style="cursor:pointer">D</div></div>
+</header>
+
+<main class="main-content" id="mainContent">
+  <div class="page-header d-flex flex-wrap align-items-center justify-content-between gap-3">
+    <div>
+      <h1 class="page-title">Emplois du temps</h1>
+      <nav aria-label="breadcrumb"><ol class="breadcrumb mb-0"><li class="breadcrumb-item"><a href="index.html">Accueil</a></li><li class="breadcrumb-item active">Emplois du temps</li></ol></nav>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-secondary btn-sm rounded-pill px-3"><i class="fas fa-print me-1"></i>Imprimer</button>
+      <button class="btn btn-primary btn-sm rounded-pill px-3"><i class="fas fa-plus me-1"></i>Ajouter un créneau</button>
+    </div>
+  </div>
+
+  <!-- Sélecteur -->
+  <div class="dash-card mb-4 p-3">
+    <div class="row g-3 align-items-end">
+      <div class="col-md-3"><label class="form-label">Classe</label><select class="form-select"><option>3ème B</option><option>6ème A</option><option>Terminale</option></select></div>
+      <div class="col-md-3"><label class="form-label">Semaine</label><input type="week" class="form-control" value="2026-W03"/></div>
+      <div class="col-md-3"><label class="form-label">Vue</label><select class="form-select"><option>Semaine</option><option>Jour</option><option>Mois</option></select></div>
+      <div class="col-md-3"><button class="btn btn-primary w-100 rounded-pill">Afficher</button></div>
+    </div>
+  </div>
+
+  <!-- Légende -->
+  <div class="d-flex flex-wrap gap-2 mb-3">
+    <span class="tt-slot tt-math px-3">Mathématiques</span>
+    <span class="tt-slot tt-french px-3">Français</span>
+    <span class="tt-slot tt-hist px-3">Histoire-Géo</span>
+    <span class="tt-slot tt-svt px-3">SVT</span>
+    <span class="tt-slot tt-phys px-3">Physique-Chimie</span>
+    <span class="tt-slot tt-eng px-3">Anglais</span>
+    <span class="tt-slot tt-eps px-3">EPS</span>
+  </div>
+
+  <!-- Grille emploi du temps -->
+  <div class="dash-card">
+    <div class="dash-card-header">
+      <span class="dash-card-title"><i class="fas fa-calendar-week text-primary me-2"></i>Emploi du temps – 3ème B · Semaine du 12 Jan 2026</span>
+    </div>
+    <div class="dash-card-body p-0" style="overflow-x:auto">
+      <table class="timetable">
+        <thead>
+          <tr>
+            <th>Heure</th>
+            <th>Lundi</th><th>Mardi</th><th>Mercredi</th><th>Jeudi</th><th>Vendredi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="time-col">07h30<br>08h30</td>
+            <td><div class="tt-slot tt-math">Mathématiques<br><span style="font-size:.72rem;opacity:.8">M. Koné · Salle 3</span></div></td>
+            <td><div class="tt-slot tt-french">Français<br><span style="font-size:.72rem;opacity:.8">Mme Diallo · Salle 1</span></div></td>
+            <td><div class="tt-slot tt-hist">Histoire-Géo<br><span style="font-size:.72rem;opacity:.8">M. Traoré · Salle 4</span></div></td>
+            <td><div class="tt-slot tt-eng">Anglais<br><span style="font-size:.72rem;opacity:.8">Mme Smith · Salle 2</span></div></td>
+            <td><div class="tt-slot tt-math">Mathématiques<br><span style="font-size:.72rem;opacity:.8">M. Koné · Salle 3</span></div></td>
+          </tr>
+          <tr>
+            <td class="time-col">08h30<br>09h30</td>
+            <td><div class="tt-slot tt-phys">Physique-Chimie<br><span style="font-size:.72rem;opacity:.8">M. Ouédraogo · Labo</span></div></td>
+            <td><div class="tt-slot tt-math">Mathématiques<br><span style="font-size:.72rem;opacity:.8">M. Koné · Salle 3</span></div></td>
+            <td><div class="tt-slot tt-svt">SVT<br><span style="font-size:.72rem;opacity:.8">Mme Bah · Labo</span></div></td>
+            <td><div class="tt-slot tt-french">Français<br><span style="font-size:.72rem;opacity:.8">Mme Diallo · Salle 1</span></div></td>
+            <td><div class="tt-slot tt-phys">Physique-Chimie<br><span style="font-size:.72rem;opacity:.8">M. Ouédraogo · Labo</span></div></td>
+          </tr>
+          <tr>
+            <td class="time-col" colspan="6"><div class="tt-break py-1">⏸ Pause – 09h30 à 10h00</div></td>
+          </tr>
+          <tr>
+            <td class="time-col">10h00<br>11h00</td>
+            <td><div class="tt-slot tt-svt">SVT<br><span style="font-size:.72rem;opacity:.8">Mme Bah · Labo</span></div></td>
+            <td><div class="tt-slot tt-eng">Anglais<br><span style="font-size:.72rem;opacity:.8">Mme Smith · Salle 2</span></div></td>
+            <td><div class="tt-slot tt-math">Mathématiques<br><span style="font-size:.72rem;opacity:.8">M. Koné · Salle 3</span></div></td>
+            <td><div class="tt-slot tt-hist">Histoire-Géo<br><span style="font-size:.72rem;opacity:.8">M. Traoré · Salle 4</span></div></td>
+            <td><div class="tt-slot tt-french">Français<br><span style="font-size:.72rem;opacity:.8">Mme Diallo · Salle 1</span></div></td>
+          </tr>
+          <tr>
+            <td class="time-col">11h00<br>12h00</td>
+            <td><div class="tt-slot tt-hist">Histoire-Géo<br><span style="font-size:.72rem;opacity:.8">M. Traoré · Salle 4</span></div></td>
+            <td><div class="tt-slot tt-svt">SVT<br><span style="font-size:.72rem;opacity:.8">Mme Bah · Labo</span></div></td>
+            <td><div class="tt-slot tt-eps">EPS<br><span style="font-size:.72rem;opacity:.8">M. Cissé · Terrain</span></div></td>
+            <td><div class="tt-slot tt-phys">Physique-Chimie<br><span style="font-size:.72rem;opacity:.8">M. Ouédraogo · Labo</span></div></td>
+            <td><div class="tt-slot tt-svt">SVT<br><span style="font-size:.72rem;opacity:.8">Mme Bah · Labo</span></div></td>
+          </tr>
+          <tr>
+            <td class="time-col" colspan="6"><div class="tt-break py-1">🍽 Déjeuner – 12h00 à 14h00</div></td>
+          </tr>
+          <tr>
+            <td class="time-col">14h00<br>15h00</td>
+            <td><div class="tt-slot tt-french">Français<br><span style="font-size:.72rem;opacity:.8">Mme Diallo · Salle 1</span></div></td>
+            <td><div class="tt-slot tt-hist">Histoire-Géo<br><span style="font-size:.72rem;opacity:.8">M. Traoré · Salle 4</span></div></td>
+            <td></td>
+            <td><div class="tt-slot tt-eng">Anglais<br><span style="font-size:.72rem;opacity:.8">Mme Smith · Salle 2</span></div></td>
+            <td><div class="tt-slot tt-eps">EPS<br><span style="font-size:.72rem;opacity:.8">M. Cissé · Terrain</span></div></td>
+          </tr>
+          <tr>
+            <td class="time-col">15h00<br>16h00</td>
+            <td><div class="tt-slot tt-eps">EPS<br><span style="font-size:.72rem;opacity:.8">M. Cissé · Terrain</span></div></td>
+            <td><div class="tt-slot tt-math">Mathématiques<br><span style="font-size:.72rem;opacity:.8">M. Koné · Salle 3</span></div></td>
+            <td></td>
+            <td><div class="tt-slot tt-french">Français<br><span style="font-size:.72rem;opacity:.8">Mme Diallo · Salle 1</span></div></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../js/dashboard.js"></script>
+</body>
+</html>

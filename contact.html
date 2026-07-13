@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Contact – EduManager</title>
+  <link rel="icon" type="image/png" href="../1/img/favicon.png"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/css/intlTelInput.css">
+  <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet"/>
+  <link href="css/landing.css" rel="stylesheet"/>
+</head>
+<body>
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top" id="mainNav">
+  <div class="container">
+    <a class="navbar-brand fw-bold text-primary" href="index.html"><i class="fas fa-graduation-cap me-1"></i>EduManager</a>
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu"><span class="navbar-toggler-icon"></span></button>
+    <div class="collapse navbar-collapse" id="navMenu">
+      <ul class="navbar-nav mx-auto gap-1">
+        <li class="nav-item"><a class="nav-link" href="index.html">Accueil</a></li>
+        <li class="nav-item"><a class="nav-link" href="index.html#fonctionnalites">Fonctionnalités</a></li>
+        <li class="nav-item"><a class="nav-link" href="index.html#tarifs">Tarifs</a></li>
+        <li class="nav-item"><a class="nav-link" href="demo.html">Démo</a></li>
+      </ul>
+      <div class="d-flex gap-2 mt-3 mt-lg-0">
+        <a href="signin.html" class="btn btn-outline-primary rounded-pill px-4">Se connecter</a>
+        <a href="signup.html" class="btn btn-primary rounded-pill px-4">S'inscrire</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section style="padding:70px 0 50px;background:linear-gradient(135deg,#EFF6FF,#F0FDF4)">
+  <div class="container text-center" data-aos="fade-up">
+    <span class="section-badge mb-3 d-inline-block">Contact</span>
+    <h1 class="section-title mb-3">Nous sommes là pour vous aider</h1>
+    <p class="section-sub mb-0">Une question, un projet ou besoin d'une démo personnalisée ? Contactez-nous.</p>
+  </div>
+</section>
+
+<!-- CONTENU -->
+<section class="py-section bg-white">
+  <div class="container">
+    <div class="row g-5 align-items-start">
+
+      <!-- Formulaire -->
+      <div class="col-lg-7" data-aos="fade-right">
+        <div class="bg-white rounded-4 border p-4 p-lg-5 shadow-sm">
+          <h4 class="fw-bold mb-1">Envoyer un message</h4>
+          <p class="text-muted mb-4" style="font-size:.9rem">Nous répondons généralement sous 24h ouvrées.</p>
+          <form id="contactForm" novalidate>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label fw-medium">Prénom *</label>
+                <input type="text" class="form-control" placeholder="Jean" required/>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-medium">Nom *</label>
+                <input type="text" class="form-control" placeholder="Directeur" required/>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-medium">Email *</label>
+                <input type="email" class="form-control" placeholder="jean@ecole.ci" required/>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-medium">Téléphone</label>
+                <input type="tel" class="form-control" id="contactPhone" placeholder="07 00 00 00" style="width:100%;"/>
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-medium">Établissement</label>
+                <input type="text" class="form-control" placeholder="Nom de votre école"/>
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-medium">Sujet *</label>
+                <select class="form-select" required>
+                  <option value="">Sélectionner…</option>
+                  <option>Demande de démonstration</option>
+                  <option>Question sur les tarifs</option>
+                  <option>Support technique</option>
+                  <option>Partenariat</option>
+                  <option>Autre</option>
+                </select>
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-medium">Message *</label>
+                <textarea class="form-control" rows="5" placeholder="Décrivez votre besoin…" required></textarea>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary rounded-pill px-5 py-2 fw-bold mt-4 w-100" id="submitBtn">
+              <i class="fas fa-paper-plane me-2"></i>Envoyer le message
+            </button>
+          </form>
+          <!-- Succès -->
+          <div id="successMsg" class="d-none mt-4 p-4 rounded-3 text-center" style="background:rgba(16,185,129,.08);border:1.5px solid rgba(16,185,129,.3)">
+            <i class="fas fa-check-circle text-success fa-3x mb-3"></i>
+            <h5 class="fw-bold text-success">Message envoyé !</h5>
+            <p class="text-muted mb-0">Nous vous répondrons dans les 24h ouvrées. Merci pour votre message.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Infos contact -->
+      <div class="col-lg-5" data-aos="fade-left" data-aos-delay="150">
+        <div class="mb-4">
+          <h4 class="fw-bold mb-4">Nos coordonnées</h4>
+          <div class="d-flex gap-3 mb-4">
+            <div class="feat-icon bg-primary-soft flex-shrink-0"><i class="fas fa-envelope text-primary"></i></div>
+            <div>
+              <div class="fw-semibold mb-1">Email</div>
+              <a href="mailto:contact@edumanager.app" class="text-muted text-decoration-none">contact@edumanager.app</a>
+              <div class="text-muted small">Réponse sous 24h ouvrées</div>
+            </div>
+          </div>
+          <div class="d-flex gap-3 mb-4">
+            <div class="feat-icon bg-success-soft flex-shrink-0"><i class="fas fa-phone text-success"></i></div>
+            <div>
+              <div class="fw-semibold mb-1">Téléphone / WhatsApp</div>
+              <a href="tel:+22507000000" class="text-muted text-decoration-none">+225 07 00 00 00</a>
+              <div class="text-muted small">Lun–Ven · 08h00 – 18h00</div>
+            </div>
+          </div>
+          <div class="d-flex gap-3 mb-4">
+            <div class="feat-icon bg-warning-soft flex-shrink-0"><i class="fas fa-map-marker-alt text-warning"></i></div>
+            <div>
+              <div class="fw-semibold mb-1">Adresse</div>
+              <div class="text-muted">Cocody, Abidjan<br/>Côte d'Ivoire</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Réseaux sociaux -->
+        <div class="mb-4">
+          <div class="fw-semibold mb-3">Suivez-nous</div>
+          <div class="d-flex gap-3">
+            <a href="#" class="soc-contact rounded-circle d-flex align-items-center justify-content-center text-decoration-none" style="width:42px;height:42px;background:#E8F4FD;color:#1877F2;font-size:1rem;transition:transform .2s" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" class="soc-contact rounded-circle d-flex align-items-center justify-content-center text-decoration-none" style="width:42px;height:42px;background:#E8FAF5;color:#25D366;font-size:1rem;transition:transform .2s" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+            <a href="#" class="soc-contact rounded-circle d-flex align-items-center justify-content-center text-decoration-none" style="width:42px;height:42px;background:#EBF5FB;color:#0077B5;font-size:1rem;transition:transform .2s" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+            <a href="#" class="soc-contact rounded-circle d-flex align-items-center justify-content-center text-decoration-none" style="width:42px;height:42px;background:#E8F4FD;color:#1DA1F2;font-size:1rem;transition:transform .2s" title="Twitter"><i class="fab fa-twitter"></i></a>
+          </div>
+        </div>
+
+        <!-- FAQ rapide -->
+        <div class="bg-light rounded-4 p-4">
+          <h6 class="fw-bold mb-3"><i class="fas fa-question-circle text-primary me-2"></i>Questions fréquentes</h6>
+          <div class="d-flex flex-column gap-2">
+            <a href="index.html#faq" class="text-decoration-none d-flex align-items-center gap-2 text-muted" style="font-size:.875rem">
+              <i class="fas fa-chevron-right text-primary" style="font-size:.7rem"></i>
+              Comment démarrer un essai gratuit ?
+            </a>
+            <a href="index.html#faq" class="text-decoration-none d-flex align-items-center gap-2 text-muted" style="font-size:.875rem">
+              <i class="fas fa-chevron-right text-primary" style="font-size:.7rem"></i>
+              Les données sont-elles sécurisées ?
+            </a>
+            <a href="index.html#faq" class="text-decoration-none d-flex align-items-center gap-2 text-muted" style="font-size:.875rem">
+              <i class="fas fa-chevron-right text-primary" style="font-size:.7rem"></i>
+              Puis-je gérer plusieurs établissements ?
+            </a>
+            <a href="index.html#tarifs" class="text-decoration-none d-flex align-items-center gap-2 text-primary fw-medium" style="font-size:.875rem">
+              <i class="fas fa-chevron-right" style="font-size:.7rem"></i>
+              Voir tous les tarifs →
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section style="padding:60px 0;background:linear-gradient(135deg,#EFF6FF,#F0FDF4)">
+  <div class="container text-center" data-aos="fade-up">
+    <h3 class="fw-bold mb-3">Préférez-vous une démonstration en direct ?</h3>
+    <p class="text-muted mb-4">Nous organisons des demos personnalisées de 30 min par visio. Réservez un créneau.</p>
+    <a href="demo.html" class="btn btn-primary rounded-pill px-5 py-2 fw-bold"><i class="fas fa-video me-2"></i>Demander une démo</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer style="background:#0F172A;padding:2rem 0">
+  <div class="container d-flex flex-wrap justify-content-between align-items-center gap-3">
+    <a href="index.html" class="text-decoration-none d-flex align-items-center gap-2">
+      <i class="fas fa-graduation-cap text-primary fa-lg"></i>
+      <span class="fw-bold text-white">EduManager</span>
+    </a>
+    <p class="text-muted small mb-0">© 2026 EduManager · Tous droits réservés</p>
+  </div>
+</footer>
+
+<style>
+.soc-contact:hover { transform:translateY(-3px); }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/intlTelInput.min.js"></script>
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+<script>
+AOS.init({ once:true, offset:50, duration:600 });
+window.addEventListener('scroll',()=>{
+  document.getElementById('mainNav').classList.toggle('nav-scrolled', window.scrollY>50);
+});
+
+// Setup intl-tel-input
+const contactPhone = document.querySelector("#contactPhone");
+const itiContact = window.intlTelInput(contactPhone, {
+  initialCountry: "cm",
+  utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js",
+});
+
+// Handle form submission
+document.getElementById('contactForm')?.addEventListener('submit', function(e) {
+  e.preventDefault();
+  
+  const emailInput = this.querySelector('input[type="email"]');
+  const email = emailInput.value.trim();
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  
+  // Clear old errors
+  const oldErr = document.getElementById('contactError');
+  if (oldErr) oldErr.remove();
+
+  if (!email || !emailRegex.test(email)) {
+    showContactError("Veuillez entrer une adresse e-mail valide.");
+    return;
+  }
+  
+  if (contactPhone.value && !itiContact.isValidNumber()) {
+    showContactError("Veuillez entrer un numéro de téléphone valide.");
+    return;
+  }
+  
+  // Success
+  const btn = document.getElementById('submitBtn');
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Envoi en cours...';
+  btn.disabled = true;
+  
+  setTimeout(() => {
+    this.style.display = 'none';
+    document.getElementById('successMsg').classList.remove('d-none');
+  }, 1200);
+});
+
+function showContactError(msg) {
+  const box = document.createElement('div');
+  box.id = 'contactError';
+  box.style.cssText = 'background:#FEF2F2;border:1.5px solid #FCA5A5;color:#DC2626;padding:.75rem 1rem;border-radius:.625rem;font-size:.85rem;margin-top:.75rem;';
+  box.innerHTML = `<i class="fas fa-exclamation-circle me-2"></i>${msg}`;
+  document.getElementById('submitBtn').before(box);
+}
+</script>
+</body>
+</html>
+

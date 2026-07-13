@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Mon profil – EduManager</title>
+  <link rel="icon" type="image/png" href="../../1/img/favicon.png"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+  <link href="../css/dashboard.css" rel="stylesheet"/>
+</head>
+<body>
+<aside class="sidebar" id="sidebar">
+  <a href="index.html" class="sidebar-brand"><i class="fas fa-graduation-cap brand-icon"></i><span class="brand-name">EduManager</span></a>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Principal</div>
+    <a href="index.html" class="nav-item-link"><i class="fas fa-th-large nav-icon"></i><span class="nav-item-label">Tableau de bord</span></a>
+    <div class="nav-section-label mt-2">Gestion</div>
+    <a href="eleves.html" class="nav-item-link"><i class="fas fa-user-graduate nav-icon"></i><span class="nav-item-label">Élèves</span></a>
+    <a href="enseignants.html" class="nav-item-link"><i class="fas fa-chalkboard-teacher nav-icon"></i><span class="nav-item-label">Enseignants</span></a>
+    <a href="classes.html" class="nav-item-link"><i class="fas fa-door-open nav-icon"></i><span class="nav-item-label">Classes</span></a>
+    <a href="notes.html" class="nav-item-link"><i class="fas fa-clipboard-list nav-icon"></i><span class="nav-item-label">Notes & Bulletins</span></a>
+    <a href="emploi-du-temps.html" class="nav-item-link"><i class="fas fa-calendar-alt nav-icon"></i><span class="nav-item-label">Emplois du temps</span></a>
+    <div class="nav-section-label mt-2">Finance</div>
+    <a href="paiements.html" class="nav-item-link"><i class="fas fa-credit-card nav-icon"></i><span class="nav-item-label">Paiements</span></a>
+    <div class="nav-section-label mt-2">Communication</div>
+    <a href="messages.html" class="nav-item-link"><i class="fas fa-comments nav-icon"></i><span class="nav-item-label">Messages</span></a>
+    <a href="notifications.html" class="nav-item-link"><i class="fas fa-bell nav-icon"></i><span class="nav-item-label">Notifications</span></a>
+    <div class="nav-section-label mt-2">Administration</div>
+    <a href="utilisateurs.html" class="nav-item-link"><i class="fas fa-users-cog nav-icon"></i><span class="nav-item-label">Utilisateurs</span></a>
+    <a href="parametres.html" class="nav-item-link"><i class="fas fa-cog nav-icon"></i><span class="nav-item-label">Paramètres</span></a>
+  </nav>
+  <div class="sidebar-footer"><div class="user-info"><div class="user-av">D</div><div><div class="user-name">M. Directeur</div><div class="user-role">Administrateur</div></div></div></div>
+</aside>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<header class="topbar" id="topbar">
+  <button class="topbar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+  <div class="topbar-search"><i class="fas fa-search"></i><input type="text" placeholder="Rechercher…"/></div>
+  <div class="topbar-actions">
+    <button class="topbar-btn"><i class="fas fa-bell"></i><span class="notif-dot"></span></button>
+    <div class="topbar-divider"></div>
+    <div class="user-av" style="cursor:pointer" onclick="window.location='profil.html'">D</div>
+  </div>
+</header>
+
+<main class="main-content" id="mainContent">
+  <div class="page-header">
+    <h1 class="page-title">Mon profil</h1>
+    <nav aria-label="breadcrumb"><ol class="breadcrumb mb-0">
+      <li class="breadcrumb-item"><a href="index.html">Accueil</a></li>
+      <li class="breadcrumb-item active">Profil</li>
+    </ol></nav>
+  </div>
+
+  <div class="row g-4">
+    <!-- Carte profil -->
+    <div class="col-lg-4">
+      <div class="dash-card p-4 text-center mb-3">
+        <div class="position-relative d-inline-block mb-3">
+          <div class="table-av mx-auto" style="width:90px;height:90px;font-size:2.2rem;background:linear-gradient(135deg,#2563EB,#10B981)">D</div>
+          <button class="btn btn-sm btn-primary rounded-circle position-absolute" style="bottom:0;right:0;width:28px;height:28px;padding:0;font-size:.7rem" title="Changer la photo">
+            <i class="fas fa-camera"></i>
+          </button>
+        </div>
+        <h5 class="fw-bold mb-0">M. Directeur</h5>
+        <p class="text-muted mb-2" style="font-size:.85rem">directeur@ecole.ci</p>
+        <span class="status-badge danger mb-3 d-inline-block">Administrateur</span>
+        <div class="border-top pt-3 mt-2">
+          <div class="row g-2 text-center">
+            <div class="col-4">
+              <div class="fw-bold text-primary" style="font-size:1.1rem">1 248</div>
+              <div class="text-muted" style="font-size:.72rem">Élèves</div>
+            </div>
+            <div class="col-4">
+              <div class="fw-bold text-success" style="font-size:1.1rem">87</div>
+              <div class="text-muted" style="font-size:.72rem">Enseignants</div>
+            </div>
+            <div class="col-4">
+              <div class="fw-bold text-warning" style="font-size:1.1rem">24</div>
+              <div class="text-muted" style="font-size:.72rem">Classes</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Actions rapides -->
+      <div class="dash-card p-3">
+        <div class="fw-semibold mb-3" style="font-size:.85rem">Actions rapides</div>
+        <div class="d-flex flex-column gap-2">
+          <a href="parametres.html" class="btn btn-outline-secondary text-start rounded-2 d-flex align-items-center gap-2" style="font-size:.83rem">
+            <i class="fas fa-cog text-muted"></i>Paramètres de l'école
+          </a>
+          <button class="btn btn-outline-secondary text-start rounded-2 d-flex align-items-center gap-2" style="font-size:.83rem" data-bs-toggle="modal" data-bs-target="#changePwdModal">
+            <i class="fas fa-lock text-muted"></i>Changer le mot de passe
+          </button>
+          <button class="btn btn-outline-secondary text-start rounded-2 d-flex align-items-center gap-2" style="font-size:.83rem">
+            <i class="fas fa-download text-muted"></i>Exporter mes données
+          </button>
+          <a href="../signin.html" class="btn btn-outline-danger text-start rounded-2 d-flex align-items-center gap-2" style="font-size:.83rem">
+            <i class="fas fa-sign-out-alt text-danger"></i>Se déconnecter
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formulaire infos -->
+    <div class="col-lg-8">
+      <!-- Onglets -->
+      <ul class="nav nav-tabs mb-3 border-0" id="profileTabs">
+        <li class="nav-item">
+          <button class="nav-link active fw-medium" data-bs-toggle="tab" data-bs-target="#tabInfo" style="font-size:.875rem">
+            <i class="fas fa-user me-1"></i>Informations
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link fw-medium" data-bs-toggle="tab" data-bs-target="#tabSecurity" style="font-size:.875rem">
+            <i class="fas fa-shield-alt me-1"></i>Sécurité
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link fw-medium" data-bs-toggle="tab" data-bs-target="#tabNotifs" style="font-size:.875rem">
+            <i class="fas fa-bell me-1"></i>Notifications
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link fw-medium" data-bs-toggle="tab" data-bs-target="#tabActivity" style="font-size:.875rem">
+            <i class="fas fa-history me-1"></i>Activité
+          </button>
+        </li>
+      </ul>
+
+      <div class="tab-content">
+        <!-- Onglet Informations -->
+        <div class="tab-pane fade show active" id="tabInfo">
+          <div class="form-section">
+            <div class="form-section-title">Informations personnelles</div>
+            <div class="row g-3">
+              <div class="col-md-6"><label class="form-label">Prénom</label><input type="text" class="form-control" value="Jean"/></div>
+              <div class="col-md-6"><label class="form-label">Nom</label><input type="text" class="form-control" value="Directeur"/></div>
+              <div class="col-md-6"><label class="form-label">Email professionnel</label><input type="email" class="form-control" value="directeur@ecole.ci"/></div>
+              <div class="col-md-6"><label class="form-label">Téléphone</label><input type="tel" class="form-control" value="+225 07 00 00 00"/></div>
+              <div class="col-md-6"><label class="form-label">Fonction</label><input type="text" class="form-control" value="Directeur général"/></div>
+              <div class="col-md-6"><label class="form-label">Depuis le</label><input type="text" class="form-control" value="01/09/2018" readonly/></div>
+            </div>
+          </div>
+          <div class="form-section">
+            <div class="form-section-title">Préférences d'affichage</div>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Langue</label>
+                <select class="form-select"><option selected>Français</option><option>English</option><option>Español</option></select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Fuseau horaire</label>
+                <select class="form-select"><option selected>Africa/Abidjan (GMT+0)</option><option>Africa/Dakar (GMT+0)</option><option>Europe/Paris (GMT+1)</option></select>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Format de date</label>
+                <div class="d-flex gap-3">
+                  <div class="form-check"><input class="form-check-input" type="radio" name="dateFormat" id="df1" checked/><label class="form-check-label small" for="df1">DD/MM/YYYY</label></div>
+                  <div class="form-check"><input class="form-check-input" type="radio" name="dateFormat" id="df2"/><label class="form-check-label small" for="df2">MM/DD/YYYY</label></div>
+                  <div class="form-check"><input class="form-check-input" type="radio" name="dateFormat" id="df3"/><label class="form-check-label small" for="df3">YYYY-MM-DD</label></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-primary rounded-pill px-4 fw-semibold"><i class="fas fa-save me-2"></i>Enregistrer les modifications</button>
+        </div>
+
+        <!-- Onglet Sécurité -->
+        <div class="tab-pane fade" id="tabSecurity">
+          <div class="form-section">
+            <div class="form-section-title">Changer le mot de passe</div>
+            <div class="row g-3">
+              <div class="col-12"><label class="form-label">Mot de passe actuel</label><input type="password" class="form-control" placeholder="••••••••"/></div>
+              <div class="col-md-6"><label class="form-label">Nouveau mot de passe</label><input type="password" class="form-control" id="newPwd" placeholder="Minimum 8 caractères" oninput="checkPwd()"/></div>
+              <div class="col-md-6"><label class="form-label">Confirmer</label><input type="password" class="form-control" id="confPwd" placeholder="Répéter" oninput="checkPwd()"/></div>
+              <div class="col-12">
+                <div class="prog-bar mb-1"><div class="prog-fill" id="pwdBar2" style="width:0%"></div></div>
+                <div id="pwdMsg" class="text-muted" style="font-size:.78rem">Entrez un mot de passe</div>
+              </div>
+            </div>
+            <button class="btn btn-primary rounded-pill px-4 mt-3 fw-semibold"><i class="fas fa-key me-2"></i>Mettre à jour</button>
+          </div>
+          <div class="form-section">
+            <div class="form-section-title">Sessions actives</div>
+            <div class="d-flex align-items-center justify-content-between p-3 rounded-2 bg-success bg-opacity-10 mb-2">
+              <div class="d-flex align-items-center gap-3">
+                <i class="fas fa-desktop text-success fa-lg"></i>
+                <div><div class="fw-semibold" style="font-size:.875rem">Chrome · Windows 11</div><div class="text-muted" style="font-size:.78rem">Abidjan, CI · Session actuelle</div></div>
+              </div>
+              <span class="status-badge success">Actuelle</span>
+            </div>
+            <div class="d-flex align-items-center justify-content-between p-3 rounded-2 bg-light mb-2">
+              <div class="d-flex align-items-center gap-3">
+                <i class="fas fa-mobile-alt text-muted fa-lg"></i>
+                <div><div class="fw-semibold" style="font-size:.875rem">Safari · iPhone</div><div class="text-muted" style="font-size:.78rem">Abidjan, CI · Il y a 2h</div></div>
+              </div>
+              <button class="btn btn-sm btn-outline-danger rounded-pill" style="font-size:.75rem">Révoquer</button>
+            </div>
+            <button class="btn btn-outline-danger rounded-pill btn-sm mt-2"><i class="fas fa-sign-out-alt me-1"></i>Déconnecter toutes les sessions</button>
+          </div>
+        </div>
+
+        <!-- Onglet Notifications -->
+        <div class="tab-pane fade" id="tabNotifs">
+          <div class="form-section">
+            <div class="form-section-title">Préférences de notifications</div>
+            <div class="d-flex flex-column gap-3">
+              <div class="d-flex align-items-center justify-content-between py-2 border-bottom">
+                <div><div class="fw-medium" style="font-size:.875rem">Nouvelles inscriptions</div><div class="text-muted" style="font-size:.78rem">Être notifié à chaque nouvel élève inscrit</div></div>
+                <div class="form-check form-switch mb-0"><input class="form-check-input" type="checkbox" checked style="cursor:pointer"/></div>
+              </div>
+              <div class="d-flex align-items-center justify-content-between py-2 border-bottom">
+                <div><div class="fw-medium" style="font-size:.875rem">Impayés détectés</div><div class="text-muted" style="font-size:.78rem">Alerte pour les frais en retard</div></div>
+                <div class="form-check form-switch mb-0"><input class="form-check-input" type="checkbox" checked style="cursor:pointer"/></div>
+              </div>
+              <div class="d-flex align-items-center justify-content-between py-2 border-bottom">
+                <div><div class="fw-medium" style="font-size:.875rem">Nouveaux messages</div><div class="text-muted" style="font-size:.78rem">Notification pour les messages parents/enseignants</div></div>
+                <div class="form-check form-switch mb-0"><input class="form-check-input" type="checkbox" checked style="cursor:pointer"/></div>
+              </div>
+              <div class="d-flex align-items-center justify-content-between py-2 border-bottom">
+                <div><div class="fw-medium" style="font-size:.875rem">Notes saisies</div><div class="text-muted" style="font-size:.78rem">Quand un enseignant saisit des notes</div></div>
+                <div class="form-check form-switch mb-0"><input class="form-check-input" type="checkbox" style="cursor:pointer"/></div>
+              </div>
+              <div class="d-flex align-items-center justify-content-between py-2">
+                <div><div class="fw-medium" style="font-size:.875rem">Résumé hebdomadaire</div><div class="text-muted" style="font-size:.78rem">Rapport par email chaque lundi matin</div></div>
+                <div class="form-check form-switch mb-0"><input class="form-check-input" type="checkbox" checked style="cursor:pointer"/></div>
+              </div>
+            </div>
+            <button class="btn btn-primary rounded-pill px-4 mt-3 fw-semibold"><i class="fas fa-save me-2"></i>Sauvegarder</button>
+          </div>
+        </div>
+
+        <!-- Onglet Activité -->
+        <div class="tab-pane fade" id="tabActivity">
+          <div class="form-section">
+            <div class="form-section-title">Historique d'activité récente</div>
+            <div class="d-flex flex-column gap-0">
+              <div class="d-flex gap-3 py-3 border-bottom">
+                <div class="act-icon bg-primary-soft text-primary" style="width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0"><i class="fas fa-sign-in-alt"></i></div>
+                <div><div class="fw-medium" style="font-size:.875rem">Connexion</div><div class="text-muted" style="font-size:.78rem">Aujourd'hui à 08:12 · Chrome · Windows</div></div>
+                <span class="ms-auto text-muted" style="font-size:.75rem;white-space:nowrap">08:12</span>
+              </div>
+              <div class="d-flex gap-3 py-3 border-bottom">
+                <div class="act-icon bg-success-soft text-success" style="width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0"><i class="fas fa-user-plus"></i></div>
+                <div><div class="fw-medium" style="font-size:.875rem">Élève ajouté</div><div class="text-muted" style="font-size:.78rem">Amina Diallo inscrite en 3ème B</div></div>
+                <span class="ms-auto text-muted" style="font-size:.75rem;white-space:nowrap">09:45</span>
+              </div>
+              <div class="d-flex gap-3 py-3 border-bottom">
+                <div class="act-icon bg-warning-soft text-warning" style="width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0"><i class="fas fa-paper-plane"></i></div>
+                <div><div class="fw-medium" style="font-size:.875rem">Notification envoyée</div><div class="text-muted" style="font-size:.78rem">Réunion parents — 248 destinataires</div></div>
+                <span class="ms-auto text-muted" style="font-size:.75rem;white-space:nowrap">10:00</span>
+              </div>
+              <div class="d-flex gap-3 py-3 border-bottom">
+                <div class="act-icon bg-info-soft text-info" style="width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0"><i class="fas fa-cog"></i></div>
+                <div><div class="fw-medium" style="font-size:.875rem">Paramètres modifiés</div><div class="text-muted" style="font-size:.78rem">Mise à jour des informations de l'école</div></div>
+                <span class="ms-auto text-muted" style="font-size:.75rem;white-space:nowrap">Hier</span>
+              </div>
+              <div class="d-flex gap-3 py-3">
+                <div class="act-icon bg-danger-soft text-danger" style="width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0"><i class="fas fa-sign-out-alt"></i></div>
+                <div><div class="fw-medium" style="font-size:.875rem">Déconnexion</div><div class="text-muted" style="font-size:.78rem">Hier à 18:32</div></div>
+                <span class="ms-auto text-muted" style="font-size:.75rem;white-space:nowrap">Hier</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Modal changer mot de passe -->
+<div class="modal fade" id="changePwdModal" tabindex="-1">
+  <div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title fw-bold"><i class="fas fa-lock text-primary me-2"></i>Changer le mot de passe</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+      <div class="mb-3"><label class="form-label">Mot de passe actuel *</label><input type="password" class="form-control" placeholder="••••••••"/></div>
+      <div class="mb-3"><label class="form-label">Nouveau mot de passe *</label><input type="password" class="form-control" placeholder="Minimum 8 caractères"/></div>
+      <div class="mb-3"><label class="form-label">Confirmer *</label><input type="password" class="form-control" placeholder="Répéter"/></div>
+    </div>
+    <div class="modal-footer"><button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Annuler</button><button type="button" class="btn btn-primary rounded-pill px-4 fw-semibold">Mettre à jour</button></div>
+  </div></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../js/dashboard.js"></script>
+<script>
+function checkPwd() {
+  const v = document.getElementById('newPwd').value;
+  const c = document.getElementById('confPwd').value;
+  const bar = document.getElementById('pwdBar2');
+  const msg = document.getElementById('pwdMsg');
+  let score = 0;
+  if(v.length>=8) score++;
+  if(/[A-Z]/.test(v)) score++;
+  if(/[0-9]/.test(v)) score++;
+  if(/[^A-Za-z0-9]/.test(v)) score++;
+  const w=['0%','30%','55%','80%','100%'][score];
+  const col=['','#EF4444','#F59E0B','#10B981','#2563EB'][score];
+  const t=['Entrez un mot de passe','Trop faible','Faible','Fort','Très fort'][score];
+  bar.style.width=w; bar.style.background=col; msg.textContent=t;
+  if(c && v!==c) { msg.textContent='Les mots de passe ne correspondent pas'; bar.style.background='#EF4444'; }
+}
+</script>
+</body>
+</html>

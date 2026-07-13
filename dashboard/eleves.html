@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Élèves – EduManager</title>
+  <link rel="icon" type="image/png" href="../../1/img/favicon.png"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+  <link href="../css/dashboard.css" rel="stylesheet"/>
+</head>
+<body>
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <a href="index.html" class="sidebar-brand"><i class="fas fa-graduation-cap brand-icon"></i><span class="brand-name">EduManager</span></a>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Principal</div>
+    <a href="index.html" class="nav-item-link"><i class="fas fa-th-large nav-icon"></i><span class="nav-item-label">Tableau de bord</span></a>
+    <div class="nav-section-label mt-2">Gestion</div>
+    <a href="eleves.html" class="nav-item-link active"><i class="fas fa-user-graduate nav-icon"></i><span class="nav-item-label">Élèves</span></a>
+    <a href="enseignants.html" class="nav-item-link"><i class="fas fa-chalkboard-teacher nav-icon"></i><span class="nav-item-label">Enseignants</span></a>
+    <a href="classes.html" class="nav-item-link"><i class="fas fa-door-open nav-icon"></i><span class="nav-item-label">Classes</span></a>
+    <a href="notes.html" class="nav-item-link"><i class="fas fa-clipboard-list nav-icon"></i><span class="nav-item-label">Notes & Bulletins</span></a>
+    <a href="emploi-du-temps.html" class="nav-item-link"><i class="fas fa-calendar-alt nav-icon"></i><span class="nav-item-label">Emplois du temps</span></a>
+    <div class="nav-section-label mt-2">Finance</div>
+    <a href="paiements.html" class="nav-item-link"><i class="fas fa-credit-card nav-icon"></i><span class="nav-item-label">Paiements</span><span class="nav-badge bg-danger-soft text-danger">12</span></a>
+    <div class="nav-section-label mt-2">Communication</div>
+    <a href="messages.html" class="nav-item-link"><i class="fas fa-comments nav-icon"></i><span class="nav-item-label">Messages</span></a>
+    <a href="notifications.html" class="nav-item-link"><i class="fas fa-bell nav-icon"></i><span class="nav-item-label">Notifications</span></a>
+    <div class="nav-section-label mt-2">Administration</div>
+    <a href="utilisateurs.html" class="nav-item-link"><i class="fas fa-users-cog nav-icon"></i><span class="nav-item-label">Utilisateurs</span></a>
+    <a href="parametres.html" class="nav-item-link"><i class="fas fa-cog nav-icon"></i><span class="nav-item-label">Paramètres</span></a>
+  </nav>
+  <div class="sidebar-footer"><div class="user-info"><div class="user-av">D</div><div><div class="user-name">M. Directeur</div><div class="user-role">Administrateur</div></div></div></div>
+</aside>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<!-- TOPBAR -->
+<header class="topbar" id="topbar">
+  <button class="topbar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+  <div class="topbar-search"><i class="fas fa-search"></i><input type="text" placeholder="Rechercher un élève…" id="searchInput" oninput="filterTable()"/></div>
+  <div class="topbar-actions">
+    <button class="topbar-btn"><i class="fas fa-bell"></i><span class="notif-dot"></span></button>
+    <div class="topbar-divider"></div>
+    <div class="user-av" style="cursor:pointer">D</div>
+  </div>
+</header>
+
+<main class="main-content" id="mainContent">
+  <div class="page-header d-flex flex-wrap align-items-center justify-content-between gap-3">
+    <div>
+      <h1 class="page-title">Gestion des élèves</h1>
+      <nav aria-label="breadcrumb"><ol class="breadcrumb mb-0"><li class="breadcrumb-item"><a href="index.html">Accueil</a></li><li class="breadcrumb-item active">Élèves</li></ol></nav>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-secondary btn-sm rounded-pill px-3"><i class="fas fa-file-export me-1"></i>Exporter</button>
+      <button class="btn btn-outline-secondary btn-sm rounded-pill px-3"><i class="fas fa-filter me-1"></i>Filtrer</button>
+      <button class="btn btn-primary btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#addEleveModal"><i class="fas fa-plus me-1"></i>Ajouter un élève</button>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3"><div class="stat-card"><div class="d-flex align-items-center justify-content-between mb-2"><div class="sc-icon bg-primary-soft"><i class="fas fa-users text-primary"></i></div><span class="sc-trend up">+12%</span></div><div class="sc-value">1 248</div><div class="sc-label">Total élèves</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-card"><div class="d-flex align-items-center justify-content-between mb-2"><div class="sc-icon bg-success-soft"><i class="fas fa-check-circle text-success"></i></div><span class="sc-trend up">98%</span></div><div class="sc-value">1 223</div><div class="sc-label">Actifs</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-card"><div class="d-flex align-items-center justify-content-between mb-2"><div class="sc-icon bg-warning-soft"><i class="fas fa-clock text-warning"></i></div></div><div class="sc-value">25</div><div class="sc-label">En attente</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-card"><div class="d-flex align-items-center justify-content-between mb-2"><div class="sc-icon bg-info-soft"><i class="fas fa-user-plus text-info"></i></div><span class="sc-trend up">+8</span></div><div class="sc-value">8</div><div class="sc-label">Nouvelles inscriptions</div></div></div>
+  </div>
+
+  <!-- Filters + Table -->
+  <div class="dash-card">
+    <div class="dash-card-header flex-wrap gap-2">
+      <span class="dash-card-title"><i class="fas fa-user-graduate text-primary me-2"></i>Liste des élèves</span>
+      <div class="d-flex gap-2 ms-auto flex-wrap">
+        <select class="form-select form-select-sm" style="width:140px" id="filterClasse" onchange="filterTable()">
+          <option value="">Toutes les classes</option>
+          <option>6ème A</option><option>6ème B</option>
+          <option>3ème A</option><option>3ème B</option>
+          <option>Terminale</option>
+        </select>
+        <select class="form-select form-select-sm" style="width:130px" id="filterStatut" onchange="filterTable()">
+          <option value="">Tous les statuts</option>
+          <option>Actif</option><option>En attente</option>
+        </select>
+      </div>
+    </div>
+    <div class="dash-card-body p-0" style="overflow-x:auto">
+      <table class="dash-table" id="elevesTable">
+        <thead><tr>
+          <th><input type="checkbox" id="checkAll" onchange="toggleAll(this)"/></th>
+          <th>Élève</th><th>Matricule</th><th>Classe</th>
+          <th>Date naissance</th><th>Parent / Contact</th>
+          <th>Paiement</th><th>Statut</th><th>Actions</th>
+        </tr></thead>
+        <tbody id="elevesBody">
+          <tr>
+            <td><input type="checkbox" class="row-check"/></td>
+            <td><div class="d-flex align-items-center gap-2"><div class="table-av" style="background:#2563EB">A</div><div><div style="font-weight:600;font-size:.85rem">Amina Diallo</div><div style="font-size:.75rem;color:var(--muted)">amina.d@ecole.ci</div></div></div></td>
+            <td style="font-size:.82rem">ELV-2026-001</td>
+            <td><span class="status-badge primary">3ème B</span></td>
+            <td style="font-size:.82rem">12/03/2010</td>
+            <td style="font-size:.82rem">M. Diallo · 07 00 00 01</td>
+            <td><div class="prog-bar" style="width:80px"><div class="prog-fill" style="width:100%;background:var(--success)"></div></div><span style="font-size:.72rem;color:var(--success)">Soldé</span></td>
+            <td><span class="status-badge success">Actif</span></td>
+            <td><div class="d-flex gap-1"><button class="btn btn-sm" style="padding:3px 8px;background:rgba(37,99,235,.1);color:var(--primary);border-radius:6px;font-size:.75rem" data-bs-toggle="modal" data-bs-target="#viewEleveModal"><i class="fas fa-eye"></i></button><button class="btn btn-sm" style="padding:3px 8px;background:rgba(245,158,11,.1);color:var(--warning);border-radius:6px;font-size:.75rem"><i class="fas fa-edit"></i></button><button class="btn btn-sm" style="padding:3px 8px;background:rgba(239,68,68,.1);color:var(--danger);border-radius:6px;font-size:.75rem"><i class="fas fa-trash"></i></button></div></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox" class="row-check"/></td>
+            <td><div class="d-flex align-items-center gap-2"><div class="table-av" style="background:#10B981">K</div><div><div style="font-weight:600;font-size:.85rem">Kofi Mensah</div><div style="font-size:.75rem;color:var(--muted)">kofi.m@ecole.ci</div></div></div></td>
+            <td style="font-size:.82rem">ELV-2026-002</td>
+            <td><span class="status-badge primary">6ème A</span></td>
+            <td style="font-size:.82rem">05/07/2013</td>
+            <td style="font-size:.82rem">Mme Mensah · 07 00 00 02</td>
+            <td><div class="prog-bar" style="width:80px"><div class="prog-fill" style="width:50%;background:var(--warning)"></div></div><span style="font-size:.72rem;color:var(--warning)">Partiel</span></td>
+            <td><span class="status-badge success">Actif</span></td>
+            <td><div class="d-flex gap-1"><button class="btn btn-sm" style="padding:3px 8px;background:rgba(37,99,235,.1);color:var(--primary);border-radius:6px;font-size:.75rem"><i class="fas fa-eye"></i></button><button class="btn btn-sm" style="padding:3px 8px;background:rgba(245,158,11,.1);color:var(--warning);border-radius:6px;font-size:.75rem"><i class="fas fa-edit"></i></button><button class="btn btn-sm" style="padding:3px 8px;background:rgba(239,68,68,.1);color:var(--danger);border-radius:6px;font-size:.75rem"><i class="fas fa-trash"></i></button></div></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox" class="row-check"/></td>
+            <td><div class="d-flex align-items-center gap-2"><div class="table-av" style="background:#F59E0B">F</div><div><div style="font-weight:600;font-size:.85rem">Fatima Traoré</div><div style="font-size:.75rem;color:var(--muted)">fatima.t@ecole.ci</div></div></div></td>
+            <td style="font-size:.82rem">ELV-2026-003</td>
+            <td><span class="status-badge primary">Terminale</span></td>
+            <td style="font-size:.82rem">18/01/2006</td>
+            <td style="font-size:.82rem">M. Traoré · 07 00 00 03</td>
+            <td><div class="prog-bar" style="width:80px"><div class="prog-fill" style="width:0%;background:var(--danger)"></div></div><span style="font-size:.72rem;color:var(--danger)">Impayé</span></td>
+            <td><span class="status-badge warning">En attente</span></td>
+            <td><div class="d-flex gap-1"><button class="btn btn-sm" style="padding:3px 8px;background:rgba(37,99,235,.1);color:var(--primary);border-radius:6px;font-size:.75rem"><i class="fas fa-eye"></i></button><button class="btn btn-sm" style="padding:3px 8px;background:rgba(245,158,11,.1);color:var(--warning);border-radius:6px;font-size:.75rem"><i class="fas fa-edit"></i></button><button class="btn btn-sm" style="padding:3px 8px;background:rgba(239,68,68,.1);color:var(--danger);border-radius:6px;font-size:.75rem"><i class="fas fa-trash"></i></button></div></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox" class="row-check"/></td>
+            <td><div class="d-flex align-items-center gap-2"><div class="table-av" style="background:#8B5CF6">Y</div><div><div style="font-weight:600;font-size:.85rem">Youssef Ben Ali</div><div style="font-size:.75rem;color:var(--muted)">youssef.b@ecole.ci</div></div></div></td>
+            <td style="font-size:.82rem">ELV-2026-004</td>
+            <td><span class="status-badge primary">4ème C</span></td>
+            <td style="font-size:.82rem">22/09/2011</td>
+            <td style="font-size:.82rem">M. Ben Ali · 07 00 00 04</td>
+            <td><div class="prog-bar" style="width:80px"><div class="prog-fill" style="width:100%;background:var(--success)"></div></div><span style="font-size:.72rem;color:var(--success)">Soldé</span></td>
+            <td><span class="status-badge success">Actif</span></td>
+            <td><div class="d-flex gap-1"><button class="btn btn-sm" style="padding:3px 8px;background:rgba(37,99,235,.1);color:var(--primary);border-radius:6px;font-size:.75rem"><i class="fas fa-eye"></i></button><button class="btn btn-sm" style="padding:3px 8px;background:rgba(245,158,11,.1);color:var(--warning);border-radius:6px;font-size:.75rem"><i class="fas fa-edit"></i></button><button class="btn btn-sm" style="padding:3px 8px;background:rgba(239,68,68,.1);color:var(--danger);border-radius:6px;font-size:.75rem"><i class="fas fa-trash"></i></button></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!-- Pagination -->
+    <div class="d-flex align-items-center justify-content-between p-3 border-top flex-wrap gap-2">
+      <span style="font-size:.8rem;color:var(--muted)">Affichage de 1 à 4 sur 1 248 élèves</span>
+      <nav><ul class="pagination pagination-sm mb-0 gap-1">
+        <li class="page-item disabled"><a class="page-link" href="#" style="border-radius:6px">«</a></li>
+        <li class="page-item active"><a class="page-link" href="#" style="border-radius:6px;background:var(--primary);border-color:var(--primary)">1</a></li>
+        <li class="page-item"><a class="page-link" href="#" style="border-radius:6px">2</a></li>
+        <li class="page-item"><a class="page-link" href="#" style="border-radius:6px">3</a></li>
+        <li class="page-item"><a class="page-link" href="#" style="border-radius:6px">…</a></li>
+        <li class="page-item"><a class="page-link" href="#" style="border-radius:6px">125</a></li>
+        <li class="page-item"><a class="page-link" href="#" style="border-radius:6px">»</a></li>
+      </ul></nav>
+    </div>
+  </div>
+</main>
+
+<!-- Modal Ajouter élève -->
+<div class="modal fade" id="addEleveModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title fw-bold"><i class="fas fa-user-plus text-primary me-2"></i>Ajouter un élève</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-md-4"><label class="form-label">Prénom *</label><input type="text" class="form-control" placeholder="Prénom"/></div>
+          <div class="col-md-4"><label class="form-label">Nom *</label><input type="text" class="form-control" placeholder="Nom"/></div>
+          <div class="col-md-4"><label class="form-label">Classe *</label><select class="form-select"><option>6ème A</option><option>6ème B</option><option>3ème A</option><option>3ème B</option><option>Terminale</option></select></div>
+          <div class="col-md-4"><label class="form-label">Date de naissance</label><input type="date" class="form-control"/></div>
+          <div class="col-md-4"><label class="form-label">Sexe</label><select class="form-select"><option>Masculin</option><option>Féminin</option></select></div>
+          <div class="col-md-4"><label class="form-label">Nationalité</label><input type="text" class="form-control" placeholder="Ex: Ivoirienne"/></div>
+          <div class="col-12"><label class="form-label">Adresse</label><input type="text" class="form-control" placeholder="Adresse complète"/></div>
+          <div class="col-md-6"><label class="form-label">Nom du parent / tuteur *</label><input type="text" class="form-control" placeholder="Nom complet"/></div>
+          <div class="col-md-6"><label class="form-label">Téléphone du parent *</label><input type="tel" class="form-control" placeholder="+225 07 00 00 00"/></div>
+          <div class="col-12"><label class="form-label">Email du parent</label><input type="email" class="form-control" placeholder="parent@email.com"/></div>
+        </div>
+      </div>
+      <div class="modal-footer"><button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Annuler</button><button type="button" class="btn btn-primary rounded-pill px-4 fw-semibold">Enregistrer</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Voir élève -->
+<div class="modal fade" id="viewEleveModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title fw-bold"><i class="fas fa-user-graduate text-primary me-2"></i>Fiche élève – Amina Diallo</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-md-3 text-center"><div class="table-av mx-auto mb-2" style="width:72px;height:72px;font-size:1.8rem;background:#2563EB">A</div><span class="status-badge success">Actif</span></div>
+          <div class="col-md-9">
+            <div class="row g-2">
+              <div class="col-6"><div class="text-muted" style="font-size:.75rem">Nom complet</div><div class="fw-semibold">Amina Diallo</div></div>
+              <div class="col-6"><div class="text-muted" style="font-size:.75rem">Matricule</div><div class="fw-semibold">ELV-2026-001</div></div>
+              <div class="col-6"><div class="text-muted" style="font-size:.75rem">Classe</div><div class="fw-semibold">3ème B</div></div>
+              <div class="col-6"><div class="text-muted" style="font-size:.75rem">Date de naissance</div><div class="fw-semibold">12/03/2010</div></div>
+              <div class="col-6"><div class="text-muted" style="font-size:.75rem">Parent</div><div class="fw-semibold">M. Diallo</div></div>
+              <div class="col-6"><div class="text-muted" style="font-size:.75rem">Contact</div><div class="fw-semibold">07 00 00 01</div></div>
+              <div class="col-12"><div class="text-muted" style="font-size:.75rem">Statut paiement</div><span class="status-badge success">Soldé – 150 000 FCFA</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer"><a href="notes.html" class="btn btn-outline-primary rounded-pill px-4">Voir les notes</a><button type="button" class="btn btn-primary rounded-pill px-4 fw-semibold" data-bs-dismiss="modal">Fermer</button></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../js/dashboard.js"></script>
+<script>
+/* ---- Filtres ---- */
+function filterTable() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const classe = document.getElementById('filterClasse').value.toLowerCase();
+  const statut = document.getElementById('filterStatut').value.toLowerCase();
+  document.querySelectorAll('#elevesBody tr').forEach(tr => {
+    const text = tr.textContent.toLowerCase();
+    const show = text.includes(search) && (!classe || text.includes(classe)) && (!statut || text.includes(statut));
+    tr.style.display = show ? '' : 'none';
+  });
+}
+function toggleAll(cb) {
+  document.querySelectorAll('.row-check').forEach(c => c.checked = cb.checked);
+}
+
+/* ---- Compteur matricule ---- */
+let eleveCount = 5;
+
+/* ---- Couleurs avatars ---- */
+const avatarColors = ['#2563EB','#10B981','#F59E0B','#8B5CF6','#EF4444','#06B6D4','#EC4899'];
+
+/* ---- Supprimer une ligne ---- */
+function deleteRow(btn) {
+  if (!confirm('Supprimer cet élève ?')) return;
+  const tr = btn.closest('tr');
+  tr.style.transition = 'opacity .3s';
+  tr.style.opacity = '0';
+  setTimeout(() => {
+    tr.remove();
+    updateCount();
+  }, 300);
+}
+
+/* ---- Mettre à jour le compteur affiché ---- */
+function updateCount() {
+  const total = document.querySelectorAll('#elevesBody tr').length;
+  const info = document.querySelector('.pagination')?.closest('.d-flex')?.querySelector('span');
+  if (info) info.textContent = `Affichage de 1 à ${total} sur ${total} élèves`;
+  // Mettre à jour la KPI carte "Total élèves"
+  const kpiEl = document.querySelector('.sc-value');
+  if (kpiEl) kpiEl.textContent = total + parseInt('1244');
+}
+
+/* ---- Ajouter un élève ---- */
+document.querySelector('#addEleveModal .modal-footer .btn-primary').addEventListener('click', function () {
+  const modal  = document.getElementById('addEleveModal');
+  const inputs = modal.querySelectorAll('input, select');
+
+  const prenom   = inputs[0].value.trim();
+  const nom      = inputs[1].value.trim();
+  const classe   = inputs[2].value;
+  const dob      = inputs[3].value;
+  const parent   = inputs[6].value.trim();
+  const tel      = inputs[7].value.trim();
+
+  /* Validation basique */
+  if (!prenom || !nom || !classe) {
+    inputs[0].style.borderColor = !prenom ? '#EF4444' : '';
+    inputs[1].style.borderColor = !nom    ? '#EF4444' : '';
+    inputs[2].style.borderColor = !classe ? '#EF4444' : '';
+    showToast('Veuillez remplir les champs obligatoires (Prénom, Nom, Classe).', 'warning');
+    return;
+  }
+
+  eleveCount++;
+  const matNum  = String(eleveCount).padStart(3, '0');
+  const initiale = prenom.charAt(0).toUpperCase();
+  const color    = avatarColors[eleveCount % avatarColors.length];
+  const fullName = prenom + ' ' + nom;
+
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input type="checkbox" class="row-check"/></td>
+    <td>
+      <div class="d-flex align-items-center gap-2">
+        <div class="table-av" style="background:${color}">${initiale}</div>
+        <div>
+          <div style="font-weight:600;font-size:.85rem">${fullName}</div>
+          <div style="font-size:.75rem;color:var(--muted)">${prenom.toLowerCase()}.${nom.toLowerCase()}@ecole.ci</div>
+        </div>
+      </div>
+    </td>
+    <td style="font-size:.82rem">ELV-2026-${matNum}</td>
+    <td><span class="status-badge primary">${classe}</span></td>
+    <td style="font-size:.82rem">${dob || '—'}</td>
+    <td style="font-size:.82rem">${parent || '—'} · ${tel || '—'}</td>
+    <td>
+      <div class="prog-bar" style="width:80px">
+        <div class="prog-fill" style="width:0%;background:var(--warning)"></div>
+      </div>
+      <span style="font-size:.72rem;color:var(--warning)">Impayé</span>
+    </td>
+    <td><span class="status-badge warning">En attente</span></td>
+    <td>
+      <div class="d-flex gap-1">
+        <button class="btn btn-sm" style="padding:3px 8px;background:rgba(37,99,235,.1);color:var(--primary);border-radius:6px;font-size:.75rem"><i class="fas fa-eye"></i></button>
+        <button class="btn btn-sm" style="padding:3px 8px;background:rgba(245,158,11,.1);color:var(--warning);border-radius:6px;font-size:.75rem"><i class="fas fa-edit"></i></button>
+        <button class="btn btn-sm" onclick="deleteRow(this)" style="padding:3px 8px;background:rgba(239,68,68,.1);color:var(--danger);border-radius:6px;font-size:.75rem"><i class="fas fa-trash"></i></button>
+      </div>
+    </td>`;
+
+  /* Animation d'entrée */
+  tr.style.opacity = '0';
+  tr.style.transition = 'opacity .4s';
+  document.getElementById('elevesBody').prepend(tr);
+  requestAnimationFrame(() => tr.style.opacity = '1');
+
+  /* Fermer la modale + reset + toast */
+  bootstrap.Modal.getInstance(modal).hide();
+  modal.querySelectorAll('input').forEach(i => { i.value = ''; i.style.borderColor = ''; });
+  modal.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
+
+  showToast(`✅ ${fullName} ajouté(e) en ${classe} avec succès !`, 'success');
+  updateCount();
+});
+</script>
+</body>
+</html>
