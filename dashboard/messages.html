@@ -176,9 +176,10 @@
           </button>
         </div>
         <div class="d-flex gap-3 mt-2" style="font-size:.75rem;color:var(--muted)">
-          <span><i class="fas fa-smile me-1"></i>Émojis</span>
-          <span><i class="fas fa-file me-1"></i>Fichier</span>
-          <span><i class="fas fa-image me-1"></i>Image</span>
+          <span style="cursor:pointer;transition:color .2s" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--muted)'" onclick="insertEmoji()"><i class="fas fa-smile me-1"></i>Émojis</span>
+          <span style="cursor:pointer;transition:color .2s" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--muted)'" onclick="document.getElementById('chatFileInput').click()"><i class="fas fa-file me-1"></i>Fichier</span>
+          <span style="cursor:pointer;transition:color .2s" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--muted)'" onclick="document.getElementById('chatFileInput').click()"><i class="fas fa-image me-1"></i>Image</span>
+          <input type="file" id="chatFileInput" style="display:none" onchange="handleFileUpload(event)">
         </div>
       </div>
     </div>
@@ -209,7 +210,7 @@
     </div>
     <div class="modal-footer">
       <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Annuler</button>
-      <button type="button" class="btn btn-primary rounded-pill px-4 fw-semibold"><i class="fas fa-paper-plane me-2"></i>Envoyer</button>
+      <button type="button" class="btn btn-primary rounded-pill px-4 fw-semibold" onclick="sendNewMessage()"><i class="fas fa-paper-plane me-2"></i>Envoyer</button>
     </div>
   </div></div>
 </div>
@@ -223,17 +224,83 @@ function openMsg(el, name) {
   el.classList.remove('unread');
   el.querySelector('.msg-unread-dot')?.remove();
   document.getElementById('chatName').textContent = name;
+  
+  const body = document.getElementById('chatBody');
+  body.innerHTML = '';
+  
+  let store = JSON.parse(localStorage.getItem('edu_messages') || '{}');
+  const saved = store[name] || [];
+  
+  if (saved.length === 0) {
+     body.innerHTML = `<div><div class="bubble received">Bonjour, c'est ${name}.</div><div class="bubble-meta">${name} &middot; Récemment</div></div>`;
+  } else {
+     saved.forEach(msgHtml => {
+       const wrap = document.createElement('div');
+       wrap.innerHTML = msgHtml;
+       body.appendChild(wrap);
+     });
+  }
+  body.scrollTop = body.scrollHeight;
 }
+
 function sendMessage() {
   const inp = document.getElementById('msgInput');
   const txt = inp.value.trim();
   if (!txt) return;
   const body = document.getElementById('chatBody');
+  const chatName = document.getElementById('chatName').textContent;
+  
+  let smsIndicator = '';
+  if (chatName.toLowerCase().includes('parent')) {
+    smsIndicator = ' &middot; <i class="fas fa-sms text-success" title="Notifié par SMS"></i> SMS envoyé';
+  }
+  
+  const htmlContent = `<div class="bubble sent">${txt.replace(/\\n/g,'<br>')}</div><div class="bubble-meta sent-meta">Vous &middot; maintenant${smsIndicator}</div>`;
+  
   const wrap = document.createElement('div');
-  wrap.innerHTML = `<div class="bubble sent">${txt.replace(/\n/g,'<br>')}</div><div class="bubble-meta sent-meta">Vous · maintenant</div>`;
+  wrap.innerHTML = htmlContent;
   body.appendChild(wrap);
+  
+  let store = JSON.parse(localStorage.getItem('edu_messages') || '{}');
+  if (!store[chatName]) store[chatName] = [];
+  store[chatName].push(htmlContent);
+  localStorage.setItem('edu_messages', JSON.stringify(store));
+  
   inp.value = '';
   body.scrollTop = body.scrollHeight;
+  
+  if (smsIndicator) {
+    if (typeof showToast === 'function') {
+      showToast("Message et SMS envoyés avec succès.", "success");
+    }
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  let store = JSON.parse(localStorage.getItem('edu_messages') || '{}');
+  if (!store['M. Diallo Parent']) {
+     store['M. Diallo Parent'] = [
+       `<div class="bubble received">Bonjour M. le Directeur, je voudrais avoir des informations sur les résultats du 1er trimestre de ma fille Amina Diallo (3ème B). Quand seront disponibles les bulletins ?</div><div class="bubble-meta">M. Diallo &middot; 10:15</div>`,
+       `<div class="bubble sent">Bonjour M. Diallo, les bulletins du 1er trimestre seront disponibles le vendredi 24 janvier. Vous recevrez une notification par SMS dès qu'ils seront prêts à télécharger. Les résultats d'Amina sont très satisfaisants ce trimestre.</div><div class="bubble-meta sent-meta">Vous &middot; 10:20</div>`,
+       `<div class="bubble received">Bonjour, je voudrais avoir des informations sur les résultats de ma fille. Elle a mentionné avoir eu quelques difficultés en mathématiques ce trimestre.</div><div class="bubble-meta">M. Diallo &middot; 10:24</div>`
+     ];
+     localStorage.setItem('edu_messages', JSON.stringify(store));
+  }
+  
+  const activeItem = document.querySelector('.msg-item.active');
+  if (activeItem) {
+     activeItem.click();
+  }
+});
+
+function sendNewMessage() {
+  const modalEl = document.getElementById('newMsgModal');
+  const modal = bootstrap.Modal.getInstance(modalEl);
+  if(modal) modal.hide();
+  
+  if (typeof showToast === 'function') {
+    showToast("Message envoyé. Si le destinataire est un parent, un SMS a également été envoyé.", "success");
+  }
 }
 function handleEnter(e) {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
@@ -243,6 +310,34 @@ document.getElementById('msgInput').addEventListener('input', function(){
   this.style.height = 'auto';
   this.style.height = Math.min(this.scrollHeight, 120) + 'px';
 });
+
+function insertEmoji() {
+  const inp = document.getElementById('msgInput');
+  inp.value += ' 😊';
+  inp.focus();
+}
+
+function handleFileUpload(event) {
+  if (event.target.files.length > 0) {
+    if (typeof showToast === 'function') {
+      showToast("Fichier joint : " + event.target.files[0].name, 'info');
+    }
+    // Simulate sending an attachment
+    const fileBubble = `<div class="bubble sent" style="background:#F1F5F9;color:var(--text);border:1px solid var(--border)"><i class="fas fa-paperclip me-2"></i>${event.target.files[0].name}</div><div class="bubble-meta sent-meta">Vous &middot; maintenant</div>`;
+    const chatName = document.getElementById('chatName').textContent;
+    let store = JSON.parse(localStorage.getItem('edu_messages') || '{}');
+    if (!store[chatName]) store[chatName] = [];
+    store[chatName].push(fileBubble);
+    localStorage.setItem('edu_messages', JSON.stringify(store));
+    
+    // Refresh chat
+    const activeItem = document.querySelector('.msg-item.active');
+    if (activeItem) activeItem.click();
+    
+    // Clear input so it can be triggered again
+    event.target.value = '';
+  }
+}
 </script>
 </body>
 </html>

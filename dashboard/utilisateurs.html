@@ -165,7 +165,7 @@
   <div class="modal-dialog"><div class="modal-content">
     <div class="modal-header"><h5 class="modal-title fw-bold"><i class="fas fa-user-plus text-primary me-2"></i>Inviter un utilisateur</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
     <div class="modal-body">
-      <div class="mb-3"><label class="form-label">Email *</label><input type="email" class="form-control" placeholder="email@ecole.ci"/></div>
+      <div class="mb-3"><label class="form-label">Email *</label><input type="email" id="inviteEmail" class="form-control" placeholder="email@ecole.ci"/></div>
       <div class="mb-3">
         <label class="form-label">Rôle *</label>
         <select class="form-select" id="roleSelect" onchange="showRoleInfo()">
@@ -178,7 +178,7 @@
       <div id="roleInfoBox" class="p-3 rounded-3 bg-light d-none mb-3" style="font-size:.82rem;color:var(--muted)"></div>
       <div class="mb-3"><label class="form-label">Message personnalisé (optionnel)</label><textarea class="form-control" rows="2" placeholder="Ex: Bienvenue dans l'équipe !"></textarea></div>
     </div>
-    <div class="modal-footer"><button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Annuler</button><button type="button" class="btn btn-primary rounded-pill px-4 fw-semibold"><i class="fas fa-paper-plane me-2"></i>Envoyer l'invitation</button></div>
+    <div class="modal-footer"><button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Annuler</button><button type="button" class="btn btn-primary rounded-pill px-4 fw-semibold" onclick="inviteUser()"><i class="fas fa-paper-plane me-2"></i>Envoyer l'invitation</button></div>
   </div></div>
 </div>
 
@@ -216,6 +216,100 @@ function showRoleInfo() {
   const box = document.getElementById('roleInfoBox');
   if (v && roleDesc[v]) { box.textContent = roleDesc[v]; box.classList.remove('d-none'); }
   else box.classList.add('d-none');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderUsersTable();
+});
+
+function renderUsersTable() {
+  const tbody = document.getElementById('usersBody');
+  const users = JSON.parse(localStorage.getItem('edu_users') || '[]');
+  
+  if (users.length === 0) return; // garde les données fictives si aucun vrai utilisateur
+  
+  let html = '';
+  users.forEach(u => {
+    let roleText = 'Enseignant';
+    let roleClass = 'success';
+    let bgColor = '#10B981';
+    
+    let roleLower = (u.role || u.fonction || '').toLowerCase();
+    if (roleLower.includes('admin') || roleLower.includes('directeur')) {
+      roleText = 'Administrateur'; roleClass = 'danger'; bgColor = '#EF4444';
+    } else if (roleLower.includes('gestion')) {
+      roleText = 'Gestionnaire'; roleClass = 'primary'; bgColor = '#8B5CF6';
+    }
+    
+    let prenom = u.prenom || 'Utilisateur';
+    let nom = u.nom || '';
+    let initial = prenom.charAt(0).toUpperCase();
+    
+    html += `
+      <tr>
+        <td><div class="d-flex align-items-center gap-2"><div class="table-av" style="background:${bgColor}">${initial}</div><div><div style="font-weight:600;font-size:.85rem">${prenom} ${nom}</div><div style="font-size:.75rem;color:var(--muted)">${u.email}</div></div></div></td>
+        <td><span class="status-badge ${roleClass}">${roleText}</span></td>
+        <td style="font-size:.82rem">Aujourd'hui</td>
+        <td><span class="status-badge success">Actif</span></td>
+        <td><div class="d-flex gap-1">
+          <button class="btn btn-sm" style="padding:3px 8px;background:rgba(37,99,235,.1);color:var(--primary);border-radius:6px;font-size:.75rem"><i class="fas fa-edit"></i></button>
+          <button class="btn btn-sm" style="padding:3px 8px;background:rgba(239,68,68,.1);color:var(--danger);border-radius:6px;font-size:.75rem" onclick="toggleUser(this)"><i class="fas fa-ban"></i></button>
+        </div></td>
+      </tr>
+    `;
+  });
+  
+  if (html !== '') {
+    tbody.innerHTML = html;
+  }
+}
+
+function inviteUser() {
+  const email = document.getElementById('inviteEmail').value.trim();
+  const roleVal = document.getElementById('roleSelect').value;
+  const roleSelectNode = document.getElementById('roleSelect');
+  const roleText = roleVal ? roleSelectNode.options[roleSelectNode.selectedIndex].text : '';
+  
+  if (!email || !roleVal) {
+    if(typeof showToast === 'function') showToast("Veuillez remplir l'email et le rôle.", 'warning');
+    return;
+  }
+  
+  const users = JSON.parse(localStorage.getItem('edu_users') || '[]');
+  if (users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
+    if(typeof showToast === 'function') showToast("Cet utilisateur existe déjà !", 'danger');
+    return;
+  }
+  
+  const newUser = {
+    id: 'EDU-Invited-' + Date.now(),
+    email: email,
+    password: 'password123', // Mot de passe par défaut
+    prenom: 'Invité',
+    nom: '',
+    fonction: roleText,
+    role: roleVal,
+    plan: 'starter'
+  };
+  
+  users.push(newUser);
+  localStorage.setItem('edu_users', JSON.stringify(users));
+  
+  const modalEl = document.getElementById('addUserModal');
+  const modal = bootstrap.Modal.getInstance(modalEl);
+  if(modal) modal.hide();
+  
+  document.getElementById('inviteEmail').value = '';
+  document.getElementById('roleSelect').value = '';
+  document.getElementById('roleInfoBox').classList.add('d-none');
+  
+  renderUsersTable();
+  
+  if(typeof showToast === 'function') {
+    showToast("Invitation envoyée ! Le mot de passe par défaut est : password123", "success");
+  } else {
+    alert("Utilisateur invité avec succès. Mot de passe : password123");
+  }
 }
 </script>
 </body>

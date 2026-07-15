@@ -267,7 +267,7 @@ document.addEventListener('click', function(e) {
   const html = btn.innerHTML.toLowerCase();
   
   // Ignore already handled buttons or those with specific logic
-  if (btn.type === 'submit' || btn.hasAttribute('data-bs-toggle') || btn.classList.contains('btn-save') || btn.classList.contains('topbar-btn') || btn.classList.contains('topbar-toggle') || btn.id === 'bAnnuel' || btn.id === 'bMensuel') return;
+  if ((btn.type === 'submit' && btn.closest('form')) || btn.hasAttribute('data-bs-toggle') || btn.classList.contains('btn-save') || btn.classList.contains('topbar-btn') || btn.classList.contains('topbar-toggle') || btn.id === 'bAnnuel' || btn.id === 'bMensuel') return;
 
   // Print simulation (real print)
   if (html.includes('fa-print') || text.includes('imprimer')) {
@@ -296,20 +296,22 @@ document.addEventListener('click', function(e) {
       // Find nearest table or the main dash-table
       const table = btn.closest('.dash-card')?.querySelector('table') || document.querySelector('table');
       if (table) {
-        let csvContent = "data:text/csv;charset=utf-8,";
+        let csvContent = "\uFEFF"; // BOM for UTF-8 Excel compatibility
         const rows = table.querySelectorAll("tr");
         rows.forEach(function(row) {
           let rowData = [];
-          row.querySelectorAll("th, td").forEach(cell => rowData.push('"' + cell.innerText.replace(/"/g, '""') + '"'));
-          csvContent += rowData.join(",") + "\r\n";
+          row.querySelectorAll("th, td").forEach(cell => rowData.push('"' + cell.innerText.replace(/"/g, '""').replace(/\n/g, ' ') + '"'));
+          csvContent += rowData.join(";") + "\r\n";
         });
-        const encodedUri = encodeURI(csvContent);
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
+        link.setAttribute("href", url);
         link.setAttribute("download", "export.csv");
         document.body.appendChild(link);
         link.click();
         link.remove();
+        URL.revokeObjectURL(url);
         showToast('Export réussi.', 'success');
       } else {
         showToast('Aucune donnée à exporter.', 'warning');

@@ -96,7 +96,7 @@ function register(data) {
 ========================================== */
 function login(email, password) {
   const users = getUsers();
-  const user  = users.find(u => u.email === email && u.password === password);
+  const user  = users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
   if (!user) {
     return { success: false, message: 'Email ou mot de passe incorrect.' };
   }
