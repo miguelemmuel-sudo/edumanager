@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>Emplois du temps – EduManager</title>
+  <title>Emplois du temps â€“ EduManager</title>
   <link rel="icon" type="image/png" href="../../1/img/favicon.png"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
@@ -33,7 +33,7 @@
     <div class="nav-section-label">Principal</div>
     <a href="index.html" class="nav-item-link"><i class="fas fa-th-large nav-icon"></i><span class="nav-item-label">Tableau de bord</span></a>
     <div class="nav-section-label mt-2">Gestion</div>
-    <a href="eleves.html" class="nav-item-link"><i class="fas fa-user-graduate nav-icon"></i><span class="nav-item-label">Élèves</span></a>
+    <a href="eleves.html" class="nav-item-link"><i class="fas fa-user-graduate nav-icon"></i><span class="nav-item-label">Ã‰lÃ¨ves</span></a>
     <a href="enseignants.html" class="nav-item-link"><i class="fas fa-chalkboard-teacher nav-icon"></i><span class="nav-item-label">Enseignants</span></a>
     <a href="classes.html" class="nav-item-link"><i class="fas fa-door-open nav-icon"></i><span class="nav-item-label">Classes</span></a>
     <a href="notes.html" class="nav-item-link"><i class="fas fa-clipboard-list nav-icon"></i><span class="nav-item-label">Notes & Bulletins</span></a>
@@ -45,14 +45,14 @@
     <a href="notifications.html" class="nav-item-link"><i class="fas fa-bell nav-icon"></i><span class="nav-item-label">Notifications</span></a>
     <div class="nav-section-label mt-2">Administration</div>
     <a href="utilisateurs.html" class="nav-item-link"><i class="fas fa-users-cog nav-icon"></i><span class="nav-item-label">Utilisateurs</span></a>
-    <a href="parametres.html" class="nav-item-link"><i class="fas fa-cog nav-icon"></i><span class="nav-item-label">Paramètres</span></a>
+    <a href="parametres.html" class="nav-item-link"><i class="fas fa-cog nav-icon"></i><span class="nav-item-label">ParamÃ¨tres</span></a>
   </nav>
   <div class="sidebar-footer"><div class="user-info"><div class="user-av">D</div><div><div class="user-name">M. Directeur</div><div class="user-role">Administrateur</div></div></div></div>
 </aside>
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 <header class="topbar" id="topbar">
   <button class="topbar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-  <div class="topbar-search"><i class="fas fa-search"></i><input type="text" placeholder="Rechercher…"/></div>
+  <div class="topbar-search"><i class="fas fa-search"></i><input type="text" placeholder="Rechercherâ€¦"/></div>
   <div class="topbar-actions"><button class="topbar-btn"><i class="fas fa-bell"></i><span class="notif-dot"></span></button><div class="topbar-divider"></div><div class="user-av" style="cursor:pointer">D</div></div>
 </header>
 
@@ -64,25 +64,25 @@
     </div>
     <div class="d-flex gap-2">
       <button class="btn btn-outline-secondary btn-sm rounded-pill px-3" id="btnImprimerEmploi"><i class="fas fa-print me-1"></i>Imprimer</button>
-      <button class="btn btn-primary btn-sm rounded-pill px-3" id="btnAjouterCreneau"><i class="fas fa-plus me-1"></i>Ajouter un créneau</button>
+      <button class="btn btn-primary btn-sm rounded-pill px-3" id="btnAjouterCreneau"><i class="fas fa-plus me-1"></i>Ajouter un crÃ©neau</button>
     </div>
   </div>
 
-  <!-- Sélecteur -->
+  <!-- SÃ©lecteur -->
   <div class="dash-card mb-4 p-3">
     <div class="row g-3 align-items-end">
-      <div class="col-md-3"><label class="form-label">Classe</label><select class="form-select" id="emploi_classe"><option>3ème B</option><option>6ème A</option><option>Terminale</option></select></div>
+      <div class="col-md-3"><label class="form-label">Classe</label><select class="form-select" id="emploi_classe"><option>3Ã¨me B</option><option>6Ã¨me A</option><option>Terminale</option></select></div>
       <div class="col-md-3"><label class="form-label">Semaine</label><input type="week" class="form-control" id="emploi_semaine" value="2026-W03"/></div>
       <div class="col-md-3"><label class="form-label">Vue</label><select class="form-select" id="emploi_vue"><option>Semaine</option><option>Jour</option><option>Mois</option></select></div>
       <div class="col-md-3"><button class="btn btn-primary w-100 rounded-pill" id="btnAfficherEmploi">Afficher</button></div>
     </div>
   </div>
 
-  <!-- Légende -->
+  <!-- LÃ©gende -->
   <div class="d-flex flex-wrap gap-2 mb-3">
-    <span class="tt-slot tt-math px-3">Mathématiques</span>
-    <span class="tt-slot tt-french px-3">Français</span>
-    <span class="tt-slot tt-hist px-3">Histoire-Géo</span>
+    <span class="tt-slot tt-math px-3">MathÃ©matiques</span>
+    <span class="tt-slot tt-french px-3">FranÃ§ais</span>
+    <span class="tt-slot tt-hist px-3">Histoire-GÃ©o</span>
     <span class="tt-slot tt-svt px-3">SVT</span>
     <span class="tt-slot tt-phys px-3">Physique-Chimie</span>
     <span class="tt-slot tt-eng px-3">Anglais</span>
@@ -92,7 +92,7 @@
   <!-- Grille emploi du temps -->
   <div class="dash-card">
     <div class="dash-card-header">
-      <span class="dash-card-title"><i class="fas fa-calendar-week text-primary me-2"></i>Emploi du temps – 3ème B · Semaine du 12 Jan 2026</span>
+      <span class="dash-card-title"><i class="fas fa-calendar-week text-primary me-2"></i>Emploi du temps â€“ 3Ã¨me B Â· Semaine du 12 Jan 2026</span>
     </div>
     <div class="dash-card-body p-0" style="overflow-x:auto">
       <table class="timetable">
@@ -105,78 +105,78 @@
         <tbody>
           <tr>
             <td class="time-col">07h30<br>08h30</td>
-            <td><div class="tt-slot tt-math">Mathématiques<br><span style="font-size:.72rem;opacity:.8">M. Koné · Salle 3</span></div></td>
-            <td><div class="tt-slot tt-french">Français<br><span style="font-size:.72rem;opacity:.8">Mme Diallo · Salle 1</span></div></td>
-            <td><div class="tt-slot tt-hist">Histoire-Géo<br><span style="font-size:.72rem;opacity:.8">M. Traoré · Salle 4</span></div></td>
-            <td><div class="tt-slot tt-eng">Anglais<br><span style="font-size:.72rem;opacity:.8">Mme Smith · Salle 2</span></div></td>
-            <td><div class="tt-slot tt-math">Mathématiques<br><span style="font-size:.72rem;opacity:.8">M. Koné · Salle 3</span></div></td>
+            <td><div class="tt-slot tt-math">MathÃ©matiques<br><span style="font-size:.72rem;opacity:.8">M. KonÃ© Â· Salle 3</span></div></td>
+            <td><div class="tt-slot tt-french">FranÃ§ais<br><span style="font-size:.72rem;opacity:.8">Mme Diallo Â· Salle 1</span></div></td>
+            <td><div class="tt-slot tt-hist">Histoire-GÃ©o<br><span style="font-size:.72rem;opacity:.8">M. TraorÃ© Â· Salle 4</span></div></td>
+            <td><div class="tt-slot tt-eng">Anglais<br><span style="font-size:.72rem;opacity:.8">Mme Smith Â· Salle 2</span></div></td>
+            <td><div class="tt-slot tt-math">MathÃ©matiques<br><span style="font-size:.72rem;opacity:.8">M. KonÃ© Â· Salle 3</span></div></td>
           </tr>
           <tr>
             <td class="time-col">08h30<br>09h30</td>
-            <td><div class="tt-slot tt-phys">Physique-Chimie<br><span style="font-size:.72rem;opacity:.8">M. Ouédraogo · Labo</span></div></td>
-            <td><div class="tt-slot tt-math">Mathématiques<br><span style="font-size:.72rem;opacity:.8">M. Koné · Salle 3</span></div></td>
-            <td><div class="tt-slot tt-svt">SVT<br><span style="font-size:.72rem;opacity:.8">Mme Bah · Labo</span></div></td>
-            <td><div class="tt-slot tt-french">Français<br><span style="font-size:.72rem;opacity:.8">Mme Diallo · Salle 1</span></div></td>
-            <td><div class="tt-slot tt-phys">Physique-Chimie<br><span style="font-size:.72rem;opacity:.8">M. Ouédraogo · Labo</span></div></td>
+            <td><div class="tt-slot tt-phys">Physique-Chimie<br><span style="font-size:.72rem;opacity:.8">M. OuÃ©draogo Â· Labo</span></div></td>
+            <td><div class="tt-slot tt-math">MathÃ©matiques<br><span style="font-size:.72rem;opacity:.8">M. KonÃ© Â· Salle 3</span></div></td>
+            <td><div class="tt-slot tt-svt">SVT<br><span style="font-size:.72rem;opacity:.8">Mme Bah Â· Labo</span></div></td>
+            <td><div class="tt-slot tt-french">FranÃ§ais<br><span style="font-size:.72rem;opacity:.8">Mme Diallo Â· Salle 1</span></div></td>
+            <td><div class="tt-slot tt-phys">Physique-Chimie<br><span style="font-size:.72rem;opacity:.8">M. OuÃ©draogo Â· Labo</span></div></td>
           </tr>
           <tr>
-            <td class="time-col" colspan="6"><div class="tt-break py-1">⏸ Pause – 09h30 à 10h00</div></td>
+            <td class="time-col" colspan="6"><div class="tt-break py-1">â¸ Pause â€“ 09h30 Ã  10h00</div></td>
           </tr>
           <tr>
             <td class="time-col">10h00<br>11h00</td>
-            <td><div class="tt-slot tt-svt">SVT<br><span style="font-size:.72rem;opacity:.8">Mme Bah · Labo</span></div></td>
-            <td><div class="tt-slot tt-eng">Anglais<br><span style="font-size:.72rem;opacity:.8">Mme Smith · Salle 2</span></div></td>
-            <td><div class="tt-slot tt-math">Mathématiques<br><span style="font-size:.72rem;opacity:.8">M. Koné · Salle 3</span></div></td>
-            <td><div class="tt-slot tt-hist">Histoire-Géo<br><span style="font-size:.72rem;opacity:.8">M. Traoré · Salle 4</span></div></td>
-            <td><div class="tt-slot tt-french">Français<br><span style="font-size:.72rem;opacity:.8">Mme Diallo · Salle 1</span></div></td>
+            <td><div class="tt-slot tt-svt">SVT<br><span style="font-size:.72rem;opacity:.8">Mme Bah Â· Labo</span></div></td>
+            <td><div class="tt-slot tt-eng">Anglais<br><span style="font-size:.72rem;opacity:.8">Mme Smith Â· Salle 2</span></div></td>
+            <td><div class="tt-slot tt-math">MathÃ©matiques<br><span style="font-size:.72rem;opacity:.8">M. KonÃ© Â· Salle 3</span></div></td>
+            <td><div class="tt-slot tt-hist">Histoire-GÃ©o<br><span style="font-size:.72rem;opacity:.8">M. TraorÃ© Â· Salle 4</span></div></td>
+            <td><div class="tt-slot tt-french">FranÃ§ais<br><span style="font-size:.72rem;opacity:.8">Mme Diallo Â· Salle 1</span></div></td>
           </tr>
           <tr>
             <td class="time-col">11h00<br>12h00</td>
-            <td><div class="tt-slot tt-hist">Histoire-Géo<br><span style="font-size:.72rem;opacity:.8">M. Traoré · Salle 4</span></div></td>
-            <td><div class="tt-slot tt-svt">SVT<br><span style="font-size:.72rem;opacity:.8">Mme Bah · Labo</span></div></td>
-            <td><div class="tt-slot tt-eps">EPS<br><span style="font-size:.72rem;opacity:.8">M. Cissé · Terrain</span></div></td>
-            <td><div class="tt-slot tt-phys">Physique-Chimie<br><span style="font-size:.72rem;opacity:.8">M. Ouédraogo · Labo</span></div></td>
-            <td><div class="tt-slot tt-svt">SVT<br><span style="font-size:.72rem;opacity:.8">Mme Bah · Labo</span></div></td>
+            <td><div class="tt-slot tt-hist">Histoire-GÃ©o<br><span style="font-size:.72rem;opacity:.8">M. TraorÃ© Â· Salle 4</span></div></td>
+            <td><div class="tt-slot tt-svt">SVT<br><span style="font-size:.72rem;opacity:.8">Mme Bah Â· Labo</span></div></td>
+            <td><div class="tt-slot tt-eps">EPS<br><span style="font-size:.72rem;opacity:.8">M. CissÃ© Â· Terrain</span></div></td>
+            <td><div class="tt-slot tt-phys">Physique-Chimie<br><span style="font-size:.72rem;opacity:.8">M. OuÃ©draogo Â· Labo</span></div></td>
+            <td><div class="tt-slot tt-svt">SVT<br><span style="font-size:.72rem;opacity:.8">Mme Bah Â· Labo</span></div></td>
           </tr>
           <tr>
-            <td class="time-col" colspan="6"><div class="tt-break py-1">🍽 Déjeuner – 12h00 à 14h00</div></td>
+            <td class="time-col" colspan="6"><div class="tt-break py-1">ðŸ½ DÃ©jeuner â€“ 12h00 Ã  14h00</div></td>
           </tr>
           <tr>
             <td class="time-col">14h00<br>15h00</td>
-            <td><div class="tt-slot tt-french">Français<br><span style="font-size:.72rem;opacity:.8">Mme Diallo · Salle 1</span></div></td>
-            <td><div class="tt-slot tt-hist">Histoire-Géo<br><span style="font-size:.72rem;opacity:.8">M. Traoré · Salle 4</span></div></td>
+            <td><div class="tt-slot tt-french">FranÃ§ais<br><span style="font-size:.72rem;opacity:.8">Mme Diallo Â· Salle 1</span></div></td>
+            <td><div class="tt-slot tt-hist">Histoire-GÃ©o<br><span style="font-size:.72rem;opacity:.8">M. TraorÃ© Â· Salle 4</span></div></td>
             <td></td>
-            <td><div class="tt-slot tt-eng">Anglais<br><span style="font-size:.72rem;opacity:.8">Mme Smith · Salle 2</span></div></td>
-            <td><div class="tt-slot tt-eps">EPS<br><span style="font-size:.72rem;opacity:.8">M. Cissé · Terrain</span></div></td>
+            <td><div class="tt-slot tt-eng">Anglais<br><span style="font-size:.72rem;opacity:.8">Mme Smith Â· Salle 2</span></div></td>
+            <td><div class="tt-slot tt-eps">EPS<br><span style="font-size:.72rem;opacity:.8">M. CissÃ© Â· Terrain</span></div></td>
           </tr>
           <tr>
             <td class="time-col">15h00<br>16h00</td>
-            <td><div class="tt-slot tt-eps">EPS<br><span style="font-size:.72rem;opacity:.8">M. Cissé · Terrain</span></div></td>
-            <td><div class="tt-slot tt-math">Mathématiques<br><span style="font-size:.72rem;opacity:.8">M. Koné · Salle 3</span></div></td>
+            <td><div class="tt-slot tt-eps">EPS<br><span style="font-size:.72rem;opacity:.8">M. CissÃ© Â· Terrain</span></div></td>
+            <td><div class="tt-slot tt-math">MathÃ©matiques<br><span style="font-size:.72rem;opacity:.8">M. KonÃ© Â· Salle 3</span></div></td>
             <td></td>
-            <td><div class="tt-slot tt-french">Français<br><span style="font-size:.72rem;opacity:.8">Mme Diallo · Salle 1</span></div></td>
+            <td><div class="tt-slot tt-french">FranÃ§ais<br><span style="font-size:.72rem;opacity:.8">Mme Diallo Â· Salle 1</span></div></td>
             <td></td>
           </tr>
         </tbody>
       </table>
     </div>
   </div>
-  <!-- Modal Ajouter un créneau -->
+  <!-- Modal Ajouter un crÃ©neau -->
   <div class="modal fade" id="addCreneauModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content border-0 shadow-lg" style="border-radius:1rem; overflow:hidden">
         <div class="modal-header border-0 bg-light pb-2">
-          <h5 class="modal-title fw-bold"><i class="fas fa-plus-circle text-primary me-2"></i>Nouveau créneau</h5>
+          <h5 class="modal-title fw-bold"><i class="fas fa-plus-circle text-primary me-2"></i>Nouveau crÃ©neau</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body pt-2">
           <form id="formAddCreneau">
             <div class="row g-3">
               <div class="col-md-6"><label class="form-label">Jour</label><select class="form-select"><option>Lundi</option><option>Mardi</option><option>Mercredi</option><option>Jeudi</option><option>Vendredi</option></select></div>
-              <div class="col-md-6"><label class="form-label">Heure de début</label><input type="time" class="form-control" value="08:00"></div>
+              <div class="col-md-6"><label class="form-label">Heure de dÃ©but</label><input type="time" class="form-control" value="08:00"></div>
               <div class="col-md-6"><label class="form-label">Heure de fin</label><input type="time" class="form-control" value="10:00"></div>
-              <div class="col-md-6"><label class="form-label">Matière</label><select class="form-select"><option>Mathématiques</option><option>Français</option><option>Anglais</option></select></div>
-              <div class="col-md-6"><label class="form-label">Enseignant</label><select class="form-select"><option>M. Koné</option><option>Mme Diallo</option></select></div>
+              <div class="col-md-6"><label class="form-label">MatiÃ¨re</label><select class="form-select"><option>MathÃ©matiques</option><option>FranÃ§ais</option><option>Anglais</option></select></div>
+              <div class="col-md-6"><label class="form-label">Enseignant</label><select class="form-select"><option>M. KonÃ©</option><option>Mme Diallo</option></select></div>
               <div class="col-md-6"><label class="form-label">Salle</label><input type="text" class="form-control" placeholder="Ex: Salle 3"></div>
             </div>
           </form>
@@ -215,9 +215,9 @@ document.addEventListener('DOMContentLoaded', function() {
         this.disabled = false;
         modalCreneau.hide();
         if(typeof showToast === 'function') {
-          showToast('Créneau ajouté avec succès à l\'emploi du temps.', 'success');
+          showToast('CrÃ©neau ajoutÃ© avec succÃ¨s Ã  l\'emploi du temps.', 'success');
         } else {
-          alert('Créneau ajouté avec succès.');
+          alert('CrÃ©neau ajoutÃ© avec succÃ¨s.');
         }
       }, 1000);
     });
@@ -238,14 +238,14 @@ document.addEventListener('DOMContentLoaded', function() {
         this.innerHTML = original;
         this.disabled = false;
         
-        // Mettre à jour le titre du tableau
+        // Mettre Ã  jour le titre du tableau
         const titreTableau = document.querySelector('.dash-card-title');
         if(titreTableau) {
-          titreTableau.innerHTML = `<i class="fas fa-calendar-week text-primary me-2"></i>Emploi du temps – ${classe} · ${vue === 'Semaine' ? 'Semaine du ' + semaine : vue}`;
+          titreTableau.innerHTML = `<i class="fas fa-calendar-week text-primary me-2"></i>Emploi du temps â€“ ${classe} Â· ${vue === 'Semaine' ? 'Semaine du ' + semaine : vue}`;
         }
 
         if(typeof showToast === 'function') {
-          showToast(`Affichage mis à jour pour la classe ${classe}.`, 'info');
+          showToast(`Affichage mis Ã  jour pour la classe ${classe}.`, 'info');
         }
       }, 800);
     });

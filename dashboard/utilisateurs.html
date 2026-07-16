@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>Utilisateurs – EduManager</title>
+  <title>Utilisateurs â€“ EduManager</title>
   <link rel="icon" type="image/png" href="../../1/img/favicon.png"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
@@ -17,7 +17,7 @@
     <div class="nav-section-label">Principal</div>
     <a href="index.html" class="nav-item-link"><i class="fas fa-th-large nav-icon"></i><span class="nav-item-label">Tableau de bord</span></a>
     <div class="nav-section-label mt-2">Gestion</div>
-    <a href="eleves.html" class="nav-item-link"><i class="fas fa-user-graduate nav-icon"></i><span class="nav-item-label">Élèves</span></a>
+    <a href="eleves.html" class="nav-item-link"><i class="fas fa-user-graduate nav-icon"></i><span class="nav-item-label">Ã‰lÃ¨ves</span></a>
     <a href="enseignants.html" class="nav-item-link"><i class="fas fa-chalkboard-teacher nav-icon"></i><span class="nav-item-label">Enseignants</span></a>
     <a href="classes.html" class="nav-item-link"><i class="fas fa-door-open nav-icon"></i><span class="nav-item-label">Classes</span></a>
     <a href="notes.html" class="nav-item-link"><i class="fas fa-clipboard-list nav-icon"></i><span class="nav-item-label">Notes & Bulletins</span></a>
@@ -29,14 +29,14 @@
     <a href="notifications.html" class="nav-item-link"><i class="fas fa-bell nav-icon"></i><span class="nav-item-label">Notifications</span></a>
     <div class="nav-section-label mt-2">Administration</div>
     <a href="utilisateurs.html" class="nav-item-link active"><i class="fas fa-users-cog nav-icon"></i><span class="nav-item-label">Utilisateurs</span></a>
-    <a href="parametres.html" class="nav-item-link"><i class="fas fa-cog nav-icon"></i><span class="nav-item-label">Paramètres</span></a>
+    <a href="parametres.html" class="nav-item-link"><i class="fas fa-cog nav-icon"></i><span class="nav-item-label">ParamÃ¨tres</span></a>
   </nav>
   <div class="sidebar-footer"><div class="user-info"><div class="user-av">D</div><div><div class="user-name">M. Directeur</div><div class="user-role">Administrateur</div></div></div></div>
 </aside>
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 <header class="topbar" id="topbar">
   <button class="topbar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-  <div class="topbar-search"><i class="fas fa-search"></i><input type="text" placeholder="Rechercher un utilisateur…" id="searchInput" oninput="filterTable()"/></div>
+  <div class="topbar-search"><i class="fas fa-search"></i><input type="text" placeholder="Rechercher un utilisateurâ€¦" id="searchInput" oninput="filterTable()"/></div>
   <div class="topbar-actions"><button class="topbar-btn"><i class="fas fa-bell"></i><span class="notif-dot"></span></button><div class="topbar-divider"></div><div class="user-av" style="cursor:pointer">D</div></div>
 </header>
 
@@ -57,7 +57,7 @@
     <div class="col-6 col-md-3"><div class="stat-card"><div class="sc-icon bg-warning-soft mb-2"><i class="fas fa-user-clock text-warning"></i></div><div class="sc-value">4</div><div class="sc-label">Invitations en attente</div></div></div>
   </div>
 
-  <!-- Rôles expliqués -->
+  <!-- RÃ´les expliquÃ©s -->
   <div class="row g-3 mb-4">
     <div class="col-md-4">
       <div class="dash-card p-3 h-100" style="border-left:3px solid var(--danger)">
@@ -65,7 +65,7 @@
           <div class="sc-icon bg-danger-soft" style="width:36px;height:36px"><i class="fas fa-user-shield text-danger" style="font-size:.85rem"></i></div>
           <div class="fw-bold">Administrateur</div>
         </div>
-        <div class="text-muted" style="font-size:.8rem">Accès complet : gestion de l'établissement, utilisateurs, finances, paramètres.</div>
+        <div class="text-muted" style="font-size:.8rem">AccÃ¨s complet : gestion de l'Ã©tablissement, utilisateurs, finances, paramÃ¨tres.</div>
       </div>
     </div>
     <div class="col-md-4">
@@ -93,7 +93,7 @@
     <div class="dash-card-header flex-wrap gap-2">
       <span class="dash-card-title"><i class="fas fa-list text-primary me-2"></i>Liste des utilisateurs</span>
       <select class="form-select form-select-sm ms-auto" style="width:150px" id="filterRole" onchange="filterTable()">
-        <option value="">Tous les rôles</option>
+        <option value="">Tous les rÃ´les</option>
         <option>Administrateur</option>
         <option>Enseignant</option>
         <option>Gestionnaire</option>
@@ -102,7 +102,7 @@
     <div class="dash-card-body p-0" style="overflow-x:auto">
       <table class="dash-table" id="usersTable">
         <thead><tr>
-          <th>Utilisateur</th><th>Rôle</th><th>Dernière connexion</th><th>Statut</th><th>Actions</th>
+          <th>Utilisateur</th><th>RÃ´le</th><th>DerniÃ¨re connexion</th><th>Statut</th><th>Actions</th>
         </tr></thead>
         <tbody id="usersBody">
           <tr>
@@ -116,7 +116,7 @@
             </div></td>
           </tr>
           <tr>
-            <td><div class="d-flex align-items-center gap-2"><div class="table-av" style="background:#2563EB">K</div><div><div style="font-weight:600;font-size:.85rem">M. Koné Abdoulaye</div><div style="font-size:.75rem;color:var(--muted)">kone@ecole.ci</div></div></div></td>
+            <td><div class="d-flex align-items-center gap-2"><div class="table-av" style="background:#2563EB">K</div><div><div style="font-weight:600;font-size:.85rem">M. KonÃ© Abdoulaye</div><div style="font-size:.75rem;color:var(--muted)">kone@ecole.ci</div></div></div></td>
             <td><span class="status-badge success">Enseignant</span></td>
             <td style="font-size:.82rem">Aujourd'hui, 08:30</td>
             <td><span class="status-badge success">Actif</span></td>
@@ -148,7 +148,7 @@
           <tr>
             <td><div class="d-flex align-items-center gap-2"><div class="table-av" style="background:var(--muted)">S</div><div><div style="font-weight:600;font-size:.85rem">Mme Smith Grace</div><div style="font-size:.75rem;color:var(--muted)">smith@ecole.ci</div></div></div></td>
             <td><span class="status-badge success">Enseignant</span></td>
-            <td style="font-size:.82rem;color:var(--muted)">—</td>
+            <td style="font-size:.82rem;color:var(--muted)">â€”</td>
             <td><span class="status-badge warning">Invitation</span></td>
             <td><div class="d-flex gap-1">
               <button class="btn btn-sm" style="padding:3px 8px;background:rgba(245,158,11,.1);color:var(--warning);border-radius:6px;font-size:.75rem"><i class="fas fa-paper-plane"></i> Relancer</button>
@@ -168,16 +168,16 @@
     <div class="modal-body">
       <div class="mb-3"><label class="form-label">Email *</label><input type="email" id="inviteEmail" class="form-control" placeholder="email@ecole.ci"/></div>
       <div class="mb-3">
-        <label class="form-label">Rôle *</label>
+        <label class="form-label">RÃ´le *</label>
         <select class="form-select" id="roleSelect" onchange="showRoleInfo()">
-          <option value="">Choisir un rôle…</option>
+          <option value="">Choisir un rÃ´leâ€¦</option>
           <option value="admin">Administrateur</option>
           <option value="enseignant">Enseignant</option>
           <option value="gestionnaire">Gestionnaire</option>
         </select>
       </div>
       <div id="roleInfoBox" class="p-3 rounded-3 bg-light d-none mb-3" style="font-size:.82rem;color:var(--muted)"></div>
-      <div class="mb-3"><label class="form-label">Message personnalisé (optionnel)</label><textarea class="form-control" rows="2" placeholder="Ex: Bienvenue dans l'équipe !"></textarea></div>
+      <div class="mb-3"><label class="form-label">Message personnalisÃ© (optionnel)</label><textarea class="form-control" rows="2" placeholder="Ex: Bienvenue dans l'Ã©quipe !"></textarea></div>
     </div>
     <div class="modal-footer"><button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Annuler</button><button type="button" class="btn btn-primary rounded-pill px-4 fw-semibold" onclick="inviteUser()"><i class="fas fa-paper-plane me-2"></i>Envoyer l'invitation</button></div>
   </div></div>
@@ -208,9 +208,9 @@ function toggleUser(btn) {
   }
 }
 const roleDesc = {
-  admin: '⚠️ Accès complet à toutes les fonctionnalités de la plateforme, y compris la gestion des utilisateurs et des paramètres.',
-  enseignant: '📚 Accès à ses classes, saisie des notes, emploi du temps et messagerie. Pas d\'accès aux finances.',
-  gestionnaire: '💳 Gestion des paiements, inscriptions et rapports financiers. Pas d\'accès à la gestion des utilisateurs.'
+  admin: 'âš ï¸ AccÃ¨s complet Ã  toutes les fonctionnalitÃ©s de la plateforme, y compris la gestion des utilisateurs et des paramÃ¨tres.',
+  enseignant: 'ðŸ“š AccÃ¨s Ã  ses classes, saisie des notes, emploi du temps et messagerie. Pas d\'accÃ¨s aux finances.',
+  gestionnaire: 'ðŸ’³ Gestion des paiements, inscriptions et rapports financiers. Pas d\'accÃ¨s Ã  la gestion des utilisateurs.'
 };
 function showRoleInfo() {
   const v = document.getElementById('roleSelect').value;
@@ -227,7 +227,7 @@ function renderUsersTable() {
   const tbody = document.getElementById('usersBody');
   const users = JSON.parse(localStorage.getItem('edu_users') || '[]');
   
-  if (users.length === 0) return; // garde les données fictives si aucun vrai utilisateur
+  if (users.length === 0) return; // garde les donnÃ©es fictives si aucun vrai utilisateur
   
   let html = '';
   users.forEach(u => {
@@ -272,21 +272,21 @@ function inviteUser() {
   const roleText = roleVal ? roleSelectNode.options[roleSelectNode.selectedIndex].text : '';
   
   if (!email || !roleVal) {
-    if(typeof showToast === 'function') showToast("Veuillez remplir l'email et le rôle.", 'warning');
+    if(typeof showToast === 'function') showToast("Veuillez remplir l'email et le rÃ´le.", 'warning');
     return;
   }
   
   const users = JSON.parse(localStorage.getItem('edu_users') || '[]');
   if (users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
-    if(typeof showToast === 'function') showToast("Cet utilisateur existe déjà !", 'danger');
+    if(typeof showToast === 'function') showToast("Cet utilisateur existe dÃ©jÃ  !", 'danger');
     return;
   }
   
   const newUser = {
     id: 'EDU-Invited-' + Date.now(),
     email: email,
-    password: 'password123', // Mot de passe par défaut
-    prenom: 'Invité',
+    password: 'password123', // Mot de passe par dÃ©faut
+    prenom: 'InvitÃ©',
     nom: '',
     fonction: roleText,
     role: roleVal,
@@ -307,9 +307,9 @@ function inviteUser() {
   renderUsersTable();
   
   if(typeof showToast === 'function') {
-    showToast("Invitation envoyée ! Le mot de passe par défaut est : password123", "success");
+    showToast("Invitation envoyÃ©e ! Le mot de passe par dÃ©faut est : password123", "success");
   } else {
-    alert("Utilisateur invité avec succès. Mot de passe : password123");
+    alert("Utilisateur invitÃ© avec succÃ¨s. Mot de passe : password123");
   }
 }
 </script>
