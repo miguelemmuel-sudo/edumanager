@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/css/intlTelInput.css">
   <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet"/>
   <link href="css/landing.css" rel="stylesheet"/>
+  <link rel="manifest" href="manifest.json" />
 </head>
 <body>
 <!-- NAVBAR -->
@@ -248,6 +249,12 @@ function showContactError(msg) {
   box.innerHTML = `<i class="fas fa-exclamation-circle me-2"></i>${msg}`;
   document.getElementById('submitBtn').before(box);
 }
+</script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+  }
 </script>
 </body>
 </html>

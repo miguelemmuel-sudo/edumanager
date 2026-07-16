@@ -39,6 +39,7 @@
     .msg-send-btn:hover { background:var(--primary-dark); }
     .msg-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; color:var(--muted); }
   </style>
+  <link rel="manifest" href="../manifest.json" />
 </head>
 <body>
 <aside class="sidebar" id="sidebar">
@@ -338,6 +339,12 @@ function handleFileUpload(event) {
     event.target.value = '';
   }
 }
+</script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('../sw.js');
+  }
 </script>
 </body>
 </html>

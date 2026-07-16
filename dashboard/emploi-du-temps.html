@@ -24,6 +24,7 @@
     .tt-eps  { background:rgba(16,185,129,.15); color:#059669; }
     .tt-break { background:#F8FAFC; color:var(--muted); text-align:center; font-style:italic; }
   </style>
+  <link rel="manifest" href="../manifest.json" />
 </head>
 <body>
 <aside class="sidebar" id="sidebar">
@@ -250,6 +251,12 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 });
+</script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('../sw.js');
+  }
 </script>
 </body>
 </html>

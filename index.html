@@ -11,6 +11,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
     <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet" />
     <link href="css/landing.css" rel="stylesheet" />
+  <link rel="manifest" href="manifest.json" />
 </head>
 <body>
 
@@ -818,6 +819,12 @@
       el.textContent = ['15€','35€','80€'][i] + '';
     });
   });
+</script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+  }
 </script>
 </body>
 </html>

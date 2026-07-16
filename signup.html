@@ -10,6 +10,7 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/css/intlTelInput.css">
   <link href="css/auth.css" rel="stylesheet"/>
+  <link rel="manifest" href="manifest.json" />
 </head>
 <body>
 <div class="auth-wrapper">
@@ -441,6 +442,12 @@ function showError(msg) {
 // On ne redirige depuis signup que si l'utilisateur a EXPLICITEMENT commencé une session
 // et n'est pas en train de créer un nouveau compte
 // (désactivé pour laisser l'utilisateur créer un compte même connecté)
+</script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+  }
 </script>
 </body>
 </html>
