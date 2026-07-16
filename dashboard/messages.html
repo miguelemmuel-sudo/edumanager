@@ -1,350 +1,600 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
-  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>Messages â€“ EduManager</title>
-  <link rel="icon" type="image/png" href="../../1/img/favicon.png"/>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
-  <link href="../css/dashboard.css" rel="stylesheet"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Messages – EduManager</title>
+  <link rel="icon" type="image/png" href="../../1/img/favicon.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+  <link href="../css/dashboard.css" rel="stylesheet" />
   <style>
-    .msg-layout { display:flex; gap:0; height:calc(100vh - 140px); overflow:hidden; background:white; border:1px solid var(--border); border-radius:.875rem; }
-    .msg-sidebar { width:300px; flex-shrink:0; border-right:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden; }
-    .msg-sidebar-header { padding:1rem; border-bottom:1px solid var(--border); }
-    .msg-list { flex:1; overflow-y:auto; }
-    .msg-item { padding:.85rem 1rem; cursor:pointer; border-bottom:1px solid #F8FAFC; transition:background .15s; display:flex; align-items:flex-start; gap:.75rem; }
-    .msg-item:hover { background:#F8FAFC; }
-    .msg-item.active { background:rgba(37,99,235,.06); border-left:3px solid var(--primary); }
-    .msg-item.unread .msg-item-subject { font-weight:700; color:var(--text); }
-    .msg-item-av { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:.85rem; color:white; flex-shrink:0; }
-    .msg-item-subject { font-size:.83rem; font-weight:500; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .msg-item-preview { font-size:.75rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .msg-item-time { font-size:.7rem; color:var(--muted); white-space:nowrap; flex-shrink:0; }
-    .msg-unread-dot { width:8px; height:8px; border-radius:50%; background:var(--primary); flex-shrink:0; margin-top:5px; }
+    .msg-layout {
+      display: flex;
+      gap: 0;
+      height: calc(100vh - 140px);
+      overflow: hidden;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: .875rem;
+    }
+
+    .msg-sidebar {
+      width: 300px;
+      flex-shrink: 0;
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .msg-sidebar-header {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .msg-list {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .msg-item {
+      padding: .85rem 1rem;
+      cursor: pointer;
+      border-bottom: 1px solid #F8FAFC;
+      transition: background .15s;
+      display: flex;
+      align-items: flex-start;
+      gap: .75rem;
+    }
+
+    .msg-item:hover {
+      background: #F8FAFC;
+    }
+
+    .msg-item.active {
+      background: rgba(37, 99, 235, .06);
+      border-left: 3px solid var(--primary);
+    }
+
+    .msg-item.unread .msg-item-subject {
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .msg-item-av {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: .85rem;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .msg-item-subject {
+      font-size: .83rem;
+      font-weight: 500;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .msg-item-preview {
+      font-size: .75rem;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .msg-item-time {
+      font-size: .7rem;
+      color: var(--muted);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .msg-unread-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--primary);
+      flex-shrink: 0;
+      margin-top: 5px;
+    }
+
     /* Chat panel */
-    .msg-chat { flex:1; display:flex; flex-direction:column; overflow:hidden; }
-    .msg-chat-header { padding:1rem 1.25rem; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:.75rem; }
-    .msg-chat-body { flex:1; overflow-y:auto; padding:1.25rem; display:flex; flex-direction:column; gap:1rem; background:#F8FAFC; }
-    .bubble { max-width:70%; padding:.75rem 1rem; border-radius:1rem; font-size:.875rem; line-height:1.5; }
-    .bubble.received { background:white; border:1px solid var(--border); border-bottom-left-radius:.25rem; align-self:flex-start; }
-    .bubble.sent { background:var(--primary); color:white; border-bottom-right-radius:.25rem; align-self:flex-end; }
-    .bubble-meta { font-size:.7rem; color:var(--muted); margin-top:3px; }
-    .bubble-meta.sent-meta { text-align:right; }
-    .msg-chat-footer { padding:1rem; border-top:1px solid var(--border); background:white; }
-    .msg-input-wrap { display:flex; align-items:flex-end; gap:.75rem; background:#F8FAFC; border:1.5px solid var(--border); border-radius:.875rem; padding:.5rem .75rem; transition:border-color .2s; }
-    .msg-input-wrap:focus-within { border-color:var(--primary); }
-    .msg-input { flex:1; border:none; background:none; resize:none; outline:none; font-size:.875rem; color:var(--text); max-height:120px; min-height:36px; }
-    .msg-send-btn { width:36px; height:36px; border-radius:50%; background:var(--primary); border:none; color:white; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; transition:background .2s; }
-    .msg-send-btn:hover { background:var(--primary-dark); }
-    .msg-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; color:var(--muted); }
+    .msg-chat {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .msg-chat-header {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+    }
+
+    .msg-chat-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      background: #F8FAFC;
+    }
+
+    .bubble {
+      max-width: 70%;
+      padding: .75rem 1rem;
+      border-radius: 1rem;
+      font-size: .875rem;
+      line-height: 1.5;
+    }
+
+    .bubble.received {
+      background: white;
+      border: 1px solid var(--border);
+      border-bottom-left-radius: .25rem;
+      align-self: flex-start;
+    }
+
+    .bubble.sent {
+      background: var(--primary);
+      color: white;
+      border-bottom-right-radius: .25rem;
+      align-self: flex-end;
+    }
+
+    .bubble-meta {
+      font-size: .7rem;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    .bubble-meta.sent-meta {
+      text-align: right;
+    }
+
+    .msg-chat-footer {
+      padding: 1rem;
+      border-top: 1px solid var(--border);
+      background: white;
+    }
+
+    .msg-input-wrap {
+      display: flex;
+      align-items: flex-end;
+      gap: .75rem;
+      background: #F8FAFC;
+      border: 1.5px solid var(--border);
+      border-radius: .875rem;
+      padding: .5rem .75rem;
+      transition: border-color .2s;
+    }
+
+    .msg-input-wrap:focus-within {
+      border-color: var(--primary);
+    }
+
+    .msg-input {
+      flex: 1;
+      border: none;
+      background: none;
+      resize: none;
+      outline: none;
+      font-size: .875rem;
+      color: var(--text);
+      max-height: 120px;
+      min-height: 36px;
+    }
+
+    .msg-send-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--primary);
+      border: none;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background .2s;
+    }
+
+    .msg-send-btn:hover {
+      background: var(--primary-dark);
+    }
+
+    .msg-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      color: var(--muted);
+    }
   </style>
   <link rel="manifest" href="../manifest.json" />
 </head>
+
 <body>
-<aside class="sidebar" id="sidebar">
-  <a href="index.html" class="sidebar-brand"><i class="fas fa-graduation-cap brand-icon"></i><span class="brand-name">EduManager</span></a>
-  <nav class="sidebar-nav">
-    <div class="nav-section-label">Principal</div>
-    <a href="index.html" class="nav-item-link"><i class="fas fa-th-large nav-icon"></i><span class="nav-item-label">Tableau de bord</span></a>
-    <div class="nav-section-label mt-2">Gestion</div>
-    <a href="eleves.html" class="nav-item-link"><i class="fas fa-user-graduate nav-icon"></i><span class="nav-item-label">Ã‰lÃ¨ves</span></a>
-    <a href="enseignants.html" class="nav-item-link"><i class="fas fa-chalkboard-teacher nav-icon"></i><span class="nav-item-label">Enseignants</span></a>
-    <a href="classes.html" class="nav-item-link"><i class="fas fa-door-open nav-icon"></i><span class="nav-item-label">Classes</span></a>
-    <a href="notes.html" class="nav-item-link"><i class="fas fa-clipboard-list nav-icon"></i><span class="nav-item-label">Notes & Bulletins</span></a>
-    <a href="emploi-du-temps.html" class="nav-item-link"><i class="fas fa-calendar-alt nav-icon"></i><span class="nav-item-label">Emplois du temps</span></a>
-    <div class="nav-section-label mt-2">Finance</div>
-    <a href="paiements.html" class="nav-item-link"><i class="fas fa-credit-card nav-icon"></i><span class="nav-item-label">Paiements</span><span class="nav-badge bg-danger-soft text-danger">12</span></a>
-    <div class="nav-section-label mt-2">Communication</div>
-    <a href="messages.html" class="nav-item-link active"><i class="fas fa-comments nav-icon"></i><span class="nav-item-label">Messages</span><span class="nav-badge bg-primary-soft text-primary">5</span></a>
-    <a href="notifications.html" class="nav-item-link"><i class="fas fa-bell nav-icon"></i><span class="nav-item-label">Notifications</span></a>
-    <div class="nav-section-label mt-2">Administration</div>
-    <a href="utilisateurs.html" class="nav-item-link"><i class="fas fa-users-cog nav-icon"></i><span class="nav-item-label">Utilisateurs</span></a>
-    <a href="parametres.html" class="nav-item-link"><i class="fas fa-cog nav-icon"></i><span class="nav-item-label">ParamÃ¨tres</span></a>
-  </nav>
-  <div class="sidebar-footer"><div class="user-info"><div class="user-av">D</div><div><div class="user-name">M. Directeur</div><div class="user-role">Administrateur</div></div></div></div>
-</aside>
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
-<header class="topbar" id="topbar">
-  <button class="topbar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-  <div class="topbar-search"><i class="fas fa-search"></i><input type="text" placeholder="Rechercher un messageâ€¦"/></div>
-  <div class="topbar-actions"><button class="topbar-btn"><i class="fas fa-bell"></i><span class="notif-dot"></span></button><div class="topbar-divider"></div><div class="user-av" style="cursor:pointer">D</div></div>
-</header>
+  <aside class="sidebar" id="sidebar">
+    <a href="index.html" class="sidebar-brand"><i class="fas fa-graduation-cap brand-icon"></i><span
+        class="brand-name">EduManager</span></a>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Principal</div>
+      <a href="index.html" class="nav-item-link"><i class="fas fa-th-large nav-icon"></i><span
+          class="nav-item-label">Tableau de bord</span></a>
+      <div class="nav-section-label mt-2">Gestion</div>
+      <a href="eleves.html" class="nav-item-link"><i class="fas fa-user-graduate nav-icon"></i><span
+          class="nav-item-label">Élèves</span></a>
+      <a href="enseignants.html" class="nav-item-link"><i class="fas fa-chalkboard-teacher nav-icon"></i><span
+          class="nav-item-label">Enseignants</span></a>
+      <a href="classes.html" class="nav-item-link"><i class="fas fa-door-open nav-icon"></i><span
+          class="nav-item-label">Classes</span></a>
+      <a href="notes.html" class="nav-item-link"><i class="fas fa-clipboard-list nav-icon"></i><span
+          class="nav-item-label">Notes & Bulletins</span></a>
+      <a href="emploi-du-temps.html" class="nav-item-link"><i class="fas fa-calendar-alt nav-icon"></i><span
+          class="nav-item-label">Emplois du temps</span></a>
+      <div class="nav-section-label mt-2">Finance</div>
+      <a href="paiements.html" class="nav-item-link"><i class="fas fa-credit-card nav-icon"></i><span
+          class="nav-item-label">Paiements</span><span class="nav-badge bg-danger-soft text-danger">12</span></a>
+      <div class="nav-section-label mt-2">Communication</div>
+      <a href="messages.html" class="nav-item-link active"><i class="fas fa-comments nav-icon"></i><span
+          class="nav-item-label">Messages</span><span class="nav-badge bg-primary-soft text-primary">5</span></a>
+      <a href="notifications.html" class="nav-item-link"><i class="fas fa-bell nav-icon"></i><span
+          class="nav-item-label">Notifications</span></a>
+      <div class="nav-section-label mt-2">Administration</div>
+      <a href="utilisateurs.html" class="nav-item-link"><i class="fas fa-users-cog nav-icon"></i><span
+          class="nav-item-label">Utilisateurs</span></a>
+      <a href="parametres.html" class="nav-item-link"><i class="fas fa-cog nav-icon"></i><span
+          class="nav-item-label">Paramètres</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-av">D</div>
+        <div>
+          <div class="user-name">M. Directeur</div>
+          <div class="user-role">Administrateur</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+  <header class="topbar" id="topbar">
+    <button class="topbar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+    <div class="topbar-search"><i class="fas fa-search"></i><input type="text" placeholder="Rechercher un message…" />
+    </div>
+    <div class="topbar-actions"><button class="topbar-btn"><i class="fas fa-bell"></i><span
+          class="notif-dot"></span></button>
+      <div class="topbar-divider"></div>
+      <div class="user-av" style="cursor:pointer">D</div>
+    </div>
+  </header>
 
-<main class="main-content" id="mainContent">
-  <div class="page-header d-flex align-items-center justify-content-between mb-3">
-    <div><h1 class="page-title">Messages</h1></div>
-    <button class="btn btn-primary btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#newMsgModal"><i class="fas fa-pen me-1"></i>Nouveau message</button>
+  <main class="main-content" id="mainContent">
+    <div class="page-header d-flex align-items-center justify-content-between mb-3">
+      <div>
+        <h1 class="page-title">Messages</h1>
+      </div>
+      <button class="btn btn-primary btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#newMsgModal"><i
+          class="fas fa-pen me-1"></i>Nouveau message</button>
+    </div>
+
+    <div class="msg-layout">
+      <!-- Liste conversations -->
+      <div class="msg-sidebar">
+        <div class="msg-sidebar-header">
+          <div class="input-group input-group-sm">
+            <span class="input-group-text bg-light border-end-0"><i class="fas fa-search text-muted"
+                style="font-size:.8rem"></i></span>
+            <input type="text" class="form-control bg-light border-start-0" placeholder="Rechercher…"
+              style="font-size:.82rem" />
+          </div>
+        </div>
+        <div class="msg-list">
+
+          <!-- Conversations -->
+          <div class="msg-item active unread" onclick="openMsg(this,'M. Diallo Parent','parent-diallo')">
+            <div class="msg-item-av" style="background:#2563EB">D</div>
+            <div style="flex:1;min-width:0">
+              <div class="d-flex justify-content-between"><span class="msg-item-subject">M. Diallo (Parent
+                  Amina)</span><span class="msg-item-time">10:24</span></div>
+              <div class="msg-item-preview">Bonjour, je voudrais avoir des informations sur les résultats...</div>
+            </div>
+            <div class="msg-unread-dot"></div>
+          </div>
+          <div class="msg-item unread" onclick="openMsg(this,'Mme Mensah Parent','parent-mensah')">
+            <div class="msg-item-av" style="background:#10B981">M</div>
+            <div style="flex:1;min-width:0">
+              <div class="d-flex justify-content-between"><span class="msg-item-subject">Mme Mensah (Parent
+                  Kofi)</span><span class="msg-item-time">09:15</span></div>
+              <div class="msg-item-preview">Mon fils sera absent demain pour raison médicale...</div>
+            </div>
+            <div class="msg-unread-dot"></div>
+          </div>
+          <div class="msg-item" onclick="openMsg(this,'M. Koné Enseignant','ens-kone')">
+            <div class="msg-item-av" style="background:#8B5CF6">K</div>
+            <div style="flex:1;min-width:0">
+              <div class="d-flex justify-content-between"><span class="msg-item-subject">M. Koné (Maths)</span><span
+                  class="msg-item-time">Hier</span></div>
+              <div class="msg-item-preview">J'ai saisi toutes les notes du 1er trimestre pour la 3ème B</div>
+            </div>
+          </div>
+          <div class="msg-item unread" onclick="openMsg(this,'M. Traoré Parent','parent-traore')">
+            <div class="msg-item-av" style="background:#F59E0B">T</div>
+            <div style="flex:1;min-width:0">
+              <div class="d-flex justify-content-between"><span class="msg-item-subject">M. Traoré (Parent
+                  Fatima)</span><span class="msg-item-time">Hier</span></div>
+              <div class="msg-item-preview">Concernant les frais scolaires impayés, je vous contacterai...</div>
+            </div>
+            <div class="msg-unread-dot"></div>
+          </div>
+          <div class="msg-item unread" onclick="openMsg(this,'Mme Bah Enseignante','ens-bah')">
+            <div class="msg-item-av" style="background:#EF4444">B</div>
+            <div style="flex:1;min-width:0">
+              <div class="d-flex justify-content-between"><span class="msg-item-subject">Mme Bah (SVT)</span><span
+                  class="msg-item-time">Lun.</span></div>
+              <div class="msg-item-preview">Demande de matériel de laboratoire pour le cours de SVT...</div>
+            </div>
+            <div class="msg-unread-dot"></div>
+          </div>
+          <div class="msg-item" onclick="openMsg(this,'M. Ben Ali Parent','parent-benali')">
+            <div class="msg-item-av" style="background:#06B6D4">B</div>
+            <div style="flex:1;min-width:0">
+              <div class="d-flex justify-content-between"><span class="msg-item-subject">M. Ben Ali (Parent
+                  Youssef)</span><span class="msg-item-time">Lun.</span></div>
+              <div class="msg-item-preview">Merci pour l'envoi du bulletin du 1er trimestre.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Zone de chat -->
+      <div class="msg-chat">
+        <!-- Header chat -->
+        <div class="msg-chat-header">
+          <div class="msg-item-av" style="background:#2563EB;width:38px;height:38px">D</div>
+          <div>
+            <div class="fw-semibold" id="chatName">M. Diallo (Parent Amina)</div>
+            <div class="text-muted" style="font-size:.75rem">Parent d'élève · Amina Diallo – 3ème B</div>
+          </div>
+          <div class="ms-auto d-flex gap-2">
+            <button class="topbar-btn" title="Appeler"><i class="fas fa-phone"></i></button>
+            <button class="topbar-btn" title="Infos"><i class="fas fa-info-circle"></i></button>
+          </div>
+        </div>
+        <!-- Messages -->
+        <div class="msg-chat-body" id="chatBody">
+          <div>
+            <div class="bubble received">Bonjour M. le Directeur, je voudrais avoir des informations sur les résultats
+              du 1er trimestre de ma fille Amina Diallo (3ème B). Quand seront disponibles les bulletins ?</div>
+            <div class="bubble-meta">M. Diallo · 10:15</div>
+          </div>
+          <div>
+            <div class="bubble sent">Bonjour M. Diallo, les bulletins du 1er trimestre seront disponibles le vendredi 24
+              janvier. Vous recevrez une notification par SMS dès qu'ils seront prêts à télécharger. Les résultats
+              d'Amina sont très satisfaisants ce trimestre.</div>
+            <div class="bubble-meta sent-meta">Vous · 10:20</div>
+          </div>
+          <div>
+            <div class="bubble received">Bonjour, je voudrais avoir des informations sur les résultats de ma fille. Elle
+              a mentionné avoir eu quelques difficultés en mathématiques ce trimestre.</div>
+            <div class="bubble-meta">M. Diallo · 10:24</div>
+          </div>
+        </div>
+        <!-- Input -->
+        <div class="msg-chat-footer">
+          <div class="msg-input-wrap">
+            <button class="topbar-btn" title="Joindre un fichier" style="width:30px;height:30px;flex-shrink:0"><i
+                class="fas fa-paperclip" style="font-size:.85rem"></i></button>
+            <textarea class="msg-input" placeholder="Écrire un message…" rows="1" id="msgInput"
+              onkeydown="handleEnter(event)"></textarea>
+            <button class="msg-send-btn" onclick="sendMessage()" title="Envoyer">
+              <i class="fas fa-paper-plane" style="font-size:.8rem"></i>
+            </button>
+          </div>
+          <div class="d-flex gap-3 mt-2" style="font-size:.75rem;color:var(--muted)">
+            <span style="cursor:pointer;transition:color .2s" onmouseover="this.style.color='var(--primary)'"
+              onmouseout="this.style.color='var(--muted)'" onclick="insertEmoji()"><i
+                class="fas fa-smile me-1"></i>Émojis</span>
+            <span style="cursor:pointer;transition:color .2s" onmouseover="this.style.color='var(--primary)'"
+              onmouseout="this.style.color='var(--muted)'" onclick="document.getElementById('chatFileInput').click()"><i
+                class="fas fa-file me-1"></i>Fichier</span>
+            <span style="cursor:pointer;transition:color .2s" onmouseover="this.style.color='var(--primary)'"
+              onmouseout="this.style.color='var(--muted)'" onclick="document.getElementById('chatFileInput').click()"><i
+                class="fas fa-image me-1"></i>Image</span>
+            <input type="file" id="chatFileInput" style="display:none" onchange="handleFileUpload(event)">
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal nouveau message -->
+  <div class="modal fade" id="newMsgModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold"><i class="fas fa-pen text-primary me-2"></i>Nouveau message</h5><button
+            type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Destinataire(s) *</label>
+            <input type="text" class="form-control" placeholder="Nom du parent, enseignant…" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Ou envoyer à un groupe</label>
+            <select class="form-select">
+              <option value="">Sélectionner un groupe…</option>
+              <option>Tous les parents</option>
+              <option>Parents – 3ème B</option>
+              <option>Parents – 6ème A</option>
+              <option>Tous les enseignants</option>
+            </select>
+          </div>
+          <div class="mb-3"><label class="form-label">Objet</label><input type="text" class="form-control"
+              placeholder="Objet du message" /></div>
+          <div class="mb-3"><label class="form-label">Message *</label><textarea class="form-control" rows="5"
+              placeholder="Rédigez votre message…"></textarea></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary rounded-pill px-4"
+            data-bs-dismiss="modal">Annuler</button>
+          <button type="button" class="btn btn-primary rounded-pill px-4 fw-semibold" onclick="sendNewMessage()"><i
+              class="fas fa-paper-plane me-2"></i>Envoyer</button>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div class="msg-layout">
-    <!-- Liste conversations -->
-    <div class="msg-sidebar">
-      <div class="msg-sidebar-header">
-        <div class="input-group input-group-sm">
-          <span class="input-group-text bg-light border-end-0"><i class="fas fa-search text-muted" style="font-size:.8rem"></i></span>
-          <input type="text" class="form-control bg-light border-start-0" placeholder="Rechercherâ€¦" style="font-size:.82rem"/>
-        </div>
-      </div>
-      <div class="msg-list">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../js/dashboard.js"></script>
+  <script>
+    function openMsg(el, name) {
+      document.querySelectorAll('.msg-item').forEach(i => i.classList.remove('active'));
+      el.classList.add('active');
+      el.classList.remove('unread');
+      el.querySelector('.msg-unread-dot')?.remove();
+      document.getElementById('chatName').textContent = name;
 
-        <!-- Conversations -->
-        <div class="msg-item active unread" onclick="openMsg(this,'M. Diallo Parent','parent-diallo')">
-          <div class="msg-item-av" style="background:#2563EB">D</div>
-          <div style="flex:1;min-width:0">
-            <div class="d-flex justify-content-between"><span class="msg-item-subject">M. Diallo (Parent Amina)</span><span class="msg-item-time">10:24</span></div>
-            <div class="msg-item-preview">Bonjour, je voudrais avoir des informations sur les rÃ©sultats...</div>
-          </div>
-          <div class="msg-unread-dot"></div>
-        </div>
-        <div class="msg-item unread" onclick="openMsg(this,'Mme Mensah Parent','parent-mensah')">
-          <div class="msg-item-av" style="background:#10B981">M</div>
-          <div style="flex:1;min-width:0">
-            <div class="d-flex justify-content-between"><span class="msg-item-subject">Mme Mensah (Parent Kofi)</span><span class="msg-item-time">09:15</span></div>
-            <div class="msg-item-preview">Mon fils sera absent demain pour raison mÃ©dicale...</div>
-          </div>
-          <div class="msg-unread-dot"></div>
-        </div>
-        <div class="msg-item" onclick="openMsg(this,'M. KonÃ© Enseignant','ens-kone')">
-          <div class="msg-item-av" style="background:#8B5CF6">K</div>
-          <div style="flex:1;min-width:0">
-            <div class="d-flex justify-content-between"><span class="msg-item-subject">M. KonÃ© (Maths)</span><span class="msg-item-time">Hier</span></div>
-            <div class="msg-item-preview">J'ai saisi toutes les notes du 1er trimestre pour la 3Ã¨me B</div>
-          </div>
-        </div>
-        <div class="msg-item unread" onclick="openMsg(this,'M. TraorÃ© Parent','parent-traore')">
-          <div class="msg-item-av" style="background:#F59E0B">T</div>
-          <div style="flex:1;min-width:0">
-            <div class="d-flex justify-content-between"><span class="msg-item-subject">M. TraorÃ© (Parent Fatima)</span><span class="msg-item-time">Hier</span></div>
-            <div class="msg-item-preview">Concernant les frais scolaires impayÃ©s, je vous contacterai...</div>
-          </div>
-          <div class="msg-unread-dot"></div>
-        </div>
-        <div class="msg-item unread" onclick="openMsg(this,'Mme Bah Enseignante','ens-bah')">
-          <div class="msg-item-av" style="background:#EF4444">B</div>
-          <div style="flex:1;min-width:0">
-            <div class="d-flex justify-content-between"><span class="msg-item-subject">Mme Bah (SVT)</span><span class="msg-item-time">Lun.</span></div>
-            <div class="msg-item-preview">Demande de matÃ©riel de laboratoire pour le cours de SVT...</div>
-          </div>
-          <div class="msg-unread-dot"></div>
-        </div>
-        <div class="msg-item" onclick="openMsg(this,'M. Ben Ali Parent','parent-benali')">
-          <div class="msg-item-av" style="background:#06B6D4">B</div>
-          <div style="flex:1;min-width:0">
-            <div class="d-flex justify-content-between"><span class="msg-item-subject">M. Ben Ali (Parent Youssef)</span><span class="msg-item-time">Lun.</span></div>
-            <div class="msg-item-preview">Merci pour l'envoi du bulletin du 1er trimestre.</div>
-          </div>
-        </div>
-      </div>
-    </div>
+      const body = document.getElementById('chatBody');
+      body.innerHTML = '';
 
-    <!-- Zone de chat -->
-    <div class="msg-chat">
-      <!-- Header chat -->
-      <div class="msg-chat-header">
-        <div class="msg-item-av" style="background:#2563EB;width:38px;height:38px">D</div>
-        <div>
-          <div class="fw-semibold" id="chatName">M. Diallo (Parent Amina)</div>
-          <div class="text-muted" style="font-size:.75rem">Parent d'Ã©lÃ¨ve Â· Amina Diallo â€“ 3Ã¨me B</div>
-        </div>
-        <div class="ms-auto d-flex gap-2">
-          <button class="topbar-btn" title="Appeler"><i class="fas fa-phone"></i></button>
-          <button class="topbar-btn" title="Infos"><i class="fas fa-info-circle"></i></button>
-        </div>
-      </div>
-      <!-- Messages -->
-      <div class="msg-chat-body" id="chatBody">
-        <div>
-          <div class="bubble received">Bonjour M. le Directeur, je voudrais avoir des informations sur les rÃ©sultats du 1er trimestre de ma fille Amina Diallo (3Ã¨me B). Quand seront disponibles les bulletins ?</div>
-          <div class="bubble-meta">M. Diallo Â· 10:15</div>
-        </div>
-        <div>
-          <div class="bubble sent">Bonjour M. Diallo, les bulletins du 1er trimestre seront disponibles le vendredi 24 janvier. Vous recevrez une notification par SMS dÃ¨s qu'ils seront prÃªts Ã  tÃ©lÃ©charger. Les rÃ©sultats d'Amina sont trÃ¨s satisfaisants ce trimestre.</div>
-          <div class="bubble-meta sent-meta">Vous Â· 10:20</div>
-        </div>
-        <div>
-          <div class="bubble received">Bonjour, je voudrais avoir des informations sur les rÃ©sultats de ma fille. Elle a mentionnÃ© avoir eu quelques difficultÃ©s en mathÃ©matiques ce trimestre.</div>
-          <div class="bubble-meta">M. Diallo Â· 10:24</div>
-        </div>
-      </div>
-      <!-- Input -->
-      <div class="msg-chat-footer">
-        <div class="msg-input-wrap">
-          <button class="topbar-btn" title="Joindre un fichier" style="width:30px;height:30px;flex-shrink:0"><i class="fas fa-paperclip" style="font-size:.85rem"></i></button>
-          <textarea class="msg-input" placeholder="Ã‰crire un messageâ€¦" rows="1" id="msgInput" onkeydown="handleEnter(event)"></textarea>
-          <button class="msg-send-btn" onclick="sendMessage()" title="Envoyer">
-            <i class="fas fa-paper-plane" style="font-size:.8rem"></i>
-          </button>
-        </div>
-        <div class="d-flex gap-3 mt-2" style="font-size:.75rem;color:var(--muted)">
-          <span style="cursor:pointer;transition:color .2s" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--muted)'" onclick="insertEmoji()"><i class="fas fa-smile me-1"></i>Ã‰mojis</span>
-          <span style="cursor:pointer;transition:color .2s" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--muted)'" onclick="document.getElementById('chatFileInput').click()"><i class="fas fa-file me-1"></i>Fichier</span>
-          <span style="cursor:pointer;transition:color .2s" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--muted)'" onclick="document.getElementById('chatFileInput').click()"><i class="fas fa-image me-1"></i>Image</span>
-          <input type="file" id="chatFileInput" style="display:none" onchange="handleFileUpload(event)">
-        </div>
-      </div>
-    </div>
-  </div>
-</main>
+      let store = JSON.parse(localStorage.getItem('edu_messages') || '{}');
+      const saved = store[name] || [];
 
-<!-- Modal nouveau message -->
-<div class="modal fade" id="newMsgModal" tabindex="-1">
-  <div class="modal-dialog"><div class="modal-content">
-    <div class="modal-header"><h5 class="modal-title fw-bold"><i class="fas fa-pen text-primary me-2"></i>Nouveau message</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-    <div class="modal-body">
-      <div class="mb-3">
-        <label class="form-label">Destinataire(s) *</label>
-        <input type="text" class="form-control" placeholder="Nom du parent, enseignantâ€¦"/>
-      </div>
-      <div class="mb-3">
-        <label class="form-label">Ou envoyer Ã  un groupe</label>
-        <select class="form-select">
-          <option value="">SÃ©lectionner un groupeâ€¦</option>
-          <option>Tous les parents</option>
-          <option>Parents â€“ 3Ã¨me B</option>
-          <option>Parents â€“ 6Ã¨me A</option>
-          <option>Tous les enseignants</option>
-        </select>
-      </div>
-      <div class="mb-3"><label class="form-label">Objet</label><input type="text" class="form-control" placeholder="Objet du message"/></div>
-      <div class="mb-3"><label class="form-label">Message *</label><textarea class="form-control" rows="5" placeholder="RÃ©digez votre messageâ€¦"></textarea></div>
-    </div>
-    <div class="modal-footer">
-      <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Annuler</button>
-      <button type="button" class="btn btn-primary rounded-pill px-4 fw-semibold" onclick="sendNewMessage()"><i class="fas fa-paper-plane me-2"></i>Envoyer</button>
-    </div>
-  </div></div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="../js/dashboard.js"></script>
-<script>
-function openMsg(el, name) {
-  document.querySelectorAll('.msg-item').forEach(i => i.classList.remove('active'));
-  el.classList.add('active');
-  el.classList.remove('unread');
-  el.querySelector('.msg-unread-dot')?.remove();
-  document.getElementById('chatName').textContent = name;
-  
-  const body = document.getElementById('chatBody');
-  body.innerHTML = '';
-  
-  let store = JSON.parse(localStorage.getItem('edu_messages') || '{}');
-  const saved = store[name] || [];
-  
-  if (saved.length === 0) {
-     body.innerHTML = `<div><div class="bubble received">Bonjour, c'est ${name}.</div><div class="bubble-meta">${name} &middot; RÃ©cemment</div></div>`;
-  } else {
-     saved.forEach(msgHtml => {
-       const wrap = document.createElement('div');
-       wrap.innerHTML = msgHtml;
-       body.appendChild(wrap);
-     });
-  }
-  body.scrollTop = body.scrollHeight;
-}
-
-function sendMessage() {
-  const inp = document.getElementById('msgInput');
-  const txt = inp.value.trim();
-  if (!txt) return;
-  const body = document.getElementById('chatBody');
-  const chatName = document.getElementById('chatName').textContent;
-  
-  let smsIndicator = '';
-  if (chatName.toLowerCase().includes('parent')) {
-    smsIndicator = ' &middot; <i class="fas fa-sms text-success" title="NotifiÃ© par SMS"></i> SMS envoyÃ©';
-  }
-  
-  const htmlContent = `<div class="bubble sent">${txt.replace(/\\n/g,'<br>')}</div><div class="bubble-meta sent-meta">Vous &middot; maintenant${smsIndicator}</div>`;
-  
-  const wrap = document.createElement('div');
-  wrap.innerHTML = htmlContent;
-  body.appendChild(wrap);
-  
-  let store = JSON.parse(localStorage.getItem('edu_messages') || '{}');
-  if (!store[chatName]) store[chatName] = [];
-  store[chatName].push(htmlContent);
-  localStorage.setItem('edu_messages', JSON.stringify(store));
-  
-  inp.value = '';
-  body.scrollTop = body.scrollHeight;
-  
-  if (smsIndicator) {
-    if (typeof showToast === 'function') {
-      showToast("Message et SMS envoyÃ©s avec succÃ¨s.", "success");
+      if (saved.length === 0) {
+        body.innerHTML = `<div><div class="bubble received">Bonjour, c'est ${name}.</div><div class="bubble-meta">${name} &middot; Récemment</div></div>`;
+      } else {
+        saved.forEach(msgHtml => {
+          const wrap = document.createElement('div');
+          wrap.innerHTML = msgHtml;
+          body.appendChild(wrap);
+        });
+      }
+      body.scrollTop = body.scrollHeight;
     }
-  }
-}
 
-document.addEventListener('DOMContentLoaded', () => {
-  let store = JSON.parse(localStorage.getItem('edu_messages') || '{}');
-  if (!store['M. Diallo Parent']) {
-     store['M. Diallo Parent'] = [
-       `<div class="bubble received">Bonjour M. le Directeur, je voudrais avoir des informations sur les rÃ©sultats du 1er trimestre de ma fille Amina Diallo (3Ã¨me B). Quand seront disponibles les bulletins ?</div><div class="bubble-meta">M. Diallo &middot; 10:15</div>`,
-       `<div class="bubble sent">Bonjour M. Diallo, les bulletins du 1er trimestre seront disponibles le vendredi 24 janvier. Vous recevrez une notification par SMS dÃ¨s qu'ils seront prÃªts Ã  tÃ©lÃ©charger. Les rÃ©sultats d'Amina sont trÃ¨s satisfaisants ce trimestre.</div><div class="bubble-meta sent-meta">Vous &middot; 10:20</div>`,
-       `<div class="bubble received">Bonjour, je voudrais avoir des informations sur les rÃ©sultats de ma fille. Elle a mentionnÃ© avoir eu quelques difficultÃ©s en mathÃ©matiques ce trimestre.</div><div class="bubble-meta">M. Diallo &middot; 10:24</div>`
-     ];
-     localStorage.setItem('edu_messages', JSON.stringify(store));
-  }
-  
-  const activeItem = document.querySelector('.msg-item.active');
-  if (activeItem) {
-     activeItem.click();
-  }
-});
+    function sendMessage() {
+      const inp = document.getElementById('msgInput');
+      const txt = inp.value.trim();
+      if (!txt) return;
+      const body = document.getElementById('chatBody');
+      const chatName = document.getElementById('chatName').textContent;
 
-function sendNewMessage() {
-  const modalEl = document.getElementById('newMsgModal');
-  const modal = bootstrap.Modal.getInstance(modalEl);
-  if(modal) modal.hide();
-  
-  if (typeof showToast === 'function') {
-    showToast("Message envoyÃ©. Si le destinataire est un parent, un SMS a Ã©galement Ã©tÃ© envoyÃ©.", "success");
-  }
-}
-function handleEnter(e) {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
-}
-// Auto-resize textarea
-document.getElementById('msgInput').addEventListener('input', function(){
-  this.style.height = 'auto';
-  this.style.height = Math.min(this.scrollHeight, 120) + 'px';
-});
+      let smsIndicator = '';
+      if (chatName.toLowerCase().includes('parent')) {
+        smsIndicator = ' &middot; <i class="fas fa-sms text-success" title="Notifié par SMS"></i> SMS envoyé';
+      }
 
-function insertEmoji() {
-  const inp = document.getElementById('msgInput');
-  inp.value += ' ðŸ˜Š';
-  inp.focus();
-}
+      const htmlContent = `<div class="bubble sent">${txt.replace(/\\n/g, '<br>')}</div><div class="bubble-meta sent-meta">Vous &middot; maintenant${smsIndicator}</div>`;
 
-function handleFileUpload(event) {
-  if (event.target.files.length > 0) {
-    if (typeof showToast === 'function') {
-      showToast("Fichier joint : " + event.target.files[0].name, 'info');
+      const wrap = document.createElement('div');
+      wrap.innerHTML = htmlContent;
+      body.appendChild(wrap);
+
+      let store = JSON.parse(localStorage.getItem('edu_messages') || '{}');
+      if (!store[chatName]) store[chatName] = [];
+      store[chatName].push(htmlContent);
+      localStorage.setItem('edu_messages', JSON.stringify(store));
+
+      inp.value = '';
+      body.scrollTop = body.scrollHeight;
+
+      if (smsIndicator) {
+        if (typeof showToast === 'function') {
+          showToast("Message et SMS envoyés avec succès.", "success");
+        }
+      }
     }
-    // Simulate sending an attachment
-    const fileBubble = `<div class="bubble sent" style="background:#F1F5F9;color:var(--text);border:1px solid var(--border)"><i class="fas fa-paperclip me-2"></i>${event.target.files[0].name}</div><div class="bubble-meta sent-meta">Vous &middot; maintenant</div>`;
-    const chatName = document.getElementById('chatName').textContent;
-    let store = JSON.parse(localStorage.getItem('edu_messages') || '{}');
-    if (!store[chatName]) store[chatName] = [];
-    store[chatName].push(fileBubble);
-    localStorage.setItem('edu_messages', JSON.stringify(store));
-    
-    // Refresh chat
-    const activeItem = document.querySelector('.msg-item.active');
-    if (activeItem) activeItem.click();
-    
-    // Clear input so it can be triggered again
-    event.target.value = '';
-  }
-}
-</script>
 
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('../sw.js');
-  }
-</script>
+    document.addEventListener('DOMContentLoaded', () => {
+      let store = JSON.parse(localStorage.getItem('edu_messages') || '{}');
+      if (!store['M. Diallo Parent']) {
+        store['M. Diallo Parent'] = [
+          `<div class="bubble received">Bonjour M. le Directeur, je voudrais avoir des informations sur les résultats du 1er trimestre de ma fille Amina Diallo (3ème B). Quand seront disponibles les bulletins ?</div><div class="bubble-meta">M. Diallo &middot; 10:15</div>`,
+          `<div class="bubble sent">Bonjour M. Diallo, les bulletins du 1er trimestre seront disponibles le vendredi 24 janvier. Vous recevrez une notification par SMS dès qu'ils seront prêts à télécharger. Les résultats d'Amina sont très satisfaisants ce trimestre.</div><div class="bubble-meta sent-meta">Vous &middot; 10:20</div>`,
+          `<div class="bubble received">Bonjour, je voudrais avoir des informations sur les résultats de ma fille. Elle a mentionné avoir eu quelques difficultés en mathématiques ce trimestre.</div><div class="bubble-meta">M. Diallo &middot; 10:24</div>`
+        ];
+        localStorage.setItem('edu_messages', JSON.stringify(store));
+      }
+
+      const activeItem = document.querySelector('.msg-item.active');
+      if (activeItem) {
+        activeItem.click();
+      }
+    });
+
+    function sendNewMessage() {
+      const modalEl = document.getElementById('newMsgModal');
+      const modal = bootstrap.Modal.getInstance(modalEl);
+      if (modal) modal.hide();
+
+      if (typeof showToast === 'function') {
+        showToast("Message envoyé. Si le destinataire est un parent, un SMS a également été envoyé.", "success");
+      }
+    }
+    function handleEnter(e) {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+    }
+    // Auto-resize textarea
+    document.getElementById('msgInput').addEventListener('input', function () {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    });
+
+    function insertEmoji() {
+      const inp = document.getElementById('msgInput');
+      inp.value += ' 😊';
+      inp.focus();
+    }
+
+    function handleFileUpload(event) {
+      if (event.target.files.length > 0) {
+        if (typeof showToast === 'function') {
+          showToast("Fichier joint : " + event.target.files[0].name, 'info');
+        }
+        // Simulate sending an attachment
+        const fileBubble = `<div class="bubble sent" style="background:#F1F5F9;color:var(--text);border:1px solid var(--border)"><i class="fas fa-paperclip me-2"></i>${event.target.files[0].name}</div><div class="bubble-meta sent-meta">Vous &middot; maintenant</div>`;
+        const chatName = document.getElementById('chatName').textContent;
+        let store = JSON.parse(localStorage.getItem('edu_messages') || '{}');
+        if (!store[chatName]) store[chatName] = [];
+        store[chatName].push(fileBubble);
+        localStorage.setItem('edu_messages', JSON.stringify(store));
+
+        // Refresh chat
+        const activeItem = document.querySelector('.msg-item.active');
+        if (activeItem) activeItem.click();
+
+        // Clear input so it can be triggered again
+        event.target.value = '';
+      }
+    }
+  </script>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('../sw.js');
+    }
+  </script>
 </body>
+
 </html>

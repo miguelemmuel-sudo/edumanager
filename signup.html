@@ -1,453 +1,464 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>CrÃ©er un compte â€“ EduManager</title>
-  <link rel="icon" type="image/png" href="../1/img/favicon.png"/>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Créer un compte – EduManager</title>
+  <link rel="icon" type="image/png" href="../1/img/favicon.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/css/intlTelInput.css">
-  <link href="css/auth.css" rel="stylesheet"/>
+  <link href="css/auth.css" rel="stylesheet" />
   <link rel="manifest" href="manifest.json" />
 </head>
+
 <body>
-<div class="auth-wrapper">
-  <!-- CÃ´tÃ© gauche -->
-  <div class="auth-left d-none d-lg-flex">
-    <div class="auth-left-content">
-      <a href="index.html" class="brand mb-5"><i class="fas fa-graduation-cap me-2"></i>EduManager</a>
-      <h2 class="text-white fw-bold mb-3">Rejoignez 200+ Ã©tablissements qui font confiance Ã  EduManager</h2>
-      <p class="text-white opacity-75 mb-4">DÃ©marrez votre essai gratuit de 30 jours. Aucune carte bancaire requise.</p>
-      <div class="d-flex flex-column gap-3">
-        <div class="d-flex align-items-center gap-3 text-white">
-          <div class="auth-check"><i class="fas fa-check"></i></div>
-          <span>Installation immÃ©diate, aucun logiciel Ã  tÃ©lÃ©charger</span>
+  <div class="auth-wrapper">
+    <!-- Côté gauche -->
+    <div class="auth-left d-none d-lg-flex">
+      <div class="auth-left-content">
+        <a href="index.html" class="brand mb-5"><i class="fas fa-graduation-cap me-2"></i>EduManager</a>
+        <h2 class="text-white fw-bold mb-3">Rejoignez 200+ établissements qui font confiance à EduManager</h2>
+        <p class="text-white opacity-75 mb-4">Démarrez votre essai gratuit de 30 jours. Aucune carte bancaire requise.
+        </p>
+        <div class="d-flex flex-column gap-3">
+          <div class="d-flex align-items-center gap-3 text-white">
+            <div class="auth-check"><i class="fas fa-check"></i></div>
+            <span>Installation immédiate, aucun logiciel à télécharger</span>
+          </div>
+          <div class="d-flex align-items-center gap-3 text-white">
+            <div class="auth-check"><i class="fas fa-check"></i></div>
+            <span>Toutes les fonctionnalités pendant 30 jours</span>
+          </div>
+          <div class="d-flex align-items-center gap-3 text-white">
+            <div class="auth-check"><i class="fas fa-check"></i></div>
+            <span>Support technique dédié inclus</span>
+          </div>
+          <div class="d-flex align-items-center gap-3 text-white">
+            <div class="auth-check"><i class="fas fa-check"></i></div>
+            <span>Données sécurisées et sauvegardées automatiquement</span>
+          </div>
         </div>
-        <div class="d-flex align-items-center gap-3 text-white">
-          <div class="auth-check"><i class="fas fa-check"></i></div>
-          <span>Toutes les fonctionnalitÃ©s pendant 30 jours</span>
+        <div class="mt-5 d-flex align-items-center gap-3">
+          <div class="d-flex">
+            <div class="av-sm" style="background:#fff;color:#2563EB">A</div>
+            <div class="av-sm" style="background:#10B981;color:#fff;margin-left:-6px">K</div>
+            <div class="av-sm" style="background:#F59E0B;color:#fff;margin-left:-6px">M</div>
+            <div class="av-sm" style="background:#8B5CF6;color:#fff;margin-left:-6px">S</div>
+          </div>
+          <span class="text-white small opacity-75">+200 directeurs nous ont déjà rejoint</span>
         </div>
-        <div class="d-flex align-items-center gap-3 text-white">
-          <div class="auth-check"><i class="fas fa-check"></i></div>
-          <span>Support technique dÃ©diÃ© inclus</span>
-        </div>
-        <div class="d-flex align-items-center gap-3 text-white">
-          <div class="auth-check"><i class="fas fa-check"></i></div>
-          <span>DonnÃ©es sÃ©curisÃ©es et sauvegardÃ©es automatiquement</span>
-        </div>
-      </div>
-      <div class="mt-5 d-flex align-items-center gap-3">
-        <div class="d-flex">
-          <div class="av-sm" style="background:#fff;color:#2563EB">A</div>
-          <div class="av-sm" style="background:#10B981;color:#fff;margin-left:-6px">K</div>
-          <div class="av-sm" style="background:#F59E0B;color:#fff;margin-left:-6px">M</div>
-          <div class="av-sm" style="background:#8B5CF6;color:#fff;margin-left:-6px">S</div>
-        </div>
-        <span class="text-white small opacity-75">+200 directeurs nous ont dÃ©jÃ  rejoint</span>
       </div>
     </div>
-  </div>
 
-  <!-- CÃ´tÃ© droit : formulaire -->
-  <div class="auth-right auth-right-scroll d-flex align-items-start justify-content-center py-5">
-    <div class="auth-form-wrap">
-      <div class="d-lg-none text-center mb-4">
-        <a href="index.html" class="text-decoration-none">
-          <i class="fas fa-graduation-cap text-primary me-1"></i>
-          <span class="fw-bold text-dark fs-5">EduManager</span>
-        </a>
-      </div>
-      <h2 class="fw-bold mb-1">CrÃ©er votre Ã©cole</h2>
-      <p class="text-muted mb-4">30 jours gratuits Â· Aucune carte bancaire</p>
+    <!-- Côté droit : formulaire -->
+    <div class="auth-right auth-right-scroll d-flex align-items-start justify-content-center py-5">
+      <div class="auth-form-wrap">
+        <div class="d-lg-none text-center mb-4">
+          <a href="index.html" class="text-decoration-none">
+            <i class="fas fa-graduation-cap text-primary me-1"></i>
+            <span class="fw-bold text-dark fs-5">EduManager</span>
+          </a>
+        </div>
+        <h2 class="fw-bold mb-1">Créer votre école</h2>
+        <p class="text-muted mb-4">30 jours gratuits · Aucune carte bancaire</p>
 
-      <!-- Stepper -->
-      <div class="stepper mb-4">
-        <div class="step active" id="s1"><span class="step-num">1</span><span class="step-lbl">Ã‰cole</span></div>
-        <div class="step-line"></div>
-        <div class="step" id="s2"><span class="step-num">2</span><span class="step-lbl">Admin</span></div>
-        <div class="step-line"></div>
-        <div class="step" id="s3"><span class="step-num">3</span><span class="step-lbl">AccÃ¨s</span></div>
-      </div>
-
-      <form id="signupForm" novalidate>
-        <!-- STEP 1 : Infos Ã©cole -->
-        <div id="step1">
-          <div class="row g-3">
-            <div class="col-12">
-              <label class="form-label fw-medium">Nom de l'Ã©tablissement *</label>
-              <div class="input-group">
-                <span class="input-group-text auth-icon"><i class="fas fa-school"></i></span>
-                <input type="text" class="form-control" placeholder="Ex: CollÃ¨ge Saint-Joseph" required/>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label fw-medium">Type d'Ã©tablissement *</label>
-              <select class="form-select" required>
-                <option value="">SÃ©lectionner...</option>
-                <option>Ã‰cole primaire</option>
-                <option>CollÃ¨ge / Secondaire</option>
-                <option>LycÃ©e</option>
-                <option>UniversitÃ©</option>
-                <option>Centre de formation</option>
-                <option>Autre</option>
-              </select>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label fw-medium">Nombre d'Ã©lÃ¨ves estimÃ©</label>
-              <select class="form-select">
-                <option>Moins de 100</option>
-                <option>100 â€“ 300</option>
-                <option>300 â€“ 1000</option>
-                <option>Plus de 1000</option>
-              </select>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label fw-medium">Pays *</label>
-              <div class="input-group">
-                <span class="input-group-text auth-icon"><i class="fas fa-globe"></i></span>
-                <input type="text" class="form-control" placeholder="Ex: CÃ´te d'Ivoire" required/>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label fw-medium">Ville *</label>
-              <div class="input-group">
-                <span class="input-group-text auth-icon"><i class="fas fa-map-marker-alt"></i></span>
-                <input type="text" class="form-control" placeholder="Ex: Abidjan" required/>
-              </div>
-            </div>
-            <div class="col-12">
-              <label class="form-label fw-medium">Adresse</label>
-              <input type="text" class="form-control" placeholder="Rue, quartier..."/>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label fw-medium">TÃ©lÃ©phone *</label>
-              <div class="input-group">
-                <input type="tel" class="form-control" id="phone1" placeholder="07 00 00 00" required/>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label fw-medium">Site web</label>
-              <div class="input-group">
-                <span class="input-group-text auth-icon"><i class="fas fa-link"></i></span>
-                <input type="url" class="form-control" placeholder="https://..."/>
-              </div>
-            </div>
-          </div>
-          <button type="button" class="btn btn-primary w-100 py-2 fw-semibold mt-4" onclick="validateStep1()">
-            Suivant <i class="fas fa-arrow-right ms-2"></i>
-          </button>
+        <!-- Stepper -->
+        <div class="stepper mb-4">
+          <div class="step active" id="s1"><span class="step-num">1</span><span class="step-lbl">École</span></div>
+          <div class="step-line"></div>
+          <div class="step" id="s2"><span class="step-num">2</span><span class="step-lbl">Admin</span></div>
+          <div class="step-line"></div>
+          <div class="step" id="s3"><span class="step-num">3</span><span class="step-lbl">Accès</span></div>
         </div>
 
-        <!-- STEP 2 : Administrateur -->
-        <div id="step2" class="d-none">
-          <div class="row g-3">
-            <div class="col-md-6">
-              <label class="form-label fw-medium">PrÃ©nom *</label>
-              <input type="text" class="form-control" placeholder="PrÃ©nom" required/>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label fw-medium">Nom *</label>
-              <input type="text" class="form-control" placeholder="Nom de famille" required/>
-            </div>
-            <div class="col-12">
-              <label class="form-label fw-medium">Fonction *</label>
-              <select class="form-select" required>
-                <option value="">SÃ©lectionner...</option>
-                <option>Directeur / Directrice</option>
-                <option>Proviseur / Proviseure</option>
-                <option>Administrateur</option>
-                <option>Gestionnaire</option>
-              </select>
-            </div>
-            <div class="col-12">
-              <label class="form-label fw-medium">Email professionnel *</label>
-              <div class="input-group">
-                <span class="input-group-text auth-icon"><i class="fas fa-envelope"></i></span>
-                <input type="email" class="form-control" placeholder="votre@email.com" required/>
+        <form id="signupForm" novalidate>
+          <!-- STEP 1 : Infos école -->
+          <div id="step1">
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="form-label fw-medium">Nom de l'établissement *</label>
+                <div class="input-group">
+                  <span class="input-group-text auth-icon"><i class="fas fa-school"></i></span>
+                  <input type="text" class="form-control" placeholder="Ex: Collège Saint-Joseph" required />
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-medium">Type d'établissement *</label>
+                <select class="form-select" required>
+                  <option value="">Sélectionner...</option>
+                  <option>École primaire</option>
+                  <option>Collège / Secondaire</option>
+                  <option>Lycée</option>
+                  <option>Université</option>
+                  <option>Centre de formation</option>
+                  <option>Autre</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-medium">Nombre d'élèves estimé</label>
+                <select class="form-select">
+                  <option>Moins de 100</option>
+                  <option>100 – 300</option>
+                  <option>300 – 1000</option>
+                  <option>Plus de 1000</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-medium">Pays *</label>
+                <div class="input-group">
+                  <span class="input-group-text auth-icon"><i class="fas fa-globe"></i></span>
+                  <input type="text" class="form-control" placeholder="Ex: Côte d'Ivoire" required />
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-medium">Ville *</label>
+                <div class="input-group">
+                  <span class="input-group-text auth-icon"><i class="fas fa-map-marker-alt"></i></span>
+                  <input type="text" class="form-control" placeholder="Ex: Abidjan" required />
+                </div>
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-medium">Adresse</label>
+                <input type="text" class="form-control" placeholder="Rue, quartier..." />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-medium">Téléphone *</label>
+                <div class="input-group">
+                  <input type="tel" class="form-control" id="phone1" placeholder="07 00 00 00" required />
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-medium">Site web</label>
+                <div class="input-group">
+                  <span class="input-group-text auth-icon"><i class="fas fa-link"></i></span>
+                  <input type="url" class="form-control" placeholder="https://..." />
+                </div>
               </div>
             </div>
-            <div class="col-12">
-              <label class="form-label fw-medium">TÃ©lÃ©phone direct</label>
-              <div class="input-group">
-                <input type="tel" class="form-control" id="phone2" placeholder="07 00 00 00"/>
-              </div>
-            </div>
-          </div>
-          <div class="d-flex gap-2 mt-4">
-            <button type="button" class="btn btn-outline-secondary w-50 py-2" onclick="goStep(1)">
-              <i class="fas fa-arrow-left me-2"></i>Retour
-            </button>
-            <button type="button" class="btn btn-primary w-50 py-2 fw-semibold" onclick="validateStep2()">
+            <button type="button" class="btn btn-primary w-100 py-2 fw-semibold mt-4" onclick="validateStep1()">
               Suivant <i class="fas fa-arrow-right ms-2"></i>
             </button>
           </div>
-        </div>
 
-        <!-- STEP 3 : Mot de passe + plan -->
-        <div id="step3" class="d-none">
-          <div class="row g-3">
-            <div class="col-12">
-              <label class="form-label fw-medium">Mot de passe *</label>
-              <div class="input-group">
-                <span class="input-group-text auth-icon"><i class="fas fa-lock"></i></span>
-                <input type="password" class="form-control" id="pwd2" placeholder="Minimum 8 caractÃ¨res" required/>
-                <button type="button" class="btn auth-toggle-pwd" onclick="togglePwd('pwd2','eyeI2')">
-                  <i class="fas fa-eye" id="eyeI2"></i>
-                </button>
+          <!-- STEP 2 : Administrateur -->
+          <div id="step2" class="d-none">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label fw-medium">Prénom *</label>
+                <input type="text" class="form-control" placeholder="Prénom" required />
               </div>
-              <div class="pwd-strength mt-2">
-                <div class="pwd-bar"><div id="pwdBar" class="pwd-fill"></div></div>
-                <span id="pwdLabel" class="text-muted" style="font-size:11px">Entrez un mot de passe</span>
+              <div class="col-md-6">
+                <label class="form-label fw-medium">Nom *</label>
+                <input type="text" class="form-control" placeholder="Nom de famille" required />
               </div>
-            </div>
-            <div class="col-12">
-              <label class="form-label fw-medium">Confirmer le mot de passe *</label>
-              <div class="input-group">
-                <span class="input-group-text auth-icon"><i class="fas fa-lock"></i></span>
-                <input type="password" class="form-control" id="confirmPwd" placeholder="RÃ©pÃ©ter le mot de passe" required/>
+              <div class="col-12">
+                <label class="form-label fw-medium">Fonction *</label>
+                <select class="form-select" required>
+                  <option value="">Sélectionner...</option>
+                  <option>Directeur / Directrice</option>
+                  <option>Proviseur / Proviseure</option>
+                  <option>Administrateur</option>
+                  <option>Gestionnaire</option>
+                </select>
               </div>
-            </div>
-            <div class="col-12 mt-2">
-              <label class="form-label fw-medium">Choisir votre plan</label>
-              <div class="plan-selector d-flex gap-2">
-                <label class="plan-opt flex-1 text-center p-2 rounded-3 border cursor-pointer active" data-plan="starter">
-                  <input type="radio" name="plan" value="starter" class="d-none" checked/>
-                  <div class="fw-bold text-primary">Starter</div>
-                  <div class="text-muted" style="font-size:11px">15â‚¬/mois</div>
-                </label>
-                <label class="plan-opt flex-1 text-center p-2 rounded-3 border cursor-pointer" data-plan="standard">
-                  <input type="radio" name="plan" value="standard" class="d-none"/>
-                  <div class="fw-bold text-primary">Standard</div>
-                  <div class="text-muted" style="font-size:11px">35â‚¬/mois</div>
-                </label>
-                <label class="plan-opt flex-1 text-center p-2 rounded-3 border cursor-pointer" data-plan="premium">
-                  <input type="radio" name="plan" value="premium" class="d-none"/>
-                  <div class="fw-bold text-primary">Premium</div>
-                  <div class="text-muted" style="font-size:11px">80â‚¬/mois</div>
-                </label>
+              <div class="col-12">
+                <label class="form-label fw-medium">Email professionnel *</label>
+                <div class="input-group">
+                  <span class="input-group-text auth-icon"><i class="fas fa-envelope"></i></span>
+                  <input type="email" class="form-control" placeholder="votre@email.com" required />
+                </div>
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-medium">Téléphone direct</label>
+                <div class="input-group">
+                  <input type="tel" class="form-control" id="phone2" placeholder="07 00 00 00" />
+                </div>
               </div>
             </div>
+            <div class="d-flex gap-2 mt-4">
+              <button type="button" class="btn btn-outline-secondary w-50 py-2" onclick="goStep(1)">
+                <i class="fas fa-arrow-left me-2"></i>Retour
+              </button>
+              <button type="button" class="btn btn-primary w-50 py-2 fw-semibold" onclick="validateStep2()">
+                Suivant <i class="fas fa-arrow-right ms-2"></i>
+              </button>
+            </div>
           </div>
-          <div class="form-check mt-3 mb-4">
-            <input class="form-check-input" type="checkbox" id="terms" required/>
-            <label class="form-check-label small text-muted" for="terms">
-              J'accepte les <a href="#" class="text-primary">conditions d'utilisation</a> et la <a href="#" class="text-primary">politique de confidentialitÃ©</a>
-            </label>
-          </div>
-          <div class="d-flex gap-2">
-            <button type="button" class="btn btn-outline-secondary w-50 py-2" onclick="goStep(2)">
-              <i class="fas fa-arrow-left me-2"></i>Retour
-            </button>
-            <button type="submit" class="btn btn-primary w-50 py-2 fw-bold">
-              <i class="fas fa-school me-2"></i>CrÃ©er mon compte
-            </button>
-          </div>
-        </div>
-      </form>
 
-      <p class="text-center text-muted small mt-4 mb-0">
-        DÃ©jÃ  un compte ? <a href="signin.html" class="text-primary fw-semibold text-decoration-none">Se connecter â†’</a>
-      </p>
+          <!-- STEP 3 : Mot de passe + plan -->
+          <div id="step3" class="d-none">
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="form-label fw-medium">Mot de passe *</label>
+                <div class="input-group">
+                  <span class="input-group-text auth-icon"><i class="fas fa-lock"></i></span>
+                  <input type="password" class="form-control" id="pwd2" placeholder="Minimum 8 caractères" required />
+                  <button type="button" class="btn auth-toggle-pwd" onclick="togglePwd('pwd2','eyeI2')">
+                    <i class="fas fa-eye" id="eyeI2"></i>
+                  </button>
+                </div>
+                <div class="pwd-strength mt-2">
+                  <div class="pwd-bar">
+                    <div id="pwdBar" class="pwd-fill"></div>
+                  </div>
+                  <span id="pwdLabel" class="text-muted" style="font-size:11px">Entrez un mot de passe</span>
+                </div>
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-medium">Confirmer le mot de passe *</label>
+                <div class="input-group">
+                  <span class="input-group-text auth-icon"><i class="fas fa-lock"></i></span>
+                  <input type="password" class="form-control" id="confirmPwd" placeholder="Répéter le mot de passe"
+                    required />
+                </div>
+              </div>
+              <div class="col-12 mt-2">
+                <label class="form-label fw-medium">Choisir votre plan</label>
+                <div class="plan-selector d-flex gap-2">
+                  <label class="plan-opt flex-1 text-center p-2 rounded-3 border cursor-pointer active"
+                    data-plan="starter">
+                    <input type="radio" name="plan" value="starter" class="d-none" checked />
+                    <div class="fw-bold text-primary">Starter</div>
+                    <div class="text-muted" style="font-size:11px">15€/mois</div>
+                  </label>
+                  <label class="plan-opt flex-1 text-center p-2 rounded-3 border cursor-pointer" data-plan="standard">
+                    <input type="radio" name="plan" value="standard" class="d-none" />
+                    <div class="fw-bold text-primary">Standard</div>
+                    <div class="text-muted" style="font-size:11px">35€/mois</div>
+                  </label>
+                  <label class="plan-opt flex-1 text-center p-2 rounded-3 border cursor-pointer" data-plan="premium">
+                    <input type="radio" name="plan" value="premium" class="d-none" />
+                    <div class="fw-bold text-primary">Premium</div>
+                    <div class="text-muted" style="font-size:11px">80€/mois</div>
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div class="form-check mt-3 mb-4">
+              <input class="form-check-input" type="checkbox" id="terms" required />
+              <label class="form-check-label small text-muted" for="terms">
+                J'accepte les <a href="#" class="text-primary">conditions d'utilisation</a> et la <a href="#"
+                  class="text-primary">politique de confidentialité</a>
+              </label>
+            </div>
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-outline-secondary w-50 py-2" onclick="goStep(2)">
+                <i class="fas fa-arrow-left me-2"></i>Retour
+              </button>
+              <button type="submit" class="btn btn-primary w-50 py-2 fw-bold">
+                <i class="fas fa-school me-2"></i>Créer mon compte
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <p class="text-center text-muted small mt-4 mb-0">
+          Déjà un compte ? <a href="signin.html" class="text-primary fw-semibold text-decoration-none">Se connecter
+            →</a>
+        </p>
+      </div>
     </div>
   </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/intlTelInput.min.js"></script>
-<script src="js/auth.js"></script>
-<script>
-/* ---- Stepper + Validation par Ã©tape ---- */
-function goStep(n) {
-  [1,2,3].forEach(i => {
-    document.getElementById('step'+i).classList.add('d-none');
-    document.getElementById('s'+i).classList.remove('active','done');
-  });
-  document.getElementById('step'+n).classList.remove('d-none');
-  document.getElementById('s'+n).classList.add('active');
-  for(let i=1;i<n;i++) document.getElementById('s'+i).classList.add('done');
-}
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/intlTelInput.min.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    /* ---- Stepper + Validation par étape ---- */
+    function goStep(n) {
+      [1, 2, 3].forEach(i => {
+        document.getElementById('step' + i).classList.add('d-none');
+        document.getElementById('s' + i).classList.remove('active', 'done');
+      });
+      document.getElementById('step' + n).classList.remove('d-none');
+      document.getElementById('s' + n).classList.add('active');
+      for (let i = 1; i < n; i++) document.getElementById('s' + i).classList.add('done');
+    }
 
-function validateStep1() {
-  const ecole = document.querySelector('#step1 input[type=text]')?.value.trim();
-  const typeEcole = document.querySelector('#step1 select')?.value;
-  
-  if (!ecole) {
-    showStepError("Veuillez saisir le nom de l'Ã©tablissement.");
-    return;
-  }
-  if (!typeEcole) {
-    showStepError("Veuillez sÃ©lectionner le type d'Ã©tablissement.");
-    return;
-  }
-  goStep(2);
-}
+    function validateStep1() {
+      const ecole = document.querySelector('#step1 input[type=text]')?.value.trim();
+      const typeEcole = document.querySelector('#step1 select')?.value;
 
-function validateStep2() {
-  const prenom = document.querySelectorAll('#step2 input[type=text]')[0]?.value.trim();
-  const nom    = document.querySelectorAll('#step2 input[type=text]')[1]?.value.trim();
-  const email  = document.querySelector('#step2 input[type=email]')?.value.trim();
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  
-  if (!prenom || !nom) {
-    showStepError("Veuillez saisir votre prÃ©nom et nom.");
-    return;
-  }
-  if (!email || !emailRegex.test(email)) {
-    showStepError("Veuillez saisir une adresse email valide.");
-    return;
-  }
-  goStep(3);
-}
+      if (!ecole) {
+        showStepError("Veuillez saisir le nom de l'établissement.");
+        return;
+      }
+      if (!typeEcole) {
+        showStepError("Veuillez sélectionner le type d'établissement.");
+        return;
+      }
+      goStep(2);
+    }
 
-function showStepError(msg) {
-  let box = document.getElementById('stepError');
-  if (!box) {
-    box = document.createElement('div');
-    box.id = 'stepError';
-    box.style.cssText = 'background:#FEF2F2;border:1.5px solid #FCA5A5;color:#DC2626;padding:.65rem 1rem;border-radius:.625rem;font-size:.85rem;margin-top:.75rem;display:flex;align-items:center;gap:.5rem';
-    const activeStep = document.querySelector('[id^="step"]:not(.d-none)');
-    if (activeStep) activeStep.appendChild(box);
-  }
-  box.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${msg}`;
-  box.style.display = 'flex';
-  setTimeout(() => box.style.display = 'none', 3500);
-}
+    function validateStep2() {
+      const prenom = document.querySelectorAll('#step2 input[type=text]')[0]?.value.trim();
+      const nom = document.querySelectorAll('#step2 input[type=text]')[1]?.value.trim();
+      const email = document.querySelector('#step2 input[type=email]')?.value.trim();
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-/* ---- Mot de passe visible ---- */
-function togglePwd(id, iconId) {
-  const f=document.getElementById(id), ic=document.getElementById(iconId);
-  if(f.type==='password'){f.type='text';ic.classList.replace('fa-eye','fa-eye-slash');}
-  else{f.type='password';ic.classList.replace('fa-eye-slash','fa-eye');}
-}
+      if (!prenom || !nom) {
+        showStepError("Veuillez saisir votre prénom et nom.");
+        return;
+      }
+      if (!email || !emailRegex.test(email)) {
+        showStepError("Veuillez saisir une adresse email valide.");
+        return;
+      }
+      goStep(3);
+    }
 
-/* ---- Force du mot de passe ---- */
-document.getElementById('pwd2')?.addEventListener('input', function(){
-  const v=this.value, bar=document.getElementById('pwdBar'), lbl=document.getElementById('pwdLabel');
-  let score=0;
-  if(v.length>=8) score++;
-  if(/[A-Z]/.test(v)) score++;
-  if(/[0-9]/.test(v)) score++;
-  if(/[^A-Za-z0-9]/.test(v)) score++;
-  bar.style.width =['0%','30%','55%','80%','100%'][score];
-  bar.style.background=['','#EF4444','#F59E0B','#10B981','#2563EB'][score];
-  lbl.textContent=['Entrez un mot de passe','Trop faible','Faible','Fort','TrÃ¨s fort'][score];
-});
+    function showStepError(msg) {
+      let box = document.getElementById('stepError');
+      if (!box) {
+        box = document.createElement('div');
+        box.id = 'stepError';
+        box.style.cssText = 'background:#FEF2F2;border:1.5px solid #FCA5A5;color:#DC2626;padding:.65rem 1rem;border-radius:.625rem;font-size:.85rem;margin-top:.75rem;display:flex;align-items:center;gap:.5rem';
+        const activeStep = document.querySelector('[id^="step"]:not(.d-none)');
+        if (activeStep) activeStep.appendChild(box);
+      }
+      box.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${msg}`;
+      box.style.display = 'flex';
+      setTimeout(() => box.style.display = 'none', 3500);
+    }
 
-/* ---- SÃ©lecteur de plan ---- */
-document.querySelectorAll('.plan-opt').forEach(el=>{
-  el.addEventListener('click',()=>{
-    document.querySelectorAll('.plan-opt').forEach(e=>e.classList.remove('active'));
-    el.classList.add('active');
-    el.querySelector('input').checked=true;
-  });
-});
+    /* ---- Mot de passe visible ---- */
+    function togglePwd(id, iconId) {
+      const f = document.getElementById(id), ic = document.getElementById(iconId);
+      if (f.type === 'password') { f.type = 'text'; ic.classList.replace('fa-eye', 'fa-eye-slash'); }
+      else { f.type = 'password'; ic.classList.replace('fa-eye-slash', 'fa-eye'); }
+    }
 
-/* ---- Initialisation intl-tel-input ---- */
-const inputPhone1 = document.querySelector("#phone1");
-const iti1 = window.intlTelInput(inputPhone1, {
-  initialCountry: "cm",
-  utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js",
-});
-const inputPhone2 = document.querySelector("#phone2");
-const iti2 = window.intlTelInput(inputPhone2, {
-  initialCountry: "cm",
-  utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js",
-});
+    /* ---- Force du mot de passe ---- */
+    document.getElementById('pwd2')?.addEventListener('input', function () {
+      const v = this.value, bar = document.getElementById('pwdBar'), lbl = document.getElementById('pwdLabel');
+      let score = 0;
+      if (v.length >= 8) score++;
+      if (/[A-Z]/.test(v)) score++;
+      if (/[0-9]/.test(v)) score++;
+      if (/[^A-Za-z0-9]/.test(v)) score++;
+      bar.style.width = ['0%', '30%', '55%', '80%', '100%'][score];
+      bar.style.background = ['', '#EF4444', '#F59E0B', '#10B981', '#2563EB'][score];
+      lbl.textContent = ['Entrez un mot de passe', 'Trop faible', 'Faible', 'Fort', 'Très fort'][score];
+    });
 
-/* ====================================================
-   SOUMISSION DU FORMULAIRE â†’ ENREGISTREMENT RÃ‰EL
-==================================================== */
-document.getElementById('signupForm').addEventListener('submit', function(e) {
-  e.preventDefault();
+    /* ---- Sélecteur de plan ---- */
+    document.querySelectorAll('.plan-opt').forEach(el => {
+      el.addEventListener('click', () => {
+        document.querySelectorAll('.plan-opt').forEach(e => e.classList.remove('active'));
+        el.classList.add('active');
+        el.querySelector('input').checked = true;
+      });
+    });
 
-  /* RÃ©cupÃ©rer toutes les valeurs des 3 Ã©tapes */
-  // Ã‰tape 1
-  const ecole    = document.querySelector('#step1 input[placeholder*="Saint"]')?.value.trim()   || document.querySelector('#step1 input[type=text]')?.value.trim();
-  const typeEcole= document.querySelector('#step1 select').value;
-  const pays     = document.querySelectorAll('#step1 input[type=text]')[3]?.value.trim() || '';
-  const ville    = document.querySelectorAll('#step1 input[type=text]')[4]?.value.trim() || '';
-  const tel      = iti1.getNumber() || '';
+    /* ---- Initialisation intl-tel-input ---- */
+    const inputPhone1 = document.querySelector("#phone1");
+    const iti1 = window.intlTelInput(inputPhone1, {
+      initialCountry: "cm",
+      utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js",
+    });
+    const inputPhone2 = document.querySelector("#phone2");
+    const iti2 = window.intlTelInput(inputPhone2, {
+      initialCountry: "cm",
+      utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js",
+    });
 
-  // Ã‰tape 2
-  const prenom   = document.querySelectorAll('#step2 input[type=text]')[0]?.value.trim() || '';
-  const nom      = document.querySelectorAll('#step2 input[type=text]')[1]?.value.trim() || '';
-  const fonction = document.querySelector('#step2 select')?.value || 'Directeur';
-  const email    = document.querySelector('#step2 input[type=email]')?.value.trim() || '';
+    /* ====================================================
+       SOUMISSION DU FORMULAIRE → ENREGISTREMENT RÉEL
+    ==================================================== */
+    document.getElementById('signupForm').addEventListener('submit', function (e) {
+      e.preventDefault();
 
-  // Ã‰tape 3
-  const password = document.getElementById('pwd2')?.value || '';
-  const confirm  = document.getElementById('confirmPwd')?.value || '';
-  const plan     = document.querySelector('input[name=plan]:checked')?.value || 'starter';
-  const terms    = document.getElementById('terms')?.checked;
+      /* Récupérer toutes les valeurs des 3 étapes */
+      // Étape 1
+      const ecole = document.querySelector('#step1 input[placeholder*="Saint"]')?.value.trim() || document.querySelector('#step1 input[type=text]')?.value.trim();
+      const typeEcole = document.querySelector('#step1 select').value;
+      const pays = document.querySelectorAll('#step1 input[type=text]')[3]?.value.trim() || '';
+      const ville = document.querySelectorAll('#step1 input[type=text]')[4]?.value.trim() || '';
+      const tel = iti1.getNumber() || '';
 
-  /* Validations */
-  const errors = [];
-  if (!ecole)    errors.push('Nom de l\'Ã©tablissement requis (Ã‰tape 1)');
-  
-  // TÃ©lÃ©phone : valider seulement si un numÃ©ro a Ã©tÃ© saisi
-  if (inputPhone1.value.trim() && !iti1.isValidNumber()) {
-    errors.push('NumÃ©ro de tÃ©lÃ©phone invalide (Ã‰tape 1). VÃ©rifiez la longueur.');
-  }
-  
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!email || !emailRegex.test(email)) {
-    errors.push('Format de l\'email invalide (Ã‰tape 2)');
-  }
-  
-  if (!password) errors.push('Mot de passe requis (Ã‰tape 3)');
-  if (password.length < 8) errors.push('Mot de passe trop court (min 8 caractÃ¨res)');
-  if (password !== confirm) errors.push('Les mots de passe ne correspondent pas. VÃ©rifiez bien les deux champs.');
-  if (!terms) errors.push('Vous devez accepter les conditions d\'utilisation');
+      // Étape 2
+      const prenom = document.querySelectorAll('#step2 input[type=text]')[0]?.value.trim() || '';
+      const nom = document.querySelectorAll('#step2 input[type=text]')[1]?.value.trim() || '';
+      const fonction = document.querySelector('#step2 select')?.value || 'Directeur';
+      const email = document.querySelector('#step2 input[type=email]')?.value.trim() || '';
 
-  if (errors.length > 0) {
-    showError(errors[0]);
-    return;
-  }
+      // Étape 3
+      const password = document.getElementById('pwd2')?.value || '';
+      const confirm = document.getElementById('confirmPwd')?.value || '';
+      const plan = document.querySelector('input[name=plan]:checked')?.value || 'starter';
+      const terms = document.getElementById('terms')?.checked;
 
-  /* Enregistrement via auth.js */
-  const result = typeof register !== 'undefined' ? register({ ecole, typeEcole, pays, ville, tel, prenom, nom, fonction, email, password, plan }) : {success:true};
+      /* Validations */
+      const errors = [];
+      if (!ecole) errors.push('Nom de l\'établissement requis (Étape 1)');
 
-  if (!result.success) {
-    showError(result.message);
-    return;
-  }
+      // Téléphone : valider seulement si un numéro a été saisi
+      if (inputPhone1.value.trim() && !iti1.isValidNumber()) {
+        errors.push('Numéro de téléphone invalide (Étape 1). Vérifiez la longueur.');
+      }
 
-  /* SuccÃ¨s â†’ redirection dashboard */
-  const btn = this.querySelector('[type=submit]');
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>CrÃ©ation en coursâ€¦';
-  btn.disabled = true;
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!email || !emailRegex.test(email)) {
+        errors.push('Format de l\'email invalide (Étape 2)');
+      }
 
-  setTimeout(() => {
-    window.location.href = 'dashboard/index.html';
-  }, 1200);
-});
+      if (!password) errors.push('Mot de passe requis (Étape 3)');
+      if (password.length < 8) errors.push('Mot de passe trop court (min 8 caractères)');
+      if (password !== confirm) errors.push('Les mots de passe ne correspondent pas. Vérifiez bien les deux champs.');
+      if (!terms) errors.push('Vous devez accepter les conditions d\'utilisation');
 
-/* ---- Afficher une erreur ---- */
-function showError(msg) {
-  let box = document.getElementById('signupError');
-  if (!box) {
-    box = document.createElement('div');
-    box.id = 'signupError';
-    box.style.cssText = 'background:#FEF2F2;border:1.5px solid #FCA5A5;color:#DC2626;padding:.75rem 1rem;border-radius:.625rem;font-size:.85rem;margin-top:.75rem;display:flex;align-items:center;gap:.5rem';
-    document.getElementById('signupForm').after(box);
-  }
-  box.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${msg}`;
-  box.style.display = 'flex';
-  setTimeout(() => box.style.display='none', 4000);
-}
+      if (errors.length > 0) {
+        showError(errors[0]);
+        return;
+      }
 
-/* ---- Si dÃ©jÃ  connectÃ©, NE PAS rediriger depuis la page d'inscription ---- */
-// On ne redirige depuis signup que si l'utilisateur a EXPLICITEMENT commencÃ© une session
-// et n'est pas en train de crÃ©er un nouveau compte
-// (dÃ©sactivÃ© pour laisser l'utilisateur crÃ©er un compte mÃªme connectÃ©)
-</script>
+      /* Enregistrement via auth.js */
+      const result = typeof register !== 'undefined' ? register({ ecole, typeEcole, pays, ville, tel, prenom, nom, fonction, email, password, plan }) : { success: true };
 
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js');
-  }
-</script>
+      if (!result.success) {
+        showError(result.message);
+        return;
+      }
+
+      /* Succès → redirection dashboard */
+      const btn = this.querySelector('[type=submit]');
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Création en cours…';
+      btn.disabled = true;
+
+      setTimeout(() => {
+        window.location.href = 'dashboard/index.html';
+      }, 1200);
+    });
+
+    /* ---- Afficher une erreur ---- */
+    function showError(msg) {
+      let box = document.getElementById('signupError');
+      if (!box) {
+        box = document.createElement('div');
+        box.id = 'signupError';
+        box.style.cssText = 'background:#FEF2F2;border:1.5px solid #FCA5A5;color:#DC2626;padding:.75rem 1rem;border-radius:.625rem;font-size:.85rem;margin-top:.75rem;display:flex;align-items:center;gap:.5rem';
+        document.getElementById('signupForm').after(box);
+      }
+      box.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${msg}`;
+      box.style.display = 'flex';
+      setTimeout(() => box.style.display = 'none', 4000);
+    }
+
+    /* ---- Si déjà connecté, NE PAS rediriger depuis la page d'inscription ---- */
+    // On ne redirige depuis signup que si l'utilisateur a EXPLICITEMENT commencé une session
+    // et n'est pas en train de créer un nouveau compte
+    // (désactivé pour laisser l'utilisateur créer un compte même connecté)
+  </script>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+  </script>
 </body>
+
 </html>

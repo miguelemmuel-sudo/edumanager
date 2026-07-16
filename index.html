@@ -1,830 +1,954 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>EduManager â€“ La plateforme tout-en-un pour gÃ©rer votre Ã©tablissement scolaire</title>
-    <meta name="description" content="GÃ©rez Ã©lÃ¨ves, enseignants, notes, paiements et emplois du temps depuis une seule plateforme sÃ©curisÃ©e." />
-    <link rel="icon" type="image/png" href="../1/img/favicon.png" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
-    <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet" />
-    <link href="css/landing.css" rel="stylesheet" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EduManager – La plateforme tout-en-un pour gérer votre établissement scolaire</title>
+  <meta name="description"
+    content="Gérez élèves, enseignants, notes, paiements et emplois du temps depuis une seule plateforme sécurisée." />
+  <link rel="icon" type="image/png" href="../1/img/favicon.png" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap"
+    rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+  <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet" />
+  <link href="css/landing.css" rel="stylesheet" />
   <link rel="manifest" href="manifest.json" />
 </head>
+
 <body>
 
-<!-- ===== NAVBAR ===== -->
-<nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top" id="mainNav">
-  <div class="container">
-    <a class="navbar-brand fw-bold text-primary" href="#">
-      <i class="fas fa-graduation-cap me-1"></i>EduManager
-    </a>
-    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navMenu">
-      <ul class="navbar-nav mx-auto gap-1">
-        <li class="nav-item"><a class="nav-link" href="#accueil">Accueil</a></li>
-        <li class="nav-item"><a class="nav-link" href="#fonctionnalites">FonctionnalitÃ©s</a></li>
-        <li class="nav-item"><a class="nav-link" href="#tarifs">Tarifs</a></li>
-        <li class="nav-item"><a class="nav-link" href="#demo">DÃ©monstration</a></li>
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Plus</a>
-          <ul class="dropdown-menu border-0 shadow-sm">
-            <li><a class="dropdown-item" href="#temoignages">TÃ©moignages</a></li>
-            <li><a class="dropdown-item" href="#faq">FAQ</a></li>
-            <li><hr class="dropdown-divider"/></li>
-            <li><a class="dropdown-item" href="a-propos.html">Ã€ propos</a></li>
-            <li><a class="dropdown-item" href="contact.html">Contact</a></li>
-            <li><a class="dropdown-item" href="demo.html">DÃ©mo interactive</a></li>
-          </ul>
-        </li>
-      </ul>
-      <div class="d-flex gap-2 mt-3 mt-lg-0">
-        <a href="signin.html" class="btn btn-outline-primary rounded-pill px-4 fw-medium">Se connecter</a>
-        <a href="signup.html" class="btn btn-primary rounded-pill px-4 fw-semibold">S'inscrire</a>
+  <!-- ===== NAVBAR ===== -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top" id="mainNav">
+    <div class="container">
+      <a class="navbar-brand fw-bold text-primary" href="#">
+        <i class="fas fa-graduation-cap me-1"></i>EduManager
+      </a>
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav mx-auto gap-1">
+          <li class="nav-item"><a class="nav-link" href="#accueil">Accueil</a></li>
+          <li class="nav-item"><a class="nav-link" href="#fonctionnalites">Fonctionnalités</a></li>
+          <li class="nav-item"><a class="nav-link" href="#tarifs">Tarifs</a></li>
+          <li class="nav-item"><a class="nav-link" href="#demo">Démonstration</a></li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Plus</a>
+            <ul class="dropdown-menu border-0 shadow-sm">
+              <li><a class="dropdown-item" href="#temoignages">Témoignages</a></li>
+              <li><a class="dropdown-item" href="#faq">FAQ</a></li>
+              <li>
+                <hr class="dropdown-divider" />
+              </li>
+              <li><a class="dropdown-item" href="a-propos.html">À propos</a></li>
+              <li><a class="dropdown-item" href="contact.html">Contact</a></li>
+              <li><a class="dropdown-item" href="demo.html">Démo interactive</a></li>
+            </ul>
+          </li>
+        </ul>
+        <div class="d-flex gap-2 mt-3 mt-lg-0">
+          <a href="signin.html" class="btn btn-outline-primary rounded-pill px-4 fw-medium">Se connecter</a>
+          <a href="signup.html" class="btn btn-primary rounded-pill px-4 fw-semibold">S'inscrire</a>
+        </div>
       </div>
     </div>
-  </div>
-</nav>
+  </nav>
 
-<!-- ===== HERO ===== -->
-<section class="hero-section" id="accueil">
-  <div class="container">
-    <div class="row align-items-center gy-5">
+  <!-- ===== HERO ===== -->
+  <section class="hero-section" id="accueil">
+    <div class="container">
+      <div class="row align-items-center gy-5">
 
-      <!-- Texte gauche -->
-      <div class="col-lg-5" data-aos="fade-right" data-aos-duration="700">
-        <h1 class="hero-title mb-3">
-          La plateforme tout-en-un pour gÃ©rer votre
-          <span class="text-primary">Ã©tablissement scolaire</span>
-          en toute simplicitÃ©.
-        </h1>
-        <p class="hero-sub text-muted mb-4">
-          GÃ©rez les Ã©lÃ¨ves, les enseignants, les notes, les paiements, les emplois du temps et communiquez avec les parents depuis une seule plateforme sÃ©curisÃ©e.
-        </p>
-        <div class="d-flex flex-wrap gap-3 mb-4">
-          <a href="signup.html" class="btn btn-primary btn-hero rounded-pill px-4 shadow-primary">
-            <i class="fas fa-rocket me-2"></i>Commencer gratuitement
-          </a>
-          <a href="#demo" class="btn btn-outline-secondary btn-hero rounded-pill px-4">
-            <i class="fas fa-play-circle me-2"></i>Voir la dÃ©monstration
-          </a>
-        </div>
-        <!-- Avatars + note -->
-        <div class="d-flex align-items-center gap-3">
-          <div class="avatar-stack">
-            <div class="av av-1">A</div>
-            <div class="av av-2">K</div>
-            <div class="av av-3">M</div>
-            <div class="av av-4">S</div>
-            <div class="av av-5">F</div>
+        <!-- Texte gauche -->
+        <div class="col-lg-5" data-aos="fade-right" data-aos-duration="700">
+          <h1 class="hero-title mb-3">
+            La plateforme tout-en-un pour gérer votre
+            <span class="text-primary">établissement scolaire</span>
+            en toute simplicité.
+          </h1>
+          <p class="hero-sub text-muted mb-4">
+            Gérez les élèves, les enseignants, les notes, les paiements, les emplois du temps et communiquez avec les
+            parents depuis une seule plateforme sécurisée.
+          </p>
+          <div class="d-flex flex-wrap gap-3 mb-4">
+            <a href="signup.html" class="btn btn-primary btn-hero rounded-pill px-4 shadow-primary">
+              <i class="fas fa-rocket me-2"></i>Commencer gratuitement
+            </a>
+            <a href="#demo" class="btn btn-outline-secondary btn-hero rounded-pill px-4">
+              <i class="fas fa-play-circle me-2"></i>Voir la démonstration
+            </a>
           </div>
-          <div>
-            <div class="stars-sm text-warning mb-0">
-              <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+          <!-- Avatars + note -->
+          <div class="d-flex align-items-center gap-3">
+            <div class="avatar-stack">
+              <div class="av av-1">A</div>
+              <div class="av av-2">K</div>
+              <div class="av av-3">M</div>
+              <div class="av av-4">S</div>
+              <div class="av av-5">F</div>
             </div>
-            <span class="text-muted small">ApprouvÃ© par 200+ Ã©tablissements</span>
+            <div>
+              <div class="stars-sm text-warning mb-0">
+                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
+                  class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+              </div>
+              <span class="text-muted small">Approuvé par 200+ établissements</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dashboard + téléphone droite -->
+        <div class="col-lg-7" data-aos="fade-left" data-aos-duration="700" data-aos-delay="150">
+          <div class="hero-mockup-wrap">
+            <!-- Dashboard desktop -->
+            <div class="hero-desktop shadow-lg rounded-3 overflow-hidden bg-white border">
+              <!-- topbar -->
+              <div class="hd-topbar d-flex align-items-center px-3 py-2 border-bottom bg-light">
+                <div class="hd-dot bg-danger me-1"></div>
+                <div class="hd-dot bg-warning me-1"></div>
+                <div class="hd-dot bg-success me-3"></div>
+                <span class="text-muted" style="font-size:10px">Tableau de bord · EduManager</span>
+              </div>
+              <div class="hd-body d-flex">
+                <!-- sidebar -->
+                <div class="hd-sidebar bg-primary p-2">
+                  <div class="hd-s-logo mb-3 text-white fw-bold" style="font-size:10px">EM</div>
+                  <div class="hd-s-item active mb-1"><i class="fas fa-th-large"></i></div>
+                  <div class="hd-s-item mb-1"><i class="fas fa-users"></i></div>
+                  <div class="hd-s-item mb-1"><i class="fas fa-clipboard-list"></i></div>
+                  <div class="hd-s-item mb-1"><i class="fas fa-calendar"></i></div>
+                  <div class="hd-s-item mb-1"><i class="fas fa-credit-card"></i></div>
+                  <div class="hd-s-item"><i class="fas fa-cog"></i></div>
+                </div>
+                <!-- content -->
+                <div class="hd-content p-2 flex-grow-1">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="fw-semibold" style="font-size:10px">Bonjour, Directeur 👋</span>
+                    <span class="badge bg-primary-soft text-primary" style="font-size:8px">Année 2025-2026</span>
+                  </div>
+                  <div class="row g-1 mb-2">
+                    <div class="col-3">
+                      <div class="hd-kpi bg-primary-soft rounded-2 p-1 text-center">
+                        <div class="fw-bold text-primary" style="font-size:11px">1 248</div>
+                        <div class="text-muted" style="font-size:8px">Élèves</div>
+                      </div>
+                    </div>
+                    <div class="col-3">
+                      <div class="hd-kpi bg-success-soft rounded-2 p-1 text-center">
+                        <div class="fw-bold text-success" style="font-size:11px">87</div>
+                        <div class="text-muted" style="font-size:8px">Enseignants</div>
+                      </div>
+                    </div>
+                    <div class="col-3">
+                      <div class="hd-kpi bg-warning-soft rounded-2 p-1 text-center">
+                        <div class="fw-bold text-warning" style="font-size:11px">24</div>
+                        <div class="text-muted" style="font-size:8px">Classes</div>
+                      </div>
+                    </div>
+                    <div class="col-3">
+                      <div class="hd-kpi bg-info-soft rounded-2 p-1 text-center">
+                        <div class="fw-bold text-info" style="font-size:11px">98%</div>
+                        <div class="text-muted" style="font-size:8px">Assiduité</div>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- charts row -->
+                  <div class="row g-1">
+                    <div class="col-7">
+                      <div class="hd-chart-box rounded-2 bg-light p-1">
+                        <div class="text-muted mb-1" style="font-size:8px">Inscriptions mensuelles</div>
+                        <div class="d-flex align-items-end gap-1" style="height:42px">
+                          <div style="flex:1;height:40%;background:#2563EB;border-radius:2px 2px 0 0;opacity:.7"></div>
+                          <div style="flex:1;height:60%;background:#2563EB;border-radius:2px 2px 0 0;opacity:.8"></div>
+                          <div style="flex:1;height:80%;background:#10B981;border-radius:2px 2px 0 0"></div>
+                          <div style="flex:1;height:55%;background:#2563EB;border-radius:2px 2px 0 0;opacity:.7"></div>
+                          <div style="flex:1;height:95%;background:#10B981;border-radius:2px 2px 0 0"></div>
+                          <div style="flex:1;height:70%;background:#2563EB;border-radius:2px 2px 0 0;opacity:.8"></div>
+                          <div style="flex:1;height:100%;background:#10B981;border-radius:2px 2px 0 0"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-5">
+                      <div class="hd-chart-box rounded-2 bg-light p-1">
+                        <div class="text-muted mb-1" style="font-size:8px">Frais scolaires</div>
+                        <div class="d-flex justify-content-center align-items-center" style="height:42px">
+                          <div class="donut-chart"></div>
+                          <div class="ms-2">
+                            <div style="font-size:8px"><span class="dot-blue"></span> Payés 72%</div>
+                            <div style="font-size:8px"><span class="dot-green"></span> En attente 28%</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- table -->
+                  <div class="hd-table mt-1 rounded-2 bg-light p-1">
+                    <div class="text-muted mb-1" style="font-size:8px">Dernières inscriptions</div>
+                    <div class="hd-tr d-flex justify-content-between py-1 border-bottom" style="font-size:8px">
+                      <span>Amina Diallo</span><span class="badge bg-success-soft text-success px-1">3ème B</span></div>
+                    <div class="hd-tr d-flex justify-content-between py-1" style="font-size:8px"><span>Kofi
+                        Mensah</span><span class="badge bg-primary-soft text-primary px-1">6ème A</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Téléphone mobile -->
+            <div class="hero-phone shadow-lg rounded-4 overflow-hidden bg-white border">
+              <div class="hp-screen bg-primary p-2">
+                <div class="text-white fw-bold mb-2" style="font-size:9px"><i
+                    class="fas fa-graduation-cap me-1"></i>EduManager</div>
+                <div class="row g-1 mb-2">
+                  <div class="col-6">
+                    <div class="hp-card bg-white rounded-2 p-1 text-center">
+                      <div class="fw-bold text-primary" style="font-size:10px">1 248</div>
+                      <div style="font-size:7px" class="text-muted">Élèves</div>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="hp-card bg-white rounded-2 p-1 text-center">
+                      <div class="fw-bold text-success" style="font-size:10px">87</div>
+                      <div style="font-size:7px" class="text-muted">Profs</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="hp-menu bg-white rounded-2 p-2">
+                  <div class="hp-menu-item d-flex align-items-center mb-1"><i class="fas fa-users text-primary me-1"
+                      style="font-size:8px"></i><span style="font-size:8px">Élèves</span></div>
+                  <div class="hp-menu-item d-flex align-items-center mb-1"><i
+                      class="fas fa-clipboard-list text-success me-1" style="font-size:8px"></i><span
+                      style="font-size:8px">Notes</span></div>
+                  <div class="hp-menu-item d-flex align-items-center mb-1"><i
+                      class="fas fa-credit-card text-warning me-1" style="font-size:8px"></i><span
+                      style="font-size:8px">Paiements</span></div>
+                  <div class="hp-menu-item d-flex align-items-center"><i class="fas fa-bell text-info me-1"
+                      style="font-size:8px"></i><span style="font-size:8px">Notifications</span></div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
+    </div>
+  </section>
 
-      <!-- Dashboard + tÃ©lÃ©phone droite -->
-      <div class="col-lg-7" data-aos="fade-left" data-aos-duration="700" data-aos-delay="150">
-        <div class="hero-mockup-wrap">
-          <!-- Dashboard desktop -->
-          <div class="hero-desktop shadow-lg rounded-3 overflow-hidden bg-white border">
-            <!-- topbar -->
-            <div class="hd-topbar d-flex align-items-center px-3 py-2 border-bottom bg-light">
-              <div class="hd-dot bg-danger me-1"></div><div class="hd-dot bg-warning me-1"></div><div class="hd-dot bg-success me-3"></div>
-              <span class="text-muted" style="font-size:10px">Tableau de bord Â· EduManager</span>
+  <!-- ===== STATS ===== -->
+  <section class="stats-section py-5 bg-white border-top border-bottom">
+    <div class="container">
+      <div class="row justify-content-center text-center g-4">
+        <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="0">
+          <div class="stat-box">
+            <div class="stat-icon-wrap bg-primary-soft mb-2"><i class="fas fa-school text-primary"></i></div>
+            <div class="stat-num" data-target="200">0</div>
+            <div class="stat-plus">+</div>
+            <div class="stat-lbl">Écoles partenaires</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="100">
+          <div class="stat-box">
+            <div class="stat-icon-wrap bg-success-soft mb-2"><i class="fas fa-user-graduate text-success"></i></div>
+            <div class="stat-num" data-target="50000">0</div>
+            <div class="stat-plus"></div>
+            <div class="stat-lbl">Élèves gérés</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="200">
+          <div class="stat-box">
+            <div class="stat-icon-wrap bg-warning-soft mb-2"><i class="fas fa-chalkboard-teacher text-warning"></i>
             </div>
-            <div class="hd-body d-flex">
-              <!-- sidebar -->
-              <div class="hd-sidebar bg-primary p-2">
-                <div class="hd-s-logo mb-3 text-white fw-bold" style="font-size:10px">EM</div>
-                <div class="hd-s-item active mb-1"><i class="fas fa-th-large"></i></div>
-                <div class="hd-s-item mb-1"><i class="fas fa-users"></i></div>
-                <div class="hd-s-item mb-1"><i class="fas fa-clipboard-list"></i></div>
-                <div class="hd-s-item mb-1"><i class="fas fa-calendar"></i></div>
-                <div class="hd-s-item mb-1"><i class="fas fa-credit-card"></i></div>
-                <div class="hd-s-item"><i class="fas fa-cog"></i></div>
+            <div class="stat-num" data-target="3000">0</div>
+            <div class="stat-plus">+</div>
+            <div class="stat-lbl">Enseignants actifs</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="300">
+          <div class="stat-box">
+            <div class="stat-icon-wrap bg-info-soft mb-2"><i class="fas fa-shield-alt text-info"></i></div>
+            <div class="stat-fixed">99,9%</div>
+            <div class="stat-lbl">Disponibilité garantie</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FONCTIONNALITÉS ===== -->
+  <section class="py-section bg-light" id="fonctionnalites">
+    <div class="container">
+      <div class="text-center mb-5" data-aos="fade-up">
+        <h2 class="section-title">Toutes les <span class="text-primary">fonctionnalités</span> dont vous avez besoin
+        </h2>
+        <p class="section-sub">Une suite complète pour digitaliser et optimiser la gestion de votre établissement
+          scolaire.</p>
+      </div>
+      <div class="row g-4 mb-4">
+        <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="0">
+          <div class="feat-card rounded-3 bg-white p-4 h-100">
+            <div class="feat-icon bg-primary-soft mb-3"><i class="fas fa-users text-primary"></i></div>
+            <h6 class="fw-bold mb-2">Gestion des élèves</h6>
+            <p class="text-muted small mb-0">Inscriptions, dossiers scolaires, présences et historique complet de chaque
+              élève.</p>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="80">
+          <div class="feat-card rounded-3 bg-white p-4 h-100">
+            <div class="feat-icon bg-success-soft mb-3"><i class="fas fa-clipboard-list text-success"></i></div>
+            <h6 class="fw-bold mb-2">Gestion des notes</h6>
+            <p class="text-muted small mb-0">Saisie des notes, calcul automatique des moyennes et génération des
+              bulletins.</p>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="160">
+          <div class="feat-card rounded-3 bg-white p-4 h-100">
+            <div class="feat-icon bg-warning-soft mb-3"><i class="fas fa-credit-card text-warning"></i></div>
+            <h6 class="fw-bold mb-2">Paiements scolaires</h6>
+            <p class="text-muted small mb-0">Collectez les frais, émettez des reçus automatiques et suivez les impayés.
+            </p>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="240">
+          <div class="feat-card rounded-3 bg-white p-4 h-100">
+            <div class="feat-icon bg-info-soft mb-3"><i class="fas fa-calendar-alt text-info"></i></div>
+            <h6 class="fw-bold mb-2">Emploi du temps</h6>
+            <p class="text-muted small mb-0">Créez et gérez les plannings des classes et des enseignants simplement.</p>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="0">
+          <div class="feat-card rounded-3 bg-white p-4 h-100">
+            <div class="feat-icon bg-purple-soft mb-3"><i class="fas fa-comments text-purple"></i></div>
+            <h6 class="fw-bold mb-2">Communication</h6>
+            <p class="text-muted small mb-0">Messagerie interne, notifications parents et bulletins envoyés
+              automatiquement.</p>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="80">
+          <div class="feat-card rounded-3 bg-white p-4 h-100">
+            <div class="feat-icon bg-primary-soft mb-3"><i class="fas fa-chart-bar text-primary"></i></div>
+            <h6 class="fw-bold mb-2">Comptabilité</h6>
+            <p class="text-muted small mb-0">Suivi des revenus, dépenses, rapports financiers et exports comptables.</p>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="160">
+          <div class="feat-card rounded-3 bg-white p-4 h-100">
+            <div class="feat-icon bg-success-soft mb-3"><i class="fas fa-mobile-alt text-success"></i></div>
+            <h6 class="fw-bold mb-2">Application mobile</h6>
+            <p class="text-muted small mb-0">Accédez à toutes les fonctionnalités depuis votre smartphone ou tablette.
+            </p>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="240">
+          <div class="feat-card rounded-3 bg-white p-4 h-100">
+            <div class="feat-icon bg-danger-soft mb-3"><i class="fas fa-shield-alt text-danger"></i></div>
+            <h6 class="fw-bold mb-2">Sécurité des données</h6>
+            <p class="text-muted small mb-0">Chiffrement SSL, sauvegardes automatiques et accès sécurisés par rôles.</p>
+          </div>
+        </div>
+      </div>
+      <div class="text-center mt-2" data-aos="fade-up">
+        <a href="signup.html" class="btn btn-primary rounded-pill px-5 py-2 fw-semibold">
+          Découvrir toutes les fonctionnalités <i class="fas fa-arrow-right ms-2"></i>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== TABLEAU DE BORD (DEMO) ===== -->
+  <section class="py-section bg-white" id="demo">
+    <div class="container">
+      <div class="row align-items-center gy-5">
+        <div class="col-lg-4" data-aos="fade-right">
+          <span class="section-badge mb-2 d-inline-block">Tableau de bord</span>
+          <h2 class="section-title mb-3">Un tableau de bord <span class="text-primary">intelligent et intuitif</span>
+          </h2>
+          <p class="text-muted mb-4">Visualisez en temps réel toutes les données de votre établissement et prenez de
+            meilleures décisions.</p>
+          <ul class="list-unstyled why-list mb-0">
+            <li class="d-flex align-items-start mb-3">
+              <div class="why-check me-3"><i class="fas fa-check text-success"></i></div>
+              <span class="text-muted">Statistiques en temps réel et indicateurs clés</span>
+            </li>
+            <li class="d-flex align-items-start mb-3">
+              <div class="why-check me-3"><i class="fas fa-check text-success"></i></div>
+              <span class="text-muted">Graphiques personnalisables et rapports exportables</span>
+            </li>
+            <li class="d-flex align-items-start mb-3">
+              <div class="why-check me-3"><i class="fas fa-check text-success"></i></div>
+              <span class="text-muted">Interface simple et facile à prendre en main</span>
+            </li>
+            <li class="d-flex align-items-start">
+              <div class="why-check me-3"><i class="fas fa-check text-success"></i></div>
+              <span class="text-muted">Accessibilité totale sur tous les appareils</span>
+            </li>
+          </ul>
+        </div>
+        <div class="col-lg-8" data-aos="fade-left" data-aos-delay="200">
+          <div class="full-dashboard rounded-4 shadow-lg overflow-hidden border bg-white">
+            <!-- topbar -->
+            <div class="fd-topbar d-flex align-items-center px-4 py-2 border-bottom bg-light">
+              <div class="hd-dot bg-danger me-1"></div>
+              <div class="hd-dot bg-warning me-1"></div>
+              <div class="hd-dot bg-success me-3"></div>
+              <span class="text-muted small">Bonjour, Directeur 👋 — Tableau de bord principal</span>
+            </div>
+            <div class="d-flex">
+              <!-- Sidebar -->
+              <div class="fd-sidebar bg-primary d-flex flex-column align-items-center py-3 px-2">
+                <div class="text-white fw-bold mb-4" style="font-size:11px">EM</div>
+                <div class="fd-s-item active mb-2" title="Tableau de bord"><i class="fas fa-th-large"></i></div>
+                <div class="fd-s-item mb-2" title="Élèves"><i class="fas fa-users"></i></div>
+                <div class="fd-s-item mb-2" title="Notes"><i class="fas fa-clipboard-list"></i></div>
+                <div class="fd-s-item mb-2" title="Emploi du temps"><i class="fas fa-calendar"></i></div>
+                <div class="fd-s-item mb-2" title="Paiements"><i class="fas fa-credit-card"></i></div>
+                <div class="fd-s-item mt-auto" title="Paramètres"><i class="fas fa-cog"></i></div>
               </div>
-              <!-- content -->
-              <div class="hd-content p-2 flex-grow-1">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <span class="fw-semibold" style="font-size:10px">Bonjour, Directeur ðŸ‘‹</span>
-                  <span class="badge bg-primary-soft text-primary" style="font-size:8px">AnnÃ©e 2025-2026</span>
+              <!-- Main content -->
+              <div class="fd-main p-3 flex-grow-1 bg-light">
+                <!-- KPIs row -->
+                <div class="row g-2 mb-3">
+                  <div class="col-3">
+                    <div class="fd-kpi rounded-3 bg-white p-2 border">
+                      <div class="d-flex justify-content-between align-items-start mb-1">
+                        <div class="fd-kpi-icon bg-primary-soft rounded-2"><i class="fas fa-users text-primary"
+                            style="font-size:10px"></i></div>
+                        <span class="badge badge-up text-success" style="font-size:8px">+12%</span>
+                      </div>
+                      <div class="fw-bold text-dark" style="font-size:15px">1 248</div>
+                      <div class="text-muted" style="font-size:9px">Élèves inscrits</div>
+                    </div>
+                  </div>
+                  <div class="col-3">
+                    <div class="fd-kpi rounded-3 bg-white p-2 border">
+                      <div class="d-flex justify-content-between align-items-start mb-1">
+                        <div class="fd-kpi-icon bg-success-soft rounded-2"><i class="fas fa-euro-sign text-success"
+                            style="font-size:10px"></i></div>
+                        <span class="badge badge-up text-success" style="font-size:8px">+8%</span>
+                      </div>
+                      <div class="fw-bold text-dark" style="font-size:15px">98 750€</div>
+                      <div class="text-muted" style="font-size:9px">Frais collectés</div>
+                    </div>
+                  </div>
+                  <div class="col-3">
+                    <div class="fd-kpi rounded-3 bg-white p-2 border">
+                      <div class="d-flex justify-content-between align-items-start mb-1">
+                        <div class="fd-kpi-icon bg-info-soft rounded-2"><i class="fas fa-chalkboard-teacher text-info"
+                            style="font-size:10px"></i></div>
+                        <span class="badge badge-up text-success" style="font-size:8px">+5%</span>
+                      </div>
+                      <div class="fw-bold text-dark" style="font-size:15px">87</div>
+                      <div class="text-muted" style="font-size:9px">Enseignants</div>
+                    </div>
+                  </div>
+                  <div class="col-3">
+                    <div class="fd-kpi rounded-3 bg-white p-2 border">
+                      <div class="d-flex justify-content-between align-items-start mb-1">
+                        <div class="fd-kpi-icon bg-warning-soft rounded-2"><i class="fas fa-book text-warning"
+                            style="font-size:10px"></i></div>
+                        <span class="badge badge-up text-muted" style="font-size:8px">stable</span>
+                      </div>
+                      <div class="fw-bold text-dark" style="font-size:15px">24</div>
+                      <div class="text-muted" style="font-size:9px">Classes actives</div>
+                    </div>
+                  </div>
                 </div>
-                <div class="row g-1 mb-2">
-                  <div class="col-3"><div class="hd-kpi bg-primary-soft rounded-2 p-1 text-center"><div class="fw-bold text-primary" style="font-size:11px">1 248</div><div class="text-muted" style="font-size:8px">Ã‰lÃ¨ves</div></div></div>
-                  <div class="col-3"><div class="hd-kpi bg-success-soft rounded-2 p-1 text-center"><div class="fw-bold text-success" style="font-size:11px">87</div><div class="text-muted" style="font-size:8px">Enseignants</div></div></div>
-                  <div class="col-3"><div class="hd-kpi bg-warning-soft rounded-2 p-1 text-center"><div class="fw-bold text-warning" style="font-size:11px">24</div><div class="text-muted" style="font-size:8px">Classes</div></div></div>
-                  <div class="col-3"><div class="hd-kpi bg-info-soft rounded-2 p-1 text-center"><div class="fw-bold text-info" style="font-size:11px">98%</div><div class="text-muted" style="font-size:8px">AssiduitÃ©</div></div></div>
-                </div>
-                <!-- charts row -->
-                <div class="row g-1">
+                <!-- Charts row -->
+                <div class="row g-2 mb-3">
                   <div class="col-7">
-                    <div class="hd-chart-box rounded-2 bg-light p-1">
-                      <div class="text-muted mb-1" style="font-size:8px">Inscriptions mensuelles</div>
-                      <div class="d-flex align-items-end gap-1" style="height:42px">
-                        <div style="flex:1;height:40%;background:#2563EB;border-radius:2px 2px 0 0;opacity:.7"></div>
-                        <div style="flex:1;height:60%;background:#2563EB;border-radius:2px 2px 0 0;opacity:.8"></div>
-                        <div style="flex:1;height:80%;background:#10B981;border-radius:2px 2px 0 0"></div>
-                        <div style="flex:1;height:55%;background:#2563EB;border-radius:2px 2px 0 0;opacity:.7"></div>
-                        <div style="flex:1;height:95%;background:#10B981;border-radius:2px 2px 0 0"></div>
-                        <div style="flex:1;height:70%;background:#2563EB;border-radius:2px 2px 0 0;opacity:.8"></div>
-                        <div style="flex:1;height:100%;background:#10B981;border-radius:2px 2px 0 0"></div>
+                    <div class="fd-chart rounded-3 bg-white p-3 border">
+                      <div class="d-flex justify-content-between mb-2">
+                        <span class="fw-semibold" style="font-size:10px">Inscriptions mensuelles</span>
+                        <span class="text-muted" style="font-size:9px">2025-2026</span>
+                      </div>
+                      <div class="d-flex align-items-end gap-1" style="height:60px">
+                        <div
+                          style="flex:1;height:35%;background:linear-gradient(180deg,#2563EB,#60A5FA);border-radius:2px 2px 0 0">
+                        </div>
+                        <div
+                          style="flex:1;height:55%;background:linear-gradient(180deg,#2563EB,#60A5FA);border-radius:2px 2px 0 0">
+                        </div>
+                        <div
+                          style="flex:1;height:78%;background:linear-gradient(180deg,#10B981,#34D399);border-radius:2px 2px 0 0">
+                        </div>
+                        <div
+                          style="flex:1;height:48%;background:linear-gradient(180deg,#2563EB,#60A5FA);border-radius:2px 2px 0 0">
+                        </div>
+                        <div
+                          style="flex:1;height:90%;background:linear-gradient(180deg,#10B981,#34D399);border-radius:2px 2px 0 0">
+                        </div>
+                        <div
+                          style="flex:1;height:68%;background:linear-gradient(180deg,#2563EB,#60A5FA);border-radius:2px 2px 0 0">
+                        </div>
+                        <div
+                          style="flex:1;height:100%;background:linear-gradient(180deg,#10B981,#34D399);border-radius:2px 2px 0 0">
+                        </div>
+                      </div>
+                      <div class="d-flex justify-content-between mt-1" style="font-size:7px;color:#94A3B8">
+                        <span>Sep</span><span>Oct</span><span>Nov</span><span>Déc</span><span>Jan</span><span>Fév</span><span>Mar</span>
                       </div>
                     </div>
                   </div>
                   <div class="col-5">
-                    <div class="hd-chart-box rounded-2 bg-light p-1">
-                      <div class="text-muted mb-1" style="font-size:8px">Frais scolaires</div>
-                      <div class="d-flex justify-content-center align-items-center" style="height:42px">
-                        <div class="donut-chart"></div>
-                        <div class="ms-2">
-                          <div style="font-size:8px"><span class="dot-blue"></span> PayÃ©s 72%</div>
-                          <div style="font-size:8px"><span class="dot-green"></span> En attente 28%</div>
+                    <div class="fd-chart rounded-3 bg-white p-3 border">
+                      <span class="fw-semibold d-block mb-2" style="font-size:10px">Répartition des paiements</span>
+                      <div class="d-flex align-items-center justify-content-center gap-2" style="height:60px">
+                        <div class="donut-lg"></div>
+                        <div>
+                          <div class="d-flex align-items-center mb-1" style="font-size:9px"><span
+                              class="legend-dot bg-primary me-1"></span>Payés 72%</div>
+                          <div class="d-flex align-items-center mb-1" style="font-size:9px"><span
+                              class="legend-dot bg-warning me-1"></span>Partiel 16%</div>
+                          <div class="d-flex align-items-center" style="font-size:9px"><span
+                              class="legend-dot bg-danger me-1"></span>Impayés 12%</div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
-                <!-- table -->
-                <div class="hd-table mt-1 rounded-2 bg-light p-1">
-                  <div class="text-muted mb-1" style="font-size:8px">DerniÃ¨res inscriptions</div>
-                  <div class="hd-tr d-flex justify-content-between py-1 border-bottom" style="font-size:8px"><span>Amina Diallo</span><span class="badge bg-success-soft text-success px-1">3Ã¨me B</span></div>
-                  <div class="hd-tr d-flex justify-content-between py-1" style="font-size:8px"><span>Kofi Mensah</span><span class="badge bg-primary-soft text-primary px-1">6Ã¨me A</span></div>
+                <!-- Table -->
+                <div class="fd-table rounded-3 bg-white p-2 border">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="fw-semibold" style="font-size:10px">Dernières inscriptions</span>
+                    <a href="#" class="text-primary" style="font-size:9px">Voir tout →</a>
+                  </div>
+                  <div class="fd-row d-flex align-items-center justify-content-between py-1 border-bottom"
+                    style="font-size:9px">
+                    <div class="d-flex align-items-center gap-1">
+                      <div class="fd-av bg-primary text-white">A</div><span>Amina Diallo</span>
+                    </div>
+                    <span class="text-muted">3ème B</span><span
+                      class="badge bg-success-soft text-success px-2">Inscrite</span>
+                  </div>
+                  <div class="fd-row d-flex align-items-center justify-content-between py-1 border-bottom"
+                    style="font-size:9px">
+                    <div class="d-flex align-items-center gap-1">
+                      <div class="fd-av bg-success text-white">K</div><span>Kofi Mensah</span>
+                    </div>
+                    <span class="text-muted">6ème A</span><span
+                      class="badge bg-success-soft text-success px-2">Inscrit</span>
+                  </div>
+                  <div class="fd-row d-flex align-items-center justify-content-between py-1" style="font-size:9px">
+                    <div class="d-flex align-items-center gap-1">
+                      <div class="fd-av bg-warning text-white">F</div><span>Fatima Traoré</span>
+                    </div>
+                    <span class="text-muted">Terminale</span><span class="badge bg-warning-soft text-warning px-2">En
+                      attente</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-          <!-- TÃ©lÃ©phone mobile -->
-          <div class="hero-phone shadow-lg rounded-4 overflow-hidden bg-white border">
-            <div class="hp-screen bg-primary p-2">
-              <div class="text-white fw-bold mb-2" style="font-size:9px"><i class="fas fa-graduation-cap me-1"></i>EduManager</div>
-              <div class="row g-1 mb-2">
-                <div class="col-6"><div class="hp-card bg-white rounded-2 p-1 text-center"><div class="fw-bold text-primary" style="font-size:10px">1 248</div><div style="font-size:7px" class="text-muted">Ã‰lÃ¨ves</div></div></div>
-                <div class="col-6"><div class="hp-card bg-white rounded-2 p-1 text-center"><div class="fw-bold text-success" style="font-size:10px">87</div><div style="font-size:7px" class="text-muted">Profs</div></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== TÉMOIGNAGES ===== -->
+  <section class="py-section bg-light" id="temoignages">
+    <div class="container">
+      <div class="text-center mb-5" data-aos="fade-up">
+        <h2 class="section-title">Ils nous font <span class="text-primary">confiance</span></h2>
+        <p class="section-sub">Ce que disent les directeurs d'établissements qui utilisent EduManager chaque jour.</p>
+      </div>
+      <div class="row g-4">
+        <div class="col-md-4" data-aos="fade-up" data-aos-delay="0">
+          <div class="testi-card h-100 bg-white rounded-4 p-4 border">
+            <div class="d-flex mb-3">
+              <i class="fas fa-quote-left text-primary opacity-25 fa-2x"></i>
+            </div>
+            <p class="text-muted mb-4">EduManager a transformé notre gestion. Nous avons réduit de moitié le temps
+              consacré à l'administration et les parents sont ravis des bulletins automatiques.</p>
+            <div class="stars mb-3">
+              <i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i><i
+                class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i><i
+                class="fas fa-star text-warning"></i>
+            </div>
+            <div class="d-flex align-items-center">
+              <div class="testi-av bg-primary text-white me-3">M</div>
+              <div>
+                <div class="fw-semibold small">M. Camara</div>
+                <div class="text-muted" style="font-size:12px">Directeur, Collège Saint-Joseph</div>
               </div>
-              <div class="hp-menu bg-white rounded-2 p-2">
-                <div class="hp-menu-item d-flex align-items-center mb-1"><i class="fas fa-users text-primary me-1" style="font-size:8px"></i><span style="font-size:8px">Ã‰lÃ¨ves</span></div>
-                <div class="hp-menu-item d-flex align-items-center mb-1"><i class="fas fa-clipboard-list text-success me-1" style="font-size:8px"></i><span style="font-size:8px">Notes</span></div>
-                <div class="hp-menu-item d-flex align-items-center mb-1"><i class="fas fa-credit-card text-warning me-1" style="font-size:8px"></i><span style="font-size:8px">Paiements</span></div>
-                <div class="hp-menu-item d-flex align-items-center"><i class="fas fa-bell text-info me-1" style="font-size:8px"></i><span style="font-size:8px">Notifications</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4" data-aos="fade-up" data-aos-delay="120">
+          <div class="testi-card h-100 bg-white rounded-4 p-4 border testi-featured">
+            <div class="d-flex mb-3">
+              <i class="fas fa-quote-left text-primary opacity-25 fa-2x"></i>
+            </div>
+            <p class="text-muted mb-4">Les parents sont beaucoup plus impliqués depuis qu'ils reçoivent les bulletins et
+              les notifications en temps réel sur leur téléphone. Un outil vraiment indispensable.</p>
+            <div class="stars mb-3">
+              <i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i><i
+                class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i><i
+                class="fas fa-star text-warning"></i>
+            </div>
+            <div class="d-flex align-items-center">
+              <div class="testi-av bg-success text-white me-3">S</div>
+              <div>
+                <div class="fw-semibold small">Mme Soumah</div>
+                <div class="text-muted" style="font-size:12px">Proviseure, Lycée Excellence</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4" data-aos="fade-up" data-aos-delay="240">
+          <div class="testi-card h-100 bg-white rounded-4 p-4 border">
+            <div class="d-flex mb-3">
+              <i class="fas fa-quote-left text-primary opacity-25 fa-2x"></i>
+            </div>
+            <p class="text-muted mb-4">La gestion des paiements est devenue un jeu d'enfant. Plus aucun suivi manuel sur
+              Excel. Les parents paient en ligne et reçoivent le reçu immédiatement.</p>
+            <div class="stars mb-3">
+              <i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i><i
+                class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i><i
+                class="fas fa-star-half-alt text-warning"></i>
+            </div>
+            <div class="d-flex align-items-center">
+              <div class="testi-av bg-warning text-white me-3">A</div>
+              <div>
+                <div class="fw-semibold small">M. Abdoulaye</div>
+                <div class="text-muted" style="font-size:12px">Admin., École Primaire Al-Nour</div>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- ===== STATS ===== -->
-<section class="stats-section py-5 bg-white border-top border-bottom">
-  <div class="container">
-    <div class="row justify-content-center text-center g-4">
-      <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="0">
-        <div class="stat-box">
-          <div class="stat-icon-wrap bg-primary-soft mb-2"><i class="fas fa-school text-primary"></i></div>
-          <div class="stat-num" data-target="200">0</div>
-          <div class="stat-plus">+</div>
-          <div class="stat-lbl">Ã‰coles partenaires</div>
+  <!-- ===== TARIFS ===== -->
+  <section class="py-section bg-white" id="tarifs">
+    <div class="container">
+      <div class="text-center mb-5" data-aos="fade-up">
+        <h2 class="section-title">Des tarifs adaptés à vos besoins</h2>
+        <p class="section-sub">Commencez gratuitement pendant 30 jours. Aucune carte bancaire requise.</p>
+        <div class="pricing-toggle d-inline-flex align-items-center gap-2 bg-light rounded-pill p-1 mt-3">
+          <button class="btn btn-primary rounded-pill btn-sm px-4 active" id="btnMensuel">Mensuel</button>
+          <button class="btn btn-ghost rounded-pill btn-sm px-4" id="btnAnnuel">Annuel <span
+              class="badge bg-success ms-1">-20%</span></button>
         </div>
       </div>
-      <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="100">
-        <div class="stat-box">
-          <div class="stat-icon-wrap bg-success-soft mb-2"><i class="fas fa-user-graduate text-success"></i></div>
-          <div class="stat-num" data-target="50000">0</div>
-          <div class="stat-plus"></div>
-          <div class="stat-lbl">Ã‰lÃ¨ves gÃ©rÃ©s</div>
-        </div>
-      </div>
-      <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="200">
-        <div class="stat-box">
-          <div class="stat-icon-wrap bg-warning-soft mb-2"><i class="fas fa-chalkboard-teacher text-warning"></i></div>
-          <div class="stat-num" data-target="3000">0</div>
-          <div class="stat-plus">+</div>
-          <div class="stat-lbl">Enseignants actifs</div>
-        </div>
-      </div>
-      <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="300">
-        <div class="stat-box">
-          <div class="stat-icon-wrap bg-info-soft mb-2"><i class="fas fa-shield-alt text-info"></i></div>
-          <div class="stat-fixed">99,9%</div>
-          <div class="stat-lbl">DisponibilitÃ© garantie</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ===== FONCTIONNALITÃ‰S ===== -->
-<section class="py-section bg-light" id="fonctionnalites">
-  <div class="container">
-    <div class="text-center mb-5" data-aos="fade-up">
-      <h2 class="section-title">Toutes les <span class="text-primary">fonctionnalitÃ©s</span> dont vous avez besoin</h2>
-      <p class="section-sub">Une suite complÃ¨te pour digitaliser et optimiser la gestion de votre Ã©tablissement scolaire.</p>
-    </div>
-    <div class="row g-4 mb-4">
-      <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="0">
-        <div class="feat-card rounded-3 bg-white p-4 h-100">
-          <div class="feat-icon bg-primary-soft mb-3"><i class="fas fa-users text-primary"></i></div>
-          <h6 class="fw-bold mb-2">Gestion des Ã©lÃ¨ves</h6>
-          <p class="text-muted small mb-0">Inscriptions, dossiers scolaires, prÃ©sences et historique complet de chaque Ã©lÃ¨ve.</p>
-        </div>
-      </div>
-      <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="80">
-        <div class="feat-card rounded-3 bg-white p-4 h-100">
-          <div class="feat-icon bg-success-soft mb-3"><i class="fas fa-clipboard-list text-success"></i></div>
-          <h6 class="fw-bold mb-2">Gestion des notes</h6>
-          <p class="text-muted small mb-0">Saisie des notes, calcul automatique des moyennes et gÃ©nÃ©ration des bulletins.</p>
-        </div>
-      </div>
-      <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="160">
-        <div class="feat-card rounded-3 bg-white p-4 h-100">
-          <div class="feat-icon bg-warning-soft mb-3"><i class="fas fa-credit-card text-warning"></i></div>
-          <h6 class="fw-bold mb-2">Paiements scolaires</h6>
-          <p class="text-muted small mb-0">Collectez les frais, Ã©mettez des reÃ§us automatiques et suivez les impayÃ©s.</p>
-        </div>
-      </div>
-      <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="240">
-        <div class="feat-card rounded-3 bg-white p-4 h-100">
-          <div class="feat-icon bg-info-soft mb-3"><i class="fas fa-calendar-alt text-info"></i></div>
-          <h6 class="fw-bold mb-2">Emploi du temps</h6>
-          <p class="text-muted small mb-0">CrÃ©ez et gÃ©rez les plannings des classes et des enseignants simplement.</p>
-        </div>
-      </div>
-      <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="0">
-        <div class="feat-card rounded-3 bg-white p-4 h-100">
-          <div class="feat-icon bg-purple-soft mb-3"><i class="fas fa-comments text-purple"></i></div>
-          <h6 class="fw-bold mb-2">Communication</h6>
-          <p class="text-muted small mb-0">Messagerie interne, notifications parents et bulletins envoyÃ©s automatiquement.</p>
-        </div>
-      </div>
-      <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="80">
-        <div class="feat-card rounded-3 bg-white p-4 h-100">
-          <div class="feat-icon bg-primary-soft mb-3"><i class="fas fa-chart-bar text-primary"></i></div>
-          <h6 class="fw-bold mb-2">ComptabilitÃ©</h6>
-          <p class="text-muted small mb-0">Suivi des revenus, dÃ©penses, rapports financiers et exports comptables.</p>
-        </div>
-      </div>
-      <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="160">
-        <div class="feat-card rounded-3 bg-white p-4 h-100">
-          <div class="feat-icon bg-success-soft mb-3"><i class="fas fa-mobile-alt text-success"></i></div>
-          <h6 class="fw-bold mb-2">Application mobile</h6>
-          <p class="text-muted small mb-0">AccÃ©dez Ã  toutes les fonctionnalitÃ©s depuis votre smartphone ou tablette.</p>
-        </div>
-      </div>
-      <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="240">
-        <div class="feat-card rounded-3 bg-white p-4 h-100">
-          <div class="feat-icon bg-danger-soft mb-3"><i class="fas fa-shield-alt text-danger"></i></div>
-          <h6 class="fw-bold mb-2">SÃ©curitÃ© des donnÃ©es</h6>
-          <p class="text-muted small mb-0">Chiffrement SSL, sauvegardes automatiques et accÃ¨s sÃ©curisÃ©s par rÃ´les.</p>
-        </div>
-      </div>
-    </div>
-    <div class="text-center mt-2" data-aos="fade-up">
-      <a href="signup.html" class="btn btn-primary rounded-pill px-5 py-2 fw-semibold">
-        DÃ©couvrir toutes les fonctionnalitÃ©s <i class="fas fa-arrow-right ms-2"></i>
-      </a>
-    </div>
-  </div>
-</section>
-
-<!-- ===== TABLEAU DE BORD (DEMO) ===== -->
-<section class="py-section bg-white" id="demo">
-  <div class="container">
-    <div class="row align-items-center gy-5">
-      <div class="col-lg-4" data-aos="fade-right">
-        <span class="section-badge mb-2 d-inline-block">Tableau de bord</span>
-        <h2 class="section-title mb-3">Un tableau de bord <span class="text-primary">intelligent et intuitif</span></h2>
-        <p class="text-muted mb-4">Visualisez en temps rÃ©el toutes les donnÃ©es de votre Ã©tablissement et prenez de meilleures dÃ©cisions.</p>
-        <ul class="list-unstyled why-list mb-0">
-          <li class="d-flex align-items-start mb-3">
-            <div class="why-check me-3"><i class="fas fa-check text-success"></i></div>
-            <span class="text-muted">Statistiques en temps rÃ©el et indicateurs clÃ©s</span>
-          </li>
-          <li class="d-flex align-items-start mb-3">
-            <div class="why-check me-3"><i class="fas fa-check text-success"></i></div>
-            <span class="text-muted">Graphiques personnalisables et rapports exportables</span>
-          </li>
-          <li class="d-flex align-items-start mb-3">
-            <div class="why-check me-3"><i class="fas fa-check text-success"></i></div>
-            <span class="text-muted">Interface simple et facile Ã  prendre en main</span>
-          </li>
-          <li class="d-flex align-items-start">
-            <div class="why-check me-3"><i class="fas fa-check text-success"></i></div>
-            <span class="text-muted">AccessibilitÃ© totale sur tous les appareils</span>
-          </li>
-        </ul>
-      </div>
-      <div class="col-lg-8" data-aos="fade-left" data-aos-delay="200">
-        <div class="full-dashboard rounded-4 shadow-lg overflow-hidden border bg-white">
-          <!-- topbar -->
-          <div class="fd-topbar d-flex align-items-center px-4 py-2 border-bottom bg-light">
-            <div class="hd-dot bg-danger me-1"></div><div class="hd-dot bg-warning me-1"></div><div class="hd-dot bg-success me-3"></div>
-            <span class="text-muted small">Bonjour, Directeur ðŸ‘‹ â€” Tableau de bord principal</span>
-          </div>
-          <div class="d-flex">
-            <!-- Sidebar -->
-            <div class="fd-sidebar bg-primary d-flex flex-column align-items-center py-3 px-2">
-              <div class="text-white fw-bold mb-4" style="font-size:11px">EM</div>
-              <div class="fd-s-item active mb-2" title="Tableau de bord"><i class="fas fa-th-large"></i></div>
-              <div class="fd-s-item mb-2" title="Ã‰lÃ¨ves"><i class="fas fa-users"></i></div>
-              <div class="fd-s-item mb-2" title="Notes"><i class="fas fa-clipboard-list"></i></div>
-              <div class="fd-s-item mb-2" title="Emploi du temps"><i class="fas fa-calendar"></i></div>
-              <div class="fd-s-item mb-2" title="Paiements"><i class="fas fa-credit-card"></i></div>
-              <div class="fd-s-item mt-auto" title="ParamÃ¨tres"><i class="fas fa-cog"></i></div>
-            </div>
-            <!-- Main content -->
-            <div class="fd-main p-3 flex-grow-1 bg-light">
-              <!-- KPIs row -->
-              <div class="row g-2 mb-3">
-                <div class="col-3">
-                  <div class="fd-kpi rounded-3 bg-white p-2 border">
-                    <div class="d-flex justify-content-between align-items-start mb-1">
-                      <div class="fd-kpi-icon bg-primary-soft rounded-2"><i class="fas fa-users text-primary" style="font-size:10px"></i></div>
-                      <span class="badge badge-up text-success" style="font-size:8px">+12%</span>
-                    </div>
-                    <div class="fw-bold text-dark" style="font-size:15px">1 248</div>
-                    <div class="text-muted" style="font-size:9px">Ã‰lÃ¨ves inscrits</div>
-                  </div>
-                </div>
-                <div class="col-3">
-                  <div class="fd-kpi rounded-3 bg-white p-2 border">
-                    <div class="d-flex justify-content-between align-items-start mb-1">
-                      <div class="fd-kpi-icon bg-success-soft rounded-2"><i class="fas fa-euro-sign text-success" style="font-size:10px"></i></div>
-                      <span class="badge badge-up text-success" style="font-size:8px">+8%</span>
-                    </div>
-                    <div class="fw-bold text-dark" style="font-size:15px">98 750â‚¬</div>
-                    <div class="text-muted" style="font-size:9px">Frais collectÃ©s</div>
-                  </div>
-                </div>
-                <div class="col-3">
-                  <div class="fd-kpi rounded-3 bg-white p-2 border">
-                    <div class="d-flex justify-content-between align-items-start mb-1">
-                      <div class="fd-kpi-icon bg-info-soft rounded-2"><i class="fas fa-chalkboard-teacher text-info" style="font-size:10px"></i></div>
-                      <span class="badge badge-up text-success" style="font-size:8px">+5%</span>
-                    </div>
-                    <div class="fw-bold text-dark" style="font-size:15px">87</div>
-                    <div class="text-muted" style="font-size:9px">Enseignants</div>
-                  </div>
-                </div>
-                <div class="col-3">
-                  <div class="fd-kpi rounded-3 bg-white p-2 border">
-                    <div class="d-flex justify-content-between align-items-start mb-1">
-                      <div class="fd-kpi-icon bg-warning-soft rounded-2"><i class="fas fa-book text-warning" style="font-size:10px"></i></div>
-                      <span class="badge badge-up text-muted" style="font-size:8px">stable</span>
-                    </div>
-                    <div class="fw-bold text-dark" style="font-size:15px">24</div>
-                    <div class="text-muted" style="font-size:9px">Classes actives</div>
-                  </div>
-                </div>
+      <div class="row g-4 justify-content-center align-items-stretch">
+        <!-- Starter -->
+        <div class="col-md-4" data-aos="fade-up" data-aos-delay="0">
+          <div class="price-card rounded-4 bg-white border p-4 h-100">
+            <div class="mb-4">
+              <h5 class="fw-bold">Starter</h5>
+              <p class="text-muted small">Idéal pour les petites écoles</p>
+              <div class="price-amount">
+                <span class="display-6 fw-bold">15€</span>
+                <span class="text-muted">/mois</span>
               </div>
-              <!-- Charts row -->
-              <div class="row g-2 mb-3">
-                <div class="col-7">
-                  <div class="fd-chart rounded-3 bg-white p-3 border">
-                    <div class="d-flex justify-content-between mb-2">
-                      <span class="fw-semibold" style="font-size:10px">Inscriptions mensuelles</span>
-                      <span class="text-muted" style="font-size:9px">2025-2026</span>
-                    </div>
-                    <div class="d-flex align-items-end gap-1" style="height:60px">
-                      <div style="flex:1;height:35%;background:linear-gradient(180deg,#2563EB,#60A5FA);border-radius:2px 2px 0 0"></div>
-                      <div style="flex:1;height:55%;background:linear-gradient(180deg,#2563EB,#60A5FA);border-radius:2px 2px 0 0"></div>
-                      <div style="flex:1;height:78%;background:linear-gradient(180deg,#10B981,#34D399);border-radius:2px 2px 0 0"></div>
-                      <div style="flex:1;height:48%;background:linear-gradient(180deg,#2563EB,#60A5FA);border-radius:2px 2px 0 0"></div>
-                      <div style="flex:1;height:90%;background:linear-gradient(180deg,#10B981,#34D399);border-radius:2px 2px 0 0"></div>
-                      <div style="flex:1;height:68%;background:linear-gradient(180deg,#2563EB,#60A5FA);border-radius:2px 2px 0 0"></div>
-                      <div style="flex:1;height:100%;background:linear-gradient(180deg,#10B981,#34D399);border-radius:2px 2px 0 0"></div>
-                    </div>
-                    <div class="d-flex justify-content-between mt-1" style="font-size:7px;color:#94A3B8">
-                      <span>Sep</span><span>Oct</span><span>Nov</span><span>DÃ©c</span><span>Jan</span><span>FÃ©v</span><span>Mar</span>
-                    </div>
-                  </div>
+              <div class="text-muted" style="font-size:12px">Jusqu'à 300 élèves</div>
+            </div>
+            <ul class="price-features list-unstyled mb-4">
+              <li><i class="fas fa-check text-success me-2"></i>Gestion des élèves</li>
+              <li><i class="fas fa-check text-success me-2"></i>Notes et bulletins</li>
+              <li><i class="fas fa-check text-success me-2"></i>Paiements de base</li>
+              <li><i class="fas fa-times text-muted me-2"></i><span class="text-muted">Rapports avancés</span></li>
+              <li><i class="fas fa-times text-muted me-2"></i><span class="text-muted">Application mobile</span></li>
+            </ul>
+            <a href="signup.html" class="btn btn-outline-primary rounded-pill w-100">Essayer gratuitement</a>
+          </div>
+        </div>
+        <!-- Standard (populaire) -->
+        <div class="col-md-4" data-aos="fade-up" data-aos-delay="120">
+          <div class="price-card price-featured rounded-4 p-4 h-100 bg-primary text-white position-relative">
+            <span class="popular-badge">⭐ Populaire</span>
+            <div class="mb-4">
+              <h5 class="fw-bold">Standard</h5>
+              <p class="small opacity-75">La solution complète</p>
+              <div class="price-amount">
+                <span class="display-6 fw-bold">35€</span>
+                <span class="opacity-75">/mois</span>
+              </div>
+              <div class="opacity-75" style="font-size:12px">Jusqu'à 1 000 élèves</div>
+            </div>
+            <ul class="price-features list-unstyled mb-4">
+              <li><i class="fas fa-check text-warning me-2"></i>Toutes les fonctionnalités</li>
+              <li><i class="fas fa-check text-warning me-2"></i>Rapports avancés</li>
+              <li><i class="fas fa-check text-warning me-2"></i>Notifications automatiques</li>
+              <li><i class="fas fa-check text-warning me-2"></i>Communication parents</li>
+              <li><i class="fas fa-times opacity-50 me-2"></i><span class="opacity-60">Application mobile</span></li>
+            </ul>
+            <a href="signup.html" class="btn btn-warning text-dark rounded-pill w-100 fw-bold">Choisir ce plan</a>
+          </div>
+        </div>
+        <!-- Premium -->
+        <div class="col-md-4" data-aos="fade-up" data-aos-delay="240">
+          <div class="price-card rounded-4 bg-white border p-4 h-100">
+            <div class="mb-4">
+              <h5 class="fw-bold">Premium</h5>
+              <p class="text-muted small">Pour les grands établissements</p>
+              <div class="price-amount">
+                <span class="display-6 fw-bold">80€</span>
+                <span class="text-muted">/mois</span>
+              </div>
+              <div class="text-muted" style="font-size:12px">Élèves illimités</div>
+            </div>
+            <ul class="price-features list-unstyled mb-4">
+              <li><i class="fas fa-check text-success me-2"></i>Tout du plan Standard</li>
+              <li><i class="fas fa-check text-success me-2"></i>Application mobile incluse</li>
+              <li><i class="fas fa-check text-success me-2"></i>API & intégrations</li>
+              <li><i class="fas fa-check text-success me-2"></i>Support prioritaire 24/7</li>
+              <li><i class="fas fa-check text-success me-2"></i>Gestion multi-établissements</li>
+            </ul>
+            <a href="signup.html" class="btn btn-dark rounded-pill w-100">Commencer maintenant</a>
+          </div>
+        </div>
+      </div>
+      <p class="text-center text-muted small mt-4" data-aos="fade-up">
+        <i class="fas fa-lock text-success me-1"></i>Paiement sécurisé · Annulation à tout moment · Sans engagement
+      </p>
+    </div>
+  </section>
+
+  <!-- ===== FAQ (4 colonnes horizontales) ===== -->
+  <section class="py-section bg-light" id="faq">
+    <div class="container">
+      <div class="text-center mb-5" data-aos="fade-up">
+        <h2 class="section-title">Questions fréquentes</h2>
+        <p class="section-sub">Tout ce que vous voulez savoir avant de commencer votre essai gratuit.</p>
+      </div>
+      <div class="row g-4">
+        <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="0">
+          <div class="faq-item bg-white rounded-3 p-4 border h-100">
+            <div class="faq-icon bg-primary-soft mb-3"><i class="fas fa-shield-alt text-primary"></i></div>
+            <h6 class="fw-bold mb-2">Les données sont-elles sécurisées ?</h6>
+            <p class="text-muted small mb-0">Oui. Toutes vos données sont chiffrées SSL et sauvegardées automatiquement.
+              Hébergement certifié, aucun partage avec des tiers.</p>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="80">
+          <div class="faq-item bg-white rounded-3 p-4 border h-100">
+            <div class="faq-icon bg-success-soft mb-3"><i class="fas fa-gift text-success"></i></div>
+            <h6 class="fw-bold mb-2">Puis-je essayer gratuitement ?</h6>
+            <p class="text-muted small mb-0">Oui, 30 jours gratuits sans carte bancaire. Accès complet au plan Standard
+              pendant toute la période d'essai.</p>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="160">
+          <div class="faq-item bg-white rounded-3 p-4 border h-100">
+            <div class="faq-icon bg-warning-soft mb-3"><i class="fas fa-building text-warning"></i></div>
+            <h6 class="fw-bold mb-2">Puis-je gérer plusieurs écoles ?</h6>
+            <p class="text-muted small mb-0">Oui. Avec le plan Premium, gérez plusieurs établissements depuis un seul
+              compte, chacun avec son espace sécurisé.</p>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="240">
+          <div class="faq-item bg-white rounded-3 p-4 border h-100">
+            <div class="faq-icon bg-info-soft mb-3"><i class="fas fa-exchange-alt text-info"></i></div>
+            <h6 class="fw-bold mb-2">Puis-je changer de plan ?</h6>
+            <p class="text-muted small mb-0">Oui, à tout moment depuis votre espace admin, sans interruption de service
+              et sans frais cachés.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CTA FINAL ===== -->
+  <section class="cta-final py-0">
+    <div class="cta-inner">
+      <div class="container">
+        <div class="row align-items-center gy-5">
+          <div class="col-lg-7 text-white" data-aos="fade-right">
+            <h2 class="display-6 fw-bold mb-3">Prêt à transformer la gestion de votre établissement ?</h2>
+            <p class="lead opacity-90 mb-4">Rejoignez plus de 200 écoles qui font confiance à EduManager. Démarrez votre
+              essai gratuit dès maintenant.</p>
+            <div class="d-flex flex-wrap gap-3">
+              <a href="signup.html" class="btn btn-light text-primary rounded-pill px-5 py-2 fw-bold shadow">
+                <i class="fas fa-school me-2"></i>Créer mon école gratuitement
+              </a>
+              <a href="signin.html" class="btn btn-outline-light rounded-pill px-5 py-2">
+                <i class="fas fa-sign-in-alt me-2"></i>Se connecter
+              </a>
+            </div>
+            <p class="small opacity-75 mt-3"><i class="fas fa-check-circle me-1"></i>Sans carte bancaire · 30 jours
+              gratuits · Annulation facile</p>
+          </div>
+          <div class="col-lg-5 text-center" data-aos="fade-left" data-aos-delay="200">
+            <!-- Illustration laptop CSS -->
+            <div class="cta-laptop">
+              <div class="laptop-screen rounded-3 shadow-lg bg-white overflow-hidden">
+                <div class="ls-bar d-flex align-items-center px-2 py-1 bg-light border-bottom">
+                  <div class="hd-dot bg-danger me-1"></div>
+                  <div class="hd-dot bg-warning me-1"></div>
+                  <div class="hd-dot bg-success me-2"></div>
+                  <span style="font-size:8px" class="text-muted">EduManager Dashboard</span>
                 </div>
-                <div class="col-5">
-                  <div class="fd-chart rounded-3 bg-white p-3 border">
-                    <span class="fw-semibold d-block mb-2" style="font-size:10px">RÃ©partition des paiements</span>
-                    <div class="d-flex align-items-center justify-content-center gap-2" style="height:60px">
-                      <div class="donut-lg"></div>
-                      <div>
-                        <div class="d-flex align-items-center mb-1" style="font-size:9px"><span class="legend-dot bg-primary me-1"></span>PayÃ©s 72%</div>
-                        <div class="d-flex align-items-center mb-1" style="font-size:9px"><span class="legend-dot bg-warning me-1"></span>Partiel 16%</div>
-                        <div class="d-flex align-items-center" style="font-size:9px"><span class="legend-dot bg-danger me-1"></span>ImpayÃ©s 12%</div>
+                <div class="ls-body p-2 d-flex gap-1">
+                  <div class="ls-sidebar bg-primary rounded-2 p-1" style="width:22px">
+                    <div class="ls-s-item active mb-1"><i class="fas fa-th-large" style="font-size:6px;color:white"></i>
+                    </div>
+                    <div class="ls-s-item mb-1"><i class="fas fa-users"
+                        style="font-size:6px;color:rgba(255,255,255,.6)"></i></div>
+                    <div class="ls-s-item mb-1"><i class="fas fa-chart-bar"
+                        style="font-size:6px;color:rgba(255,255,255,.6)"></i></div>
+                  </div>
+                  <div class="flex-grow-1">
+                    <div class="row g-1 mb-1">
+                      <div class="col-6">
+                        <div class="rounded-1 p-1 bg-primary-soft" style="font-size:7px"><strong>1 248</strong> Élèves
+                        </div>
+                      </div>
+                      <div class="col-6">
+                        <div class="rounded-1 p-1 bg-success-soft" style="font-size:7px"><strong>98 750€</strong> Frais
+                        </div>
+                      </div>
+                    </div>
+                    <div class="rounded-1 bg-light p-1" style="height:32px">
+                      <div class="d-flex align-items-end gap-0" style="height:100%">
+                        <div style="flex:1;height:40%;background:#2563EB;margin:0 1px;border-radius:1px 1px 0 0"></div>
+                        <div style="flex:1;height:65%;background:#10B981;margin:0 1px;border-radius:1px 1px 0 0"></div>
+                        <div style="flex:1;height:80%;background:#2563EB;margin:0 1px;border-radius:1px 1px 0 0"></div>
+                        <div style="flex:1;height:55%;background:#10B981;margin:0 1px;border-radius:1px 1px 0 0"></div>
+                        <div style="flex:1;height:95%;background:#2563EB;margin:0 1px;border-radius:1px 1px 0 0"></div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-              <!-- Table -->
-              <div class="fd-table rounded-3 bg-white p-2 border">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <span class="fw-semibold" style="font-size:10px">DerniÃ¨res inscriptions</span>
-                  <a href="#" class="text-primary" style="font-size:9px">Voir tout â†’</a>
-                </div>
-                <div class="fd-row d-flex align-items-center justify-content-between py-1 border-bottom" style="font-size:9px">
-                  <div class="d-flex align-items-center gap-1"><div class="fd-av bg-primary text-white">A</div><span>Amina Diallo</span></div>
-                  <span class="text-muted">3Ã¨me B</span><span class="badge bg-success-soft text-success px-2">Inscrite</span>
-                </div>
-                <div class="fd-row d-flex align-items-center justify-content-between py-1 border-bottom" style="font-size:9px">
-                  <div class="d-flex align-items-center gap-1"><div class="fd-av bg-success text-white">K</div><span>Kofi Mensah</span></div>
-                  <span class="text-muted">6Ã¨me A</span><span class="badge bg-success-soft text-success px-2">Inscrit</span>
-                </div>
-                <div class="fd-row d-flex align-items-center justify-content-between py-1" style="font-size:9px">
-                  <div class="d-flex align-items-center gap-1"><div class="fd-av bg-warning text-white">F</div><span>Fatima TraorÃ©</span></div>
-                  <span class="text-muted">Terminale</span><span class="badge bg-warning-soft text-warning px-2">En attente</span>
-                </div>
-              </div>
+              <div class="laptop-hinge"></div>
+              <div class="laptop-base rounded-bottom shadow"></div>
+            </div>
+            <!-- Livres et mortier décoratifs -->
+            <div class="cta-deco mt-3">
+              <i class="fas fa-graduation-cap text-white fa-3x opacity-50 me-3"></i>
+              <i class="fas fa-book text-white fa-2x opacity-40 me-2"></i>
+              <i class="fas fa-pencil-alt text-white fa-2x opacity-30"></i>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- ===== TÃ‰MOIGNAGES ===== -->
-<section class="py-section bg-light" id="temoignages">
-  <div class="container">
-    <div class="text-center mb-5" data-aos="fade-up">
-      <h2 class="section-title">Ils nous font <span class="text-primary">confiance</span></h2>
-      <p class="section-sub">Ce que disent les directeurs d'Ã©tablissements qui utilisent EduManager chaque jour.</p>
-    </div>
-    <div class="row g-4">
-      <div class="col-md-4" data-aos="fade-up" data-aos-delay="0">
-        <div class="testi-card h-100 bg-white rounded-4 p-4 border">
-          <div class="d-flex mb-3">
-            <i class="fas fa-quote-left text-primary opacity-25 fa-2x"></i>
-          </div>
-          <p class="text-muted mb-4">EduManager a transformÃ© notre gestion. Nous avons rÃ©duit de moitiÃ© le temps consacrÃ© Ã  l'administration et les parents sont ravis des bulletins automatiques.</p>
-          <div class="stars mb-3">
-            <i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i>
-          </div>
-          <div class="d-flex align-items-center">
-            <div class="testi-av bg-primary text-white me-3">M</div>
-            <div>
-              <div class="fw-semibold small">M. Camara</div>
-              <div class="text-muted" style="font-size:12px">Directeur, CollÃ¨ge Saint-Joseph</div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-4" data-aos="fade-up" data-aos-delay="120">
-        <div class="testi-card h-100 bg-white rounded-4 p-4 border testi-featured">
-          <div class="d-flex mb-3">
-            <i class="fas fa-quote-left text-primary opacity-25 fa-2x"></i>
-          </div>
-          <p class="text-muted mb-4">Les parents sont beaucoup plus impliquÃ©s depuis qu'ils reÃ§oivent les bulletins et les notifications en temps rÃ©el sur leur tÃ©lÃ©phone. Un outil vraiment indispensable.</p>
-          <div class="stars mb-3">
-            <i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i>
-          </div>
-          <div class="d-flex align-items-center">
-            <div class="testi-av bg-success text-white me-3">S</div>
-            <div>
-              <div class="fw-semibold small">Mme Soumah</div>
-              <div class="text-muted" style="font-size:12px">Proviseure, LycÃ©e Excellence</div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-4" data-aos="fade-up" data-aos-delay="240">
-        <div class="testi-card h-100 bg-white rounded-4 p-4 border">
-          <div class="d-flex mb-3">
-            <i class="fas fa-quote-left text-primary opacity-25 fa-2x"></i>
-          </div>
-          <p class="text-muted mb-4">La gestion des paiements est devenue un jeu d'enfant. Plus aucun suivi manuel sur Excel. Les parents paient en ligne et reÃ§oivent le reÃ§u immÃ©diatement.</p>
-          <div class="stars mb-3">
-            <i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i><i class="fas fa-star-half-alt text-warning"></i>
-          </div>
-          <div class="d-flex align-items-center">
-            <div class="testi-av bg-warning text-white me-3">A</div>
-            <div>
-              <div class="fw-semibold small">M. Abdoulaye</div>
-              <div class="text-muted" style="font-size:12px">Admin., Ã‰cole Primaire Al-Nour</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ===== TARIFS ===== -->
-<section class="py-section bg-white" id="tarifs">
-  <div class="container">
-    <div class="text-center mb-5" data-aos="fade-up">
-      <h2 class="section-title">Des tarifs adaptÃ©s Ã  vos besoins</h2>
-      <p class="section-sub">Commencez gratuitement pendant 30 jours. Aucune carte bancaire requise.</p>
-      <div class="pricing-toggle d-inline-flex align-items-center gap-2 bg-light rounded-pill p-1 mt-3">
-        <button class="btn btn-primary rounded-pill btn-sm px-4 active" id="btnMensuel">Mensuel</button>
-        <button class="btn btn-ghost rounded-pill btn-sm px-4" id="btnAnnuel">Annuel <span class="badge bg-success ms-1">-20%</span></button>
-      </div>
-    </div>
-    <div class="row g-4 justify-content-center align-items-stretch">
-      <!-- Starter -->
-      <div class="col-md-4" data-aos="fade-up" data-aos-delay="0">
-        <div class="price-card rounded-4 bg-white border p-4 h-100">
-          <div class="mb-4">
-            <h5 class="fw-bold">Starter</h5>
-            <p class="text-muted small">IdÃ©al pour les petites Ã©coles</p>
-            <div class="price-amount">
-              <span class="display-6 fw-bold">15â‚¬</span>
-              <span class="text-muted">/mois</span>
-            </div>
-            <div class="text-muted" style="font-size:12px">Jusqu'Ã  300 Ã©lÃ¨ves</div>
-          </div>
-          <ul class="price-features list-unstyled mb-4">
-            <li><i class="fas fa-check text-success me-2"></i>Gestion des Ã©lÃ¨ves</li>
-            <li><i class="fas fa-check text-success me-2"></i>Notes et bulletins</li>
-            <li><i class="fas fa-check text-success me-2"></i>Paiements de base</li>
-            <li><i class="fas fa-times text-muted me-2"></i><span class="text-muted">Rapports avancÃ©s</span></li>
-            <li><i class="fas fa-times text-muted me-2"></i><span class="text-muted">Application mobile</span></li>
-          </ul>
-          <a href="signup.html" class="btn btn-outline-primary rounded-pill w-100">Essayer gratuitement</a>
-        </div>
-      </div>
-      <!-- Standard (populaire) -->
-      <div class="col-md-4" data-aos="fade-up" data-aos-delay="120">
-        <div class="price-card price-featured rounded-4 p-4 h-100 bg-primary text-white position-relative">
-          <span class="popular-badge">â­ Populaire</span>
-          <div class="mb-4">
-            <h5 class="fw-bold">Standard</h5>
-            <p class="small opacity-75">La solution complÃ¨te</p>
-            <div class="price-amount">
-              <span class="display-6 fw-bold">35â‚¬</span>
-              <span class="opacity-75">/mois</span>
-            </div>
-            <div class="opacity-75" style="font-size:12px">Jusqu'Ã  1 000 Ã©lÃ¨ves</div>
-          </div>
-          <ul class="price-features list-unstyled mb-4">
-            <li><i class="fas fa-check text-warning me-2"></i>Toutes les fonctionnalitÃ©s</li>
-            <li><i class="fas fa-check text-warning me-2"></i>Rapports avancÃ©s</li>
-            <li><i class="fas fa-check text-warning me-2"></i>Notifications automatiques</li>
-            <li><i class="fas fa-check text-warning me-2"></i>Communication parents</li>
-            <li><i class="fas fa-times opacity-50 me-2"></i><span class="opacity-60">Application mobile</span></li>
-          </ul>
-          <a href="signup.html" class="btn btn-warning text-dark rounded-pill w-100 fw-bold">Choisir ce plan</a>
-        </div>
-      </div>
-      <!-- Premium -->
-      <div class="col-md-4" data-aos="fade-up" data-aos-delay="240">
-        <div class="price-card rounded-4 bg-white border p-4 h-100">
-          <div class="mb-4">
-            <h5 class="fw-bold">Premium</h5>
-            <p class="text-muted small">Pour les grands Ã©tablissements</p>
-            <div class="price-amount">
-              <span class="display-6 fw-bold">80â‚¬</span>
-              <span class="text-muted">/mois</span>
-            </div>
-            <div class="text-muted" style="font-size:12px">Ã‰lÃ¨ves illimitÃ©s</div>
-          </div>
-          <ul class="price-features list-unstyled mb-4">
-            <li><i class="fas fa-check text-success me-2"></i>Tout du plan Standard</li>
-            <li><i class="fas fa-check text-success me-2"></i>Application mobile incluse</li>
-            <li><i class="fas fa-check text-success me-2"></i>API & intÃ©grations</li>
-            <li><i class="fas fa-check text-success me-2"></i>Support prioritaire 24/7</li>
-            <li><i class="fas fa-check text-success me-2"></i>Gestion multi-Ã©tablissements</li>
-          </ul>
-          <a href="signup.html" class="btn btn-dark rounded-pill w-100">Commencer maintenant</a>
-        </div>
-      </div>
-    </div>
-    <p class="text-center text-muted small mt-4" data-aos="fade-up">
-      <i class="fas fa-lock text-success me-1"></i>Paiement sÃ©curisÃ© Â· Annulation Ã  tout moment Â· Sans engagement
-    </p>
-  </div>
-</section>
-
-<!-- ===== FAQ (4 colonnes horizontales) ===== -->
-<section class="py-section bg-light" id="faq">
-  <div class="container">
-    <div class="text-center mb-5" data-aos="fade-up">
-      <h2 class="section-title">Questions frÃ©quentes</h2>
-      <p class="section-sub">Tout ce que vous voulez savoir avant de commencer votre essai gratuit.</p>
-    </div>
-    <div class="row g-4">
-      <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="0">
-        <div class="faq-item bg-white rounded-3 p-4 border h-100">
-          <div class="faq-icon bg-primary-soft mb-3"><i class="fas fa-shield-alt text-primary"></i></div>
-          <h6 class="fw-bold mb-2">Les donnÃ©es sont-elles sÃ©curisÃ©es ?</h6>
-          <p class="text-muted small mb-0">Oui. Toutes vos donnÃ©es sont chiffrÃ©es SSL et sauvegardÃ©es automatiquement. HÃ©bergement certifiÃ©, aucun partage avec des tiers.</p>
-        </div>
-      </div>
-      <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="80">
-        <div class="faq-item bg-white rounded-3 p-4 border h-100">
-          <div class="faq-icon bg-success-soft mb-3"><i class="fas fa-gift text-success"></i></div>
-          <h6 class="fw-bold mb-2">Puis-je essayer gratuitement ?</h6>
-          <p class="text-muted small mb-0">Oui, 30 jours gratuits sans carte bancaire. AccÃ¨s complet au plan Standard pendant toute la pÃ©riode d'essai.</p>
-        </div>
-      </div>
-      <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="160">
-        <div class="faq-item bg-white rounded-3 p-4 border h-100">
-          <div class="faq-icon bg-warning-soft mb-3"><i class="fas fa-building text-warning"></i></div>
-          <h6 class="fw-bold mb-2">Puis-je gÃ©rer plusieurs Ã©coles ?</h6>
-          <p class="text-muted small mb-0">Oui. Avec le plan Premium, gÃ©rez plusieurs Ã©tablissements depuis un seul compte, chacun avec son espace sÃ©curisÃ©.</p>
-        </div>
-      </div>
-      <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="240">
-        <div class="faq-item bg-white rounded-3 p-4 border h-100">
-          <div class="faq-icon bg-info-soft mb-3"><i class="fas fa-exchange-alt text-info"></i></div>
-          <h6 class="fw-bold mb-2">Puis-je changer de plan ?</h6>
-          <p class="text-muted small mb-0">Oui, Ã  tout moment depuis votre espace admin, sans interruption de service et sans frais cachÃ©s.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ===== CTA FINAL ===== -->
-<section class="cta-final py-0">
-  <div class="cta-inner">
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer bg-dark text-white pt-5 pb-4">
     <div class="container">
-      <div class="row align-items-center gy-5">
-        <div class="col-lg-7 text-white" data-aos="fade-right">
-          <h2 class="display-6 fw-bold mb-3">PrÃªt Ã  transformer la gestion de votre Ã©tablissement ?</h2>
-          <p class="lead opacity-90 mb-4">Rejoignez plus de 200 Ã©coles qui font confiance Ã  EduManager. DÃ©marrez votre essai gratuit dÃ¨s maintenant.</p>
-          <div class="d-flex flex-wrap gap-3">
-            <a href="signup.html" class="btn btn-light text-primary rounded-pill px-5 py-2 fw-bold shadow">
-              <i class="fas fa-school me-2"></i>CrÃ©er mon Ã©cole gratuitement
-            </a>
-            <a href="signin.html" class="btn btn-outline-light rounded-pill px-5 py-2">
-              <i class="fas fa-sign-in-alt me-2"></i>Se connecter
-            </a>
-          </div>
-          <p class="small opacity-75 mt-3"><i class="fas fa-check-circle me-1"></i>Sans carte bancaire Â· 30 jours gratuits Â· Annulation facile</p>
-        </div>
-        <div class="col-lg-5 text-center" data-aos="fade-left" data-aos-delay="200">
-          <!-- Illustration laptop CSS -->
-          <div class="cta-laptop">
-            <div class="laptop-screen rounded-3 shadow-lg bg-white overflow-hidden">
-              <div class="ls-bar d-flex align-items-center px-2 py-1 bg-light border-bottom">
-                <div class="hd-dot bg-danger me-1"></div><div class="hd-dot bg-warning me-1"></div><div class="hd-dot bg-success me-2"></div>
-                <span style="font-size:8px" class="text-muted">EduManager Dashboard</span>
-              </div>
-              <div class="ls-body p-2 d-flex gap-1">
-                <div class="ls-sidebar bg-primary rounded-2 p-1" style="width:22px">
-                  <div class="ls-s-item active mb-1"><i class="fas fa-th-large" style="font-size:6px;color:white"></i></div>
-                  <div class="ls-s-item mb-1"><i class="fas fa-users" style="font-size:6px;color:rgba(255,255,255,.6)"></i></div>
-                  <div class="ls-s-item mb-1"><i class="fas fa-chart-bar" style="font-size:6px;color:rgba(255,255,255,.6)"></i></div>
-                </div>
-                <div class="flex-grow-1">
-                  <div class="row g-1 mb-1">
-                    <div class="col-6"><div class="rounded-1 p-1 bg-primary-soft" style="font-size:7px"><strong>1 248</strong> Ã‰lÃ¨ves</div></div>
-                    <div class="col-6"><div class="rounded-1 p-1 bg-success-soft" style="font-size:7px"><strong>98 750â‚¬</strong> Frais</div></div>
-                  </div>
-                  <div class="rounded-1 bg-light p-1" style="height:32px">
-                    <div class="d-flex align-items-end gap-0" style="height:100%">
-                      <div style="flex:1;height:40%;background:#2563EB;margin:0 1px;border-radius:1px 1px 0 0"></div>
-                      <div style="flex:1;height:65%;background:#10B981;margin:0 1px;border-radius:1px 1px 0 0"></div>
-                      <div style="flex:1;height:80%;background:#2563EB;margin:0 1px;border-radius:1px 1px 0 0"></div>
-                      <div style="flex:1;height:55%;background:#10B981;margin:0 1px;border-radius:1px 1px 0 0"></div>
-                      <div style="flex:1;height:95%;background:#2563EB;margin:0 1px;border-radius:1px 1px 0 0"></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="laptop-hinge"></div>
-            <div class="laptop-base rounded-bottom shadow"></div>
-          </div>
-          <!-- Livres et mortier dÃ©coratifs -->
-          <div class="cta-deco mt-3">
-            <i class="fas fa-graduation-cap text-white fa-3x opacity-50 me-3"></i>
-            <i class="fas fa-book text-white fa-2x opacity-40 me-2"></i>
-            <i class="fas fa-pencil-alt text-white fa-2x opacity-30"></i>
+      <div class="row g-4 mb-4">
+        <div class="col-lg-4">
+          <a href="#" class="d-flex align-items-center text-white text-decoration-none mb-3">
+            <i class="fas fa-graduation-cap text-primary fa-lg me-2"></i>
+            <span class="fw-bold fs-5">EduManager</span>
+          </a>
+          <p class="text-muted small lh-base">La plateforme SaaS tout-en-un pour la gestion scolaire moderne. Simple,
+            sécurisée et accessible depuis n'importe quel appareil.</p>
+          <div class="d-flex gap-2 mt-3">
+            <a href="#" class="soc-lnk"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" class="soc-lnk"><i class="fab fa-linkedin-in"></i></a>
+            <a href="#" class="soc-lnk"><i class="fab fa-whatsapp"></i></a>
+            <a href="#" class="soc-lnk"><i class="fab fa-twitter"></i></a>
           </div>
         </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ===== FOOTER ===== -->
-<footer class="footer bg-dark text-white pt-5 pb-4">
-  <div class="container">
-    <div class="row g-4 mb-4">
-      <div class="col-lg-4">
-        <a href="#" class="d-flex align-items-center text-white text-decoration-none mb-3">
-          <i class="fas fa-graduation-cap text-primary fa-lg me-2"></i>
-          <span class="fw-bold fs-5">EduManager</span>
-        </a>
-        <p class="text-muted small lh-base">La plateforme SaaS tout-en-un pour la gestion scolaire moderne. Simple, sÃ©curisÃ©e et accessible depuis n'importe quel appareil.</p>
-        <div class="d-flex gap-2 mt-3">
-          <a href="#" class="soc-lnk"><i class="fab fa-facebook-f"></i></a>
-          <a href="#" class="soc-lnk"><i class="fab fa-linkedin-in"></i></a>
-          <a href="#" class="soc-lnk"><i class="fab fa-whatsapp"></i></a>
-          <a href="#" class="soc-lnk"><i class="fab fa-twitter"></i></a>
+        <div class="col-6 col-lg-2">
+          <h6 class="fw-semibold mb-3">Produit</h6>
+          <ul class="list-unstyled ftr-links">
+            <li><a href="#fonctionnalites">Fonctionnalités</a></li>
+            <li><a href="#tarifs">Tarifs</a></li>
+            <li><a href="#demo">Démonstration</a></li>
+            <li><a href="signup.html">Essai gratuit</a></li>
+          </ul>
+        </div>
+        <div class="col-6 col-lg-2">
+          <h6 class="fw-semibold mb-3">Ressources</h6>
+          <ul class="list-unstyled ftr-links">
+            <li><a href="demo.html">Démonstration</a></li>
+            <li><a href="#">Documentation</a></li>
+            <li><a href="#">Centre d'aide</a></li>
+            <li><a href="#">Blog</a></li>
+          </ul>
+        </div>
+        <div class="col-6 col-lg-2">
+          <h6 class="fw-semibold mb-3">Société</h6>
+          <ul class="list-unstyled ftr-links">
+            <li><a href="a-propos.html">À propos</a></li>
+            <li><a href="contact.html">Contact</a></li>
+            <li><a href="#">Partenaires</a></li>
+            <li><a href="#">Carrières</a></li>
+          </ul>
+        </div>
+        <div class="col-6 col-lg-2">
+          <h6 class="fw-semibold mb-3">Légal</h6>
+          <ul class="list-unstyled ftr-links">
+            <li><a href="#">Confidentialité</a></li>
+            <li><a href="#">Conditions</a></li>
+            <li><a href="#">Cookies</a></li>
+            <li><a href="#">RGPD</a></li>
+          </ul>
         </div>
       </div>
-      <div class="col-6 col-lg-2">
-        <h6 class="fw-semibold mb-3">Produit</h6>
-        <ul class="list-unstyled ftr-links">
-          <li><a href="#fonctionnalites">FonctionnalitÃ©s</a></li>
-          <li><a href="#tarifs">Tarifs</a></li>
-          <li><a href="#demo">DÃ©monstration</a></li>
-          <li><a href="signup.html">Essai gratuit</a></li>
-        </ul>
-      </div>
-      <div class="col-6 col-lg-2">
-        <h6 class="fw-semibold mb-3">Ressources</h6>
-        <ul class="list-unstyled ftr-links">
-          <li><a href="demo.html">DÃ©monstration</a></li>
-          <li><a href="#">Documentation</a></li>
-          <li><a href="#">Centre d'aide</a></li>
-          <li><a href="#">Blog</a></li>
-        </ul>
-      </div>
-      <div class="col-6 col-lg-2">
-        <h6 class="fw-semibold mb-3">SociÃ©tÃ©</h6>
-        <ul class="list-unstyled ftr-links">
-          <li><a href="a-propos.html">Ã€ propos</a></li>
-          <li><a href="contact.html">Contact</a></li>
-          <li><a href="#">Partenaires</a></li>
-          <li><a href="#">CarriÃ¨res</a></li>
-        </ul>
-      </div>
-      <div class="col-6 col-lg-2">
-        <h6 class="fw-semibold mb-3">LÃ©gal</h6>
-        <ul class="list-unstyled ftr-links">
-          <li><a href="#">ConfidentialitÃ©</a></li>
-          <li><a href="#">Conditions</a></li>
-          <li><a href="#">Cookies</a></li>
-          <li><a href="#">RGPD</a></li>
-        </ul>
+      <hr class="border-secondary opacity-25" />
+      <div class="d-flex flex-wrap justify-content-between align-items-center pt-2">
+        <p class="text-muted small mb-0">© 2026 EduManager. Tous droits réservés.</p>
+        <p class="text-muted small mb-0">Fait avec <i class="fas fa-heart text-danger mx-1"></i> pour les écoles du
+          monde entier</p>
       </div>
     </div>
-    <hr class="border-secondary opacity-25" />
-    <div class="d-flex flex-wrap justify-content-between align-items-center pt-2">
-      <p class="text-muted small mb-0">Â© 2026 EduManager. Tous droits rÃ©servÃ©s.</p>
-      <p class="text-muted small mb-0">Fait avec <i class="fas fa-heart text-danger mx-1"></i> pour les Ã©coles du monde entier</p>
-    </div>
-  </div>
-</footer>
+  </footer>
 
-<!-- Scripts -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
-<script>
-  AOS.init({ once: true, offset: 50, duration: 650 });
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+  <script>
+    AOS.init({ once: true, offset: 50, duration: 650 });
 
-  // Navbar scrolled
-  window.addEventListener('scroll', () => {
-    document.getElementById('mainNav').classList.toggle('nav-scrolled', window.scrollY > 50);
-  });
-
-  // Counters
-  const observerCnt = new IntersectionObserver((entries) => {
-    entries.forEach(e => {
-      if (!e.isIntersecting) return;
-      const el = e.target;
-      const target = parseInt(el.dataset.target);
-      let cur = 0;
-      const step = target / 80;
-      const t = setInterval(() => {
-        cur = Math.min(cur + step, target);
-        el.textContent = Math.floor(cur).toLocaleString('fr-FR');
-        if (cur >= target) clearInterval(t);
-      }, 20);
-      observerCnt.unobserve(el);
+    // Navbar scrolled
+    window.addEventListener('scroll', () => {
+      document.getElementById('mainNav').classList.toggle('nav-scrolled', window.scrollY > 50);
     });
-  }, { threshold: 0.6 });
-  document.querySelectorAll('.stat-num').forEach(el => observerCnt.observe(el));
 
-  // Smooth scroll
-  document.querySelectorAll('a[href^="#"]').forEach(a => {
-    a.addEventListener('click', e => {
-      const t = document.querySelector(a.getAttribute('href'));
-      if (t) { e.preventDefault(); t.scrollIntoView({ behavior: 'smooth' }); }
-    });
-  });
+    // Counters
+    const observerCnt = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (!e.isIntersecting) return;
+        const el = e.target;
+        const target = parseInt(el.dataset.target);
+        let cur = 0;
+        const step = target / 80;
+        const t = setInterval(() => {
+          cur = Math.min(cur + step, target);
+          el.textContent = Math.floor(cur).toLocaleString('fr-FR');
+          if (cur >= target) clearInterval(t);
+        }, 20);
+        observerCnt.unobserve(el);
+      });
+    }, { threshold: 0.6 });
+    document.querySelectorAll('.stat-num').forEach(el => observerCnt.observe(el));
 
-  // Pricing toggle (mensuel / annuel)
-  document.getElementById('btnAnnuel').addEventListener('click', function() {
-    this.classList.add('btn-primary'); this.classList.remove('btn-ghost');
-    document.getElementById('btnMensuel').classList.remove('btn-primary'); document.getElementById('btnMensuel').classList.add('btn-ghost');
-    document.querySelectorAll('.price-amount .display-6').forEach((el, i) => {
-      el.textContent = ['12â‚¬','28â‚¬','64â‚¬'][i] + '';
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => {
+        const t = document.querySelector(a.getAttribute('href'));
+        if (t) { e.preventDefault(); t.scrollIntoView({ behavior: 'smooth' }); }
+      });
     });
-  });
-  document.getElementById('btnMensuel').addEventListener('click', function() {
-    this.classList.add('btn-primary'); this.classList.remove('btn-ghost');
-    document.getElementById('btnAnnuel').classList.remove('btn-primary'); document.getElementById('btnAnnuel').classList.add('btn-ghost');
-    document.querySelectorAll('.price-amount .display-6').forEach((el, i) => {
-      el.textContent = ['15â‚¬','35â‚¬','80â‚¬'][i] + '';
-    });
-  });
-</script>
 
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js');
-  }
-</script>
+    // Pricing toggle (mensuel / annuel)
+    document.getElementById('btnAnnuel').addEventListener('click', function () {
+      this.classList.add('btn-primary'); this.classList.remove('btn-ghost');
+      document.getElementById('btnMensuel').classList.remove('btn-primary'); document.getElementById('btnMensuel').classList.add('btn-ghost');
+      document.querySelectorAll('.price-amount .display-6').forEach((el, i) => {
+        el.textContent = ['12€', '28€', '64€'][i] + '';
+      });
+    });
+    document.getElementById('btnMensuel').addEventListener('click', function () {
+      this.classList.add('btn-primary'); this.classList.remove('btn-ghost');
+      document.getElementById('btnAnnuel').classList.remove('btn-primary'); document.getElementById('btnAnnuel').classList.add('btn-ghost');
+      document.querySelectorAll('.price-amount .display-6').forEach((el, i) => {
+        el.textContent = ['15€', '35€', '80€'][i] + '';
+      });
+    });
+  </script>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+  </script>
 </body>
+
 </html>
