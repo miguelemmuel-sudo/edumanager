@@ -1,7 +1,13 @@
 /* ==============================================
    EduManager – Dashboard JS
-   Fonctionnalités partagées sur toutes les pages
+   Fonctionnalites partagees sur toutes les pages
+   
+   OWASP A03:2021 – Injection (XSS Prevention)
+   Toutes les injections innerHTML utilisent escapeHtml()
 ============================================== */
+
+/* XSS helper alias */
+const _e = (window.EduSecurity && window.EduSecurity.escapeHtml) || function(s) { return String(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
 
 /* ---- SIDEBAR TOGGLE ---- */
 document.addEventListener('DOMContentLoaded', function() {
@@ -16,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (user) {
           // Update user-name
           document.querySelectorAll('.user-name').forEach(el => {
-            el.textContent = `${user.prenom} ${user.nom}`;
+            el.textContent = `${_e(user.prenom)} ${_e(user.nom)}`;
           });
           // Update user-role
           document.querySelectorAll('.user-role').forEach(el => {
@@ -24,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function() {
           });
           // Update user-av
           document.querySelectorAll('.user-av').forEach(el => {
-            el.textContent = user.prenom.charAt(0).toUpperCase();
+            el.textContent = _e(user.prenom).charAt(0).toUpperCase();
           });
           
           // Profil.html inputs
@@ -210,7 +216,7 @@ function showToast(msg, type = 'success') {
   toast.innerHTML = `
     <div style="position:fixed;bottom:1.5rem;right:1.5rem;background:white;border-left:4px solid ${colors[type]};border-radius:.75rem;padding:1rem 1.25rem;box-shadow:0 8px 30px rgba(0,0,0,.12);z-index:9999;display:flex;align-items:center;gap:.75rem;min-width:280px;animation:slideIn .3s ease">
       <i class="fas fa-${icons[type]}" style="color:${colors[type]};font-size:1.1rem;flex-shrink:0"></i>
-      <span style="font-size:.875rem;font-weight:500;color:#1E293B">${msg}</span>
+      <span style="font-size:.875rem;font-weight:500;color:#1E293B">${_e(msg)}</span>
       <button onclick="this.closest('div').parentElement.remove()" style="margin-left:auto;background:none;border:none;color:#94A3B8;cursor:pointer;font-size:.9rem;padding:0">×</button>
     </div>`;
   document.body.appendChild(toast);
@@ -448,7 +454,7 @@ document.addEventListener('click', function(e) {
               
               const tr = document.createElement('tr');
               tr.innerHTML = `
-                <td><div class="d-flex align-items-center gap-2"><div class="table-av" style="background:${bgClass}">${nom.charAt(0).toUpperCase()}</div><span style="font-weight:600;font-size:.85rem">${nom}</span></div></td>
+                <td><div class="d-flex align-items-center gap-2"><div class="table-av" style="background:${bgClass}">${EduSecurity.escapeHtml(nom.charAt(0).toUpperCase())}</div><span style="font-weight:600;font-size:.85rem">${EduSecurity.escapeHtml(nom)}</span></div></td>
                 <td class="text-center" style="font-size:.85rem">-</td>
                 <td class="text-center" style="font-size:.85rem">-</td>
                 <td class="text-center" style="font-size:.85rem">${note}</td>

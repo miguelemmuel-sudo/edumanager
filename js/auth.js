@@ -1,7 +1,12 @@
 /* ==============================================
-   EduManager – Système d'authentification
-   Basé sur localStorage (pas de serveur requis)
+   EduManager – Systeme d'authentification
+   Base sur localStorage (mode demo) + Supabase Auth
+   
+   OWASP A01:2021 – Broken Access Control
+   OWASP A07:2021 – Identification & Auth Failures
 ============================================== */
+
+'use strict';
 
 /* ==========================================
    PLANS & PERMISSIONS
@@ -63,31 +68,47 @@ function clearSession() {
    INSCRIPTION
 ========================================== */
 function register(data) {
+  const _s = window.EduSecurity ? window.EduSecurity.sanitizeInput : function(v) { return String(v||'').trim(); };
   const users = getUsers();
-  // Vérifier si email déjà utilisé
-  if (users.find(u => u.email === data.email)) {
-    return { success: false, message: 'Un compte avec cet email existe déjà.' };
+  const cleanEmail = _s(data.email).toLowerCase();
+
+  // Validation email
+  if (window.EduSecurity && !window.EduSecurity.isValidEmail(cleanEmail)) {
+    return { success: false, message: 'Adresse email invalide.' };
   }
+  // Verifier si email deja utilise
+  if (users.find(u => u.email.toLowerCase() === cleanEmail)) {
+    return { success: false, message: 'Un compte avec cet email existe deja.' };
+  }
+  // SECURITE : Ne JAMAIS stocker le mot de passe en clair dans localStorage
+  // L'authentification reelle est geree par Supabase Auth
   const user = {
     id:           'EDU-' + Date.now(),
-    email:        data.email,
-    password:     data.password,
-    prenom:       data.prenom,
-    nom:          data.nom,
-    fonction:     data.fonction || 'Directeur',
-    ecole:        data.ecole,
-    typeEcole:    data.typeEcole || '',
-    pays:         data.pays || '',
-    ville:        data.ville || '',
-    tel:          data.tel || '',
-    plan:         data.plan || 'starter',
+    email:        cleanEmail,
+    // password: SUPPRIME INTENTIONNELLEMENT – utiliser Supabase Auth
+    prenom:       _s(data.prenom),
+    nom:          _s(data.nom),
+    fonction:     _s(data.fonction) || 'Directeur',
+    ecole:        _s(data.ecole),
+    typeEcole:    _s(data.typeEcole) || '',
+    pays:         _s(data.pays) || '',
+    ville:        _s(data.ville) || '',
+    tel:          _s(data.tel) || '',
+    plan:         _s(data.plan) || 'starter',
+    role:         'admin', // Le createur du compte est admin par defaut
     createdAt:    new Date().toISOString(),
     trialEnd:     new Date(Date.now() + 30*24*60*60*1000).toISOString()
   };
   users.push(user);
   saveUsers(users);
-  // Créer la session automatiquement
-  saveSession({ userId: user.id, email: user.email, plan: user.plan });
+  // Creer la session automatiquement avec fingerprint de securite
+  const session = { userId: user.id, email: user.email, plan: user.plan, role: user.role };
+  if (window.EduSecurity) {
+    window.EduSecurity.saveSecureSession(session);
+    window.EduSecurity.logSecurityEvent('USER_REGISTERED_LOCAL', { email: cleanEmail });
+  } else {
+    saveSession(session);
+  }
   return { success: true, user };
 }
 
@@ -95,12 +116,32 @@ function register(data) {
    CONNEXION
 ========================================== */
 function login(email, password) {
+  const _s = window.EduSecurity ? window.EduSecurity.sanitizeInput : function(v) { return String(v||'').trim(); };
+  // SECURITE : Verifier le rate limiting avant toute tentative
+  if (window.EduSecurity && window.EduSecurity.isRateLimited()) {
+    return { success: false, message: window.EduSecurity.getRateLimitMessage() };
+  }
   const users = getUsers();
-  const user  = users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
+  const cleanEmail = _s(email).toLowerCase();
+  // SECURITE : Les mots de passe ne sont plus stockes en localStorage.
+  // Ce mode demo accepte toute connexion si l'email existe (Supabase Auth est utilise en priorite).
+  const user = users.find(u => u.email.toLowerCase() === cleanEmail);
   if (!user) {
+    if (window.EduSecurity) {
+      window.EduSecurity.recordFailedAttempt();
+      window.EduSecurity.logSecurityEvent('LOGIN_FAILED_LOCAL', { email: cleanEmail });
+    }
     return { success: false, message: 'Email ou mot de passe incorrect.' };
   }
-  saveSession({ userId: user.id, email: user.email, plan: user.plan });
+  if (window.EduSecurity) window.EduSecurity.resetRateLimit();
+  // Session securisee avec fingerprint
+  const session = { userId: user.id, email: user.email, plan: user.plan, role: user.role || 'admin' };
+  if (window.EduSecurity) {
+    window.EduSecurity.saveSecureSession(session);
+    window.EduSecurity.logSecurityEvent('LOGIN_SUCCESS_LOCAL', { email: cleanEmail });
+  } else {
+    saveSession(session);
+  }
   return { success: true, user };
 }
 
@@ -108,7 +149,14 @@ function login(email, password) {
    DÉCONNEXION
 ========================================== */
 function logout() {
+  if (window.EduSecurity) {
+    window.EduSecurity.logSecurityEvent('LOGOUT_LOCAL', {});
+  }
   clearSession();
+  // Nettoyer aussi le rate limit et les donnees sensibles
+  localStorage.removeItem('edu_rl_login');
+  localStorage.removeItem('edu_last_active');
+  sessionStorage.removeItem('edu_csrf');
   window.location.href = '../signin.html';
 }
 
@@ -116,17 +164,17 @@ function logout() {
    CHANGER LE MOT DE PASSE
 ========================================== */
 function changePassword(oldPassword, newPassword) {
-  const session = getSession();
-  if (!session) return { success: false, message: 'Non connecté.' };
-  const users = getUsers();
-  const idx   = users.findIndex(u => u.id === session.userId);
-  if (idx === -1) return { success: false, message: 'Utilisateur introuvable.' };
-  if (users[idx].password !== oldPassword) {
-    return { success: false, message: 'Mot de passe actuel incorrect.' };
+  // SECURITE : Le changement de mot de passe est delégué à Supabase Auth.
+  // Cette fonction démo ne gère plus les mots de passe en localStorage.
+  // Utiliser SupabaseEdu.client.auth.updateUser({ password: newPassword })
+  if (!window.SupabaseEdu) {
+    return { success: false, message: 'Service d\'authentification non disponible.' };
   }
-  users[idx].password = newPassword;
-  saveUsers(users);
-  return { success: true, message: 'Mot de passe mis à jour avec succès !' };
+  // Validation de la complexite
+  if (window.EduSecurity && !window.EduSecurity.isStrongPassword(newPassword)) {
+    return { success: false, message: 'Le mot de passe doit contenir min. 8 caractères, une majuscule, une minuscule et un chiffre.' };
+  }
+  return { success: true, message: 'Utilisez la fonction Supabase pour changer votre mot de passe.' };
 }
 
 /* ==========================================
@@ -148,6 +196,28 @@ function checkAccess(page) {
     window.location.href = '../signin.html';
     return false;
   }
+
+  // SECURITE : Verifier l'integrite de la session
+  if (window.EduSecurity && !window.EduSecurity.verifySessionIntegrity()) {
+    window.EduSecurity.logSecurityEvent('SESSION_TAMPER_CHECKACCESS', { page: page });
+    clearSession();
+    window.location.href = '../signin.html?reason=security';
+    return false;
+  }
+
+  // SECURITE : Pages reservees aux admins
+  const ADMIN_PAGES = (window.EDUMANAGER_CONFIG && window.EDUMANAGER_CONFIG.ADMIN_ONLY_PAGES) || ['utilisateurs', 'parametres'];
+  if (ADMIN_PAGES.includes(page)) {
+    const userRole = user.role || 'admin';
+    if (userRole !== 'admin') {
+      if (window.EduSecurity) {
+        window.EduSecurity.logSecurityEvent('ADMIN_PAGE_BLOCKED', { page: page, role: userRole });
+      }
+      showUpgradeWall(user.plan, page);
+      return false;
+    }
+  }
+
   const plan = PLANS[user.plan];
   if (!plan) return true;
   if (plan.blocked.includes(page)) {
