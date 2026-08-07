@@ -36,7 +36,7 @@
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 <header class="topbar" id="topbar">
   <button class="topbar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-  <div class="topbar-search"><i class="fas fa-search"></i><input type="text" placeholder="Rechercher une classeâ€¦"/></div>
+  <div class="topbar-search"><i class="fas fa-search"></i><input type="text" placeholder="Rechercher une classe…"/></div>
   <div class="topbar-actions"><button class="topbar-btn"><i class="fas fa-bell"></i><span class="notif-dot"></span></button><div class="topbar-divider"></div><div class="user-av" style="cursor:pointer">D</div></div>
 </header>
 <main class="main-content" id="mainContent">
@@ -130,7 +130,7 @@ document.querySelector('#addClasseModal .modal-footer .btn-primary').addEventLis
   if (!section) {
     const wrapper = document.createElement('div');
     wrapper.innerHTML = `
-      <h6 class="fw-bold mb-3 text-muted text-uppercase" style="font-size:.75rem;letter-spacing:.5px;margin-top:2rem" data-niveau-title="${niveau}">${niveau} â€” Nouveau niveau</h6>
+      <h6 class="fw-bold mb-3 text-muted text-uppercase" style="font-size:.75rem;letter-spacing:.5px;margin-top:2rem" data-niveau-title="${niveau}">${niveau} — Nouveau niveau</h6>
       <div class="row g-3 mb-4" data-niveau="${niveau}"></div>`;
     document.querySelector('.main-content > .page-header').after(wrapper);
     section = document.querySelector(`[data-niveau="${niveau}"]`);
@@ -145,10 +145,10 @@ document.querySelector('#addClasseModal .modal-footer .btn-primary').addEventLis
         <span class="status-badge ${badgeClass}">0 élève</span>
       </div>
       <div class="row g-2 mb-3">
-        <div class="col-6"><div class="text-muted" style="font-size:.72rem">Prof. principal</div><div style="font-size:.82rem;font-weight:600">${profPrinc || 'â€”'}</div></div>
-        <div class="col-6"><div class="text-muted" style="font-size:.72rem">Salle</div><div style="font-size:.82rem;font-weight:600">${salle || 'â€”'}</div></div>
-        <div class="col-6"><div class="text-muted" style="font-size:.72rem">Moy. générale</div><div style="font-size:.82rem;font-weight:600;color:var(--muted)">â€”</div></div>
-        <div class="col-6"><div class="text-muted" style="font-size:.72rem">Assiduité</div><div style="font-size:.82rem;font-weight:600">â€”</div></div>
+        <div class="col-6"><div class="text-muted" style="font-size:.72rem">Prof. principal</div><div style="font-size:.82rem;font-weight:600">${profPrinc || '—'}</div></div>
+        <div class="col-6"><div class="text-muted" style="font-size:.72rem">Salle</div><div style="font-size:.82rem;font-weight:600">${salle || '—'}</div></div>
+        <div class="col-6"><div class="text-muted" style="font-size:.72rem">Moy. générale</div><div style="font-size:.82rem;font-weight:600;color:var(--muted)">—</div></div>
+        <div class="col-6"><div class="text-muted" style="font-size:.72rem">Assiduité</div><div style="font-size:.82rem;font-weight:600">—</div></div>
       </div>
       <div class="prog-bar mb-1"><div class="prog-fill" style="width:0%;background:${borderColor}"></div></div>
       <div style="font-size:.72rem;color:var(--muted)">Capacité : 0 / ${capacite} places</div>
@@ -177,7 +177,7 @@ document.querySelector('#addClasseModal .modal-footer .btn-primary').addEventLis
   const kpi = document.querySelector('.sc-value');
   if (kpi) kpi.textContent = String(parseInt(kpi.textContent) + 1);
 
-  showToast(`âœ… Classe "${nom}" créée avec succès !`, 'success');
+  showToast(`✅ Classe "${nom}" créée avec succès !`, 'success');
 });
 </script>
 

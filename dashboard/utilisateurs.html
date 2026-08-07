@@ -36,7 +36,7 @@
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 <header class="topbar" id="topbar">
   <button class="topbar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-  <div class="topbar-search"><i class="fas fa-search"></i><input type="text" placeholder="Rechercher un utilisateurâ€¦" id="searchInput" oninput="filterTable()"/></div>
+  <div class="topbar-search"><i class="fas fa-search"></i><input type="text" placeholder="Rechercher un utilisateur…" id="searchInput" oninput="filterTable()"/></div>
   <div class="topbar-actions"><button class="topbar-btn"><i class="fas fa-bell"></i><span class="notif-dot"></span></button><div class="topbar-divider"></div><div class="user-av" style="cursor:pointer">D</div></div>
 </header>
 
@@ -121,7 +121,7 @@
       <div class="mb-3">
         <label class="form-label">Rôle *</label>
         <select class="form-select" id="roleSelect" onchange="showRoleInfo()">
-          <option value="">Choisir un rôleâ€¦</option>
+          <option value="">Choisir un rôle…</option>
           <option value="admin">Administrateur</option>
           <option value="enseignant">Enseignant</option>
           <option value="gestionnaire">Gestionnaire</option>
@@ -159,9 +159,9 @@ function toggleUser(btn) {
   }
 }
 const roleDesc = {
-  admin: 'âš ï¸ Accès complet à toutes les fonctionnalités de la plateforme, y compris la gestion des utilisateurs et des paramètres.',
-  enseignant: 'ðŸ“š Accès à ses classes, saisie des notes, emploi du temps et messagerie. Pas d\'accès aux finances.',
-  gestionnaire: 'ðŸ’³ Gestion des paiements, inscriptions et rapports financiers. Pas d\'accès à la gestion des utilisateurs.'
+  admin: '⚠️ Accès complet à toutes les fonctionnalités de la plateforme, y compris la gestion des utilisateurs et des paramètres.',
+  enseignant: '📚 Accès à ses classes, saisie des notes, emploi du temps et messagerie. Pas d\'accès aux finances.',
+  gestionnaire: '💳 Gestion des paiements, inscriptions et rapports financiers. Pas d\'accès à la gestion des utilisateurs.'
 };
 function showRoleInfo() {
   const v = document.getElementById('roleSelect').value;

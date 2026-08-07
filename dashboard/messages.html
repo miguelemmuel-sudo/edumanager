@@ -67,7 +67,7 @@
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 <header class="topbar" id="topbar">
   <button class="topbar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-  <div class="topbar-search"><i class="fas fa-search"></i><input type="text" placeholder="Rechercher un messageâ€¦"/></div>
+  <div class="topbar-search"><i class="fas fa-search"></i><input type="text" placeholder="Rechercher un message…"/></div>
   <div class="topbar-actions"><button class="topbar-btn"><i class="fas fa-bell"></i><span class="notif-dot"></span></button><div class="topbar-divider"></div><div class="user-av" style="cursor:pointer">D</div></div>
 </header>
 
@@ -83,7 +83,7 @@
       <div class="msg-sidebar-header">
         <div class="input-group input-group-sm">
           <span class="input-group-text bg-light border-end-0"><i class="fas fa-search text-muted" style="font-size:.8rem"></i></span>
-          <input type="text" class="form-control bg-light border-start-0" placeholder="Rechercherâ€¦" style="font-size:.82rem"/>
+          <input type="text" class="form-control bg-light border-start-0" placeholder="Rechercher…" style="font-size:.82rem"/>
         </div>
       </div>
       <div class="msg-list">
@@ -171,7 +171,7 @@
       <div class="msg-chat-footer">
         <div class="msg-input-wrap">
           <button class="topbar-btn" title="Joindre un fichier" style="width:30px;height:30px;flex-shrink:0"><i class="fas fa-paperclip" style="font-size:.85rem"></i></button>
-          <textarea class="msg-input" placeholder="Écrire un messageâ€¦" rows="1" id="msgInput" onkeydown="handleEnter(event)"></textarea>
+          <textarea class="msg-input" placeholder="Écrire un message…" rows="1" id="msgInput" onkeydown="handleEnter(event)"></textarea>
           <button class="msg-send-btn" onclick="sendMessage()" title="Envoyer">
             <i class="fas fa-paper-plane" style="font-size:.8rem"></i>
           </button>
@@ -194,12 +194,12 @@
     <div class="modal-body">
       <div class="mb-3">
         <label class="form-label">Destinataire(s) *</label>
-        <input type="text" class="form-control" placeholder="Nom du parent, enseignantâ€¦"/>
+        <input type="text" class="form-control" placeholder="Nom du parent, enseignant…"/>
       </div>
       <div class="mb-3">
         <label class="form-label">Ou envoyer à un groupe</label>
         <select class="form-select">
-          <option value="">Sélectionner un groupeâ€¦</option>
+          <option value="">Sélectionner un groupe…</option>
           <option>Tous les parents</option>
           <option>Parents – 3ème B</option>
           <option>Parents – 6ème A</option>
@@ -207,7 +207,7 @@
         </select>
       </div>
       <div class="mb-3"><label class="form-label">Objet</label><input type="text" class="form-control" placeholder="Objet du message"/></div>
-      <div class="mb-3"><label class="form-label">Message *</label><textarea class="form-control" rows="5" placeholder="Rédigez votre messageâ€¦"></textarea></div>
+      <div class="mb-3"><label class="form-label">Message *</label><textarea class="form-control" rows="5" placeholder="Rédigez votre message…"></textarea></div>
     </div>
     <div class="modal-footer">
       <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Annuler</button>
@@ -314,7 +314,7 @@ document.getElementById('msgInput').addEventListener('input', function(){
 
 function insertEmoji() {
   const inp = document.getElementById('msgInput');
-  inp.value += ' ðŸ˜Š';
+  inp.value += ' 😊';
   inp.focus();
 }
 

@@ -248,7 +248,7 @@
       </form>
 
       <p class="text-center text-muted small mt-4 mb-0">
-        Déjà un compte ? <a href="signin.html" class="text-primary fw-semibold text-decoration-none">Se connecter â†’</a>
+        Déjà un compte ? <a href="signin.html" class="text-primary fw-semibold text-decoration-none">Se connecter →</a>
       </p>
     </div>
   </div>
@@ -357,7 +357,7 @@ const iti2 = window.intlTelInput(inputPhone2, {
 });
 
 /* ====================================================
-   SOUMISSION DU FORMULAIRE â†’ ENREGISTREMENT RÉEL
+   SOUMISSION DU FORMULAIRE → ENREGISTREMENT RÉEL
 ==================================================== */
 document.getElementById('signupForm').addEventListener('submit', function(e) {
   e.preventDefault();
@@ -414,9 +414,9 @@ document.getElementById('signupForm').addEventListener('submit', function(e) {
     return;
   }
 
-  /* Succès â†’ redirection dashboard */
+  /* Succès → redirection dashboard */
   const btn = this.querySelector('[type=submit]');
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Création en coursâ€¦';
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Création en cours…';
   btn.disabled = true;
 
   setTimeout(() => {

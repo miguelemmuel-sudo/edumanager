@@ -36,7 +36,7 @@
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 <header class="topbar" id="topbar">
   <button class="topbar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-  <div class="topbar-search"><i class="fas fa-search"></i><input type="text" placeholder="Rechercher un paiementâ€¦"/></div>
+  <div class="topbar-search"><i class="fas fa-search"></i><input type="text" placeholder="Rechercher un paiement…"/></div>
   <div class="topbar-actions"><button class="topbar-btn"><i class="fas fa-bell"></i><span class="notif-dot"></span></button><div class="topbar-divider"></div><div class="user-av" style="cursor:pointer">D</div></div>
 </header>
 
@@ -126,7 +126,7 @@
         <div class="col-6"><label class="form-label">Montant payé *</label><input type="number" class="form-control" placeholder="0"/></div>
         <div class="col-6"><label class="form-label">Mode de paiement</label><select class="form-select"><option>Espèces</option><option>Virement</option><option>Mobile Money</option><option>Chèque</option></select></div>
         <div class="col-12"><label class="form-label">Date du paiement</label><input type="date" class="form-control"/></div>
-        <div class="col-12"><label class="form-label">Note / Remarque</label><textarea class="form-control" rows="2" placeholder="Optionnelâ€¦"></textarea></div>
+        <div class="col-12"><label class="form-label">Note / Remarque</label><textarea class="form-control" rows="2" placeholder="Optionnel…"></textarea></div>
       </div>
     </div>
     <div class="modal-footer"><button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Annuler</button><button type="button" class="btn btn-primary rounded-pill px-4 fw-semibold">Enregistrer &amp; Générer reçu</button></div>
@@ -165,7 +165,7 @@ document.querySelector('#addPaiementModal .modal-footer .btn-primary').addEventL
         <span style="font-size:.85rem;font-weight:600">${eleve}</span>
       </div>
     </td>
-    <td><span class="status-badge primary">â€”</span></td>
+    <td><span class="status-badge primary">—</span></td>
     <td style="font-weight:600;font-size:.85rem">${parseInt(montant).toLocaleString('fr-FR')} F</td>
     <td style="font-size:.85rem;color:var(--success)">${parseInt(montant).toLocaleString('fr-FR')} F</td>
     <td style="font-size:.85rem;color:var(--success)">0 F</td>
@@ -187,7 +187,7 @@ document.querySelector('#addPaiementModal .modal-footer .btn-primary').addEventL
   modal.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
   modal.querySelectorAll('textarea').forEach(t => t.value = '');
 
-  showToast(`âœ… Paiement de ${parseInt(montant).toLocaleString('fr-FR')} F enregistré pour ${eleve} !`, 'success');
+  showToast(`✅ Paiement de ${parseInt(montant).toLocaleString('fr-FR')} F enregistré pour ${eleve} !`, 'success');
 });
 </script>
 

@@ -38,7 +38,7 @@
 <!-- TOPBAR -->
 <header class="topbar" id="topbar">
   <button class="topbar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-  <div class="topbar-search"><i class="fas fa-search"></i><input type="text" placeholder="Rechercher un élèveâ€¦" id="searchInput" oninput="filterTable()"/></div>
+  <div class="topbar-search"><i class="fas fa-search"></i><input type="text" placeholder="Rechercher un élève…" id="searchInput" oninput="filterTable()"/></div>
   <div class="topbar-actions">
     <button class="topbar-btn"><i class="fas fa-bell"></i><span class="notif-dot"></span></button>
     <div class="topbar-divider"></div>
@@ -105,7 +105,7 @@
         <li class="page-item active"><a class="page-link" href="#" style="border-radius:6px;background:var(--primary);border-color:var(--primary)">1</a></li>
         <li class="page-item"><a class="page-link" href="#" style="border-radius:6px">2</a></li>
         <li class="page-item"><a class="page-link" href="#" style="border-radius:6px">3</a></li>
-        <li class="page-item"><a class="page-link" href="#" style="border-radius:6px">â€¦</a></li>
+        <li class="page-item"><a class="page-link" href="#" style="border-radius:6px">…</a></li>
         <li class="page-item"><a class="page-link" href="#" style="border-radius:6px">125</a></li>
         <li class="page-item"><a class="page-link" href="#" style="border-radius:6px">»</a></li>
       </ul></nav>
@@ -250,8 +250,8 @@ document.querySelector('#addEleveModal .modal-footer .btn-primary').addEventList
     </td>
     <td style="font-size:.82rem">ELV-2026-${matNum}</td>
     <td><span class="status-badge primary">${classe}</span></td>
-    <td style="font-size:.82rem">${dob || 'â€”'}</td>
-    <td style="font-size:.82rem">${parent || 'â€”'} · ${tel || 'â€”'}</td>
+    <td style="font-size:.82rem">${dob || '—'}</td>
+    <td style="font-size:.82rem">${parent || '—'} · ${tel || '—'}</td>
     <td>
       <div class="prog-bar" style="width:80px">
         <div class="prog-fill" style="width:0%;background:var(--warning)"></div>
@@ -278,7 +278,7 @@ document.querySelector('#addEleveModal .modal-footer .btn-primary').addEventList
   modal.querySelectorAll('input').forEach(i => { i.value = ''; i.style.borderColor = ''; });
   modal.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
 
-  showToast(`âœ… ${fullName} ajouté(e) en ${classe} avec succès !`, 'success');
+  showToast(`✅ ${fullName} ajouté(e) en ${classe} avec succès !`, 'success');
   updateCount();
 });
 </script>
