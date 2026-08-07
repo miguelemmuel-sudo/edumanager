@@ -169,23 +169,16 @@
       <div class="dash-card h-100">
         <div class="dash-card-header">
           <span class="dash-card-title"><i class="fas fa-chart-bar text-primary me-2"></i>Inscriptions mensuelles</span>
-          <select class="form-select form-select-sm" style="width:auto;font-size:.8rem">
-            <option>2025-2026</option><option>2024-2025</option>
+          <select id="academicYearSelect" class="form-select form-select-sm" style="width:auto;font-size:.8rem">
+            <option>2026-2027</option>
           </select>
         </div>
         <div class="dash-card-body">
-          <div class="bar-chart mb-2">
-            <div class="bar-item" style="height:42%;background:linear-gradient(180deg,#2563EB,#60A5FA)" title="Sep: 105"></div>
-            <div class="bar-item" style="height:58%;background:linear-gradient(180deg,#2563EB,#60A5FA)" title="Oct: 145"></div>
-            <div class="bar-item" style="height:75%;background:linear-gradient(180deg,#10B981,#34D399)" title="Nov: 188"></div>
-            <div class="bar-item" style="height:52%;background:linear-gradient(180deg,#2563EB,#60A5FA)" title="Déc: 130"></div>
-            <div class="bar-item" style="height:88%;background:linear-gradient(180deg,#10B981,#34D399)" title="Jan: 220"></div>
-            <div class="bar-item" style="height:68%;background:linear-gradient(180deg,#2563EB,#60A5FA)" title="Fév: 170"></div>
-            <div class="bar-item" style="height:100%;background:linear-gradient(180deg,#10B981,#34D399)" title="Mar: 250"></div>
-            <div class="bar-item" style="height:80%;background:linear-gradient(180deg,#2563EB,#60A5FA)" title="Avr: 200"></div>
+          <div class="bar-chart mb-2" id="enrollmentsChart">
+            <!-- Dynamically populated by JS -->
           </div>
-          <div class="d-flex justify-content-between" style="font-size:.72rem;color:var(--muted)">
-            <span>Sep</span><span>Oct</span><span>Nov</span><span>Déc</span><span>Jan</span><span>Fév</span><span>Mar</span><span>Avr</span>
+          <div class="d-flex justify-content-between" style="font-size:.72rem;color:var(--muted)" id="enrollmentsLabels">
+            <!-- Dynamically populated by JS -->
           </div>
           <div class="d-flex gap-3 mt-3" style="font-size:.78rem">
             <span><span style="width:10px;height:10px;border-radius:2px;background:#2563EB;display:inline-block;margin-right:4px"></span>Inscriptions</span>
@@ -200,28 +193,28 @@
           <span class="dash-card-title"><i class="fas fa-chart-pie text-success me-2"></i>Paiements</span>
         </div>
         <div class="dash-card-body text-center">
-          <div class="donut mx-auto mb-3"></div>
+          <div class="donut mx-auto mb-3" id="paymentsDonut"></div>
           <div class="d-flex flex-column gap-2 text-start mt-2">
             <div class="d-flex align-items-center justify-content-between">
               <div class="d-flex align-items-center gap-2">
                 <div style="width:10px;height:10px;border-radius:2px;background:var(--primary)"></div>
                 <span style="font-size:.8rem">Payés</span>
               </div>
-              <span class="fw-semibold" style="font-size:.8rem">72% · 900 élèves</span>
+              <span class="fw-semibold" style="font-size:.8rem" id="paymentsPaidText">0% · 0 élèves</span>
             </div>
             <div class="d-flex align-items-center justify-content-between">
               <div class="d-flex align-items-center gap-2">
                 <div style="width:10px;height:10px;border-radius:2px;background:var(--warning)"></div>
                 <span style="font-size:.8rem">Partiels</span>
               </div>
-              <span class="fw-semibold" style="font-size:.8rem">16% · 200 élèves</span>
+              <span class="fw-semibold" style="font-size:.8rem" id="paymentsPartialText">0% · 0 élèves</span>
             </div>
             <div class="d-flex align-items-center justify-content-between">
               <div class="d-flex align-items-center gap-2">
                 <div style="width:10px;height:10px;border-radius:2px;background:var(--danger)"></div>
                 <span style="font-size:.8rem">Impayés</span>
               </div>
-              <span class="fw-semibold" style="font-size:.8rem">12% · 148 élèves</span>
+              <span class="fw-semibold" style="font-size:.8rem" id="paymentsUnpaidText">0% · 0 élèves</span>
             </div>
           </div>
           <a href="/dashboard/paiements.html" class="btn btn-outline-primary btn-sm rounded-pill w-100 mt-3" style="font-size:.8rem">Voir les paiements</a>
