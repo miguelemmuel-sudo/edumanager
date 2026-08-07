@@ -1,0 +1,22 @@
+$files = Get-ChildItem -Path . -Recurse -Filter *.html
+$enc = [System.Text.Encoding]::GetEncoding("Windows-1252")
+$utf8NoBom = New-Object System.Text.UTF8Encoding $false
+
+foreach ($file in $files) {
+    $content = [System.IO.File]::ReadAllText($file.FullName, $enc)
+    
+    $isDashboard = $file.FullName -match 'dashboard'
+    $manifestPath = if ($isDashboard) { '../manifest.json' } else { 'manifest.json' }
+    $swPath = if ($isDashboard) { '../sw.js' } else { 'sw.js' }
+
+    if ($content -notmatch 'rel="manifest"') {
+        $content = $content -replace '</head>', "  <link rel=`"manifest`" href=`"$manifestPath`" />`r`n</head>"
+    }
+
+    if ($content -notmatch 'serviceWorker') {
+        $swScript = "`r`n<script>`r`n  if ('serviceWorker' in navigator) {`r`n    navigator.serviceWorker.register('$swPath');`r`n  }`r`n</script>`r`n"
+        $content = $content -replace '</body>', "$swScript</body>"
+    }
+
+    [System.IO.File]::WriteAllText($file.FullName, $content, $utf8NoBom)
+}

@@ -1,0 +1,10 @@
+User-agent: *
+Disallow: /dashboard/
+Disallow: /js/
+Disallow: /css/
+Disallow: /1/
+Disallow: /dossierEducation/
+Disallow: /*.json$
+Disallow: /*.md$
+Disallow: /.git/
+Disallow: /.env
