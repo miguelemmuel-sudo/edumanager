@@ -128,12 +128,13 @@
       } else {
         const btn = document.querySelector('#signinForm button[type="submit"]');
         const oldHtml = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Erreur';
+        btn.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>' + (result.message || 'Erreur');
         btn.classList.replace('btn-primary', 'btn-danger');
         setTimeout(() => {
           btn.innerHTML = oldHtml;
           btn.classList.replace('btn-danger', 'btn-primary');
-        }, 2000);
+          btn.disabled = false;
+        }, 4000);
       }
     } else {
       window.location.href = 'dashboard/index.html';
