@@ -86,66 +86,19 @@
           <input type="text" class="form-control bg-light border-start-0" placeholder="Rechercher…" style="font-size:.82rem"/>
         </div>
       </div>
-      <div class="msg-list">
-
-        <!-- Conversations -->
-        <div class="msg-item active unread" onclick="openMsg(this,'M. Diallo Parent','parent-diallo')">
-          <div class="msg-item-av" style="background:#2563EB">D</div>
-          <div style="flex:1;min-width:0">
-            <div class="d-flex justify-content-between"><span class="msg-item-subject">M. Diallo (Parent Amina)</span><span class="msg-item-time">10:24</span></div>
-            <div class="msg-item-preview">Bonjour, je voudrais avoir des informations sur les résultats...</div>
-          </div>
-          <div class="msg-unread-dot"></div>
-        </div>
-        <div class="msg-item unread" onclick="openMsg(this,'Mme Mensah Parent','parent-mensah')">
-          <div class="msg-item-av" style="background:#10B981">M</div>
-          <div style="flex:1;min-width:0">
-            <div class="d-flex justify-content-between"><span class="msg-item-subject">Mme Mensah (Parent Kofi)</span><span class="msg-item-time">09:15</span></div>
-            <div class="msg-item-preview">Mon fils sera absent demain pour raison médicale...</div>
-          </div>
-          <div class="msg-unread-dot"></div>
-        </div>
-        <div class="msg-item" onclick="openMsg(this,'M. Koné Enseignant','ens-kone')">
-          <div class="msg-item-av" style="background:#8B5CF6">K</div>
-          <div style="flex:1;min-width:0">
-            <div class="d-flex justify-content-between"><span class="msg-item-subject">M. Koné (Maths)</span><span class="msg-item-time">Hier</span></div>
-            <div class="msg-item-preview">J'ai saisi toutes les notes du 1er trimestre pour la 3ème B</div>
-          </div>
-        </div>
-        <div class="msg-item unread" onclick="openMsg(this,'M. Traoré Parent','parent-traore')">
-          <div class="msg-item-av" style="background:#F59E0B">T</div>
-          <div style="flex:1;min-width:0">
-            <div class="d-flex justify-content-between"><span class="msg-item-subject">M. Traoré (Parent Fatima)</span><span class="msg-item-time">Hier</span></div>
-            <div class="msg-item-preview">Concernant les frais scolaires impayés, je vous contacterai...</div>
-          </div>
-          <div class="msg-unread-dot"></div>
-        </div>
-        <div class="msg-item unread" onclick="openMsg(this,'Mme Bah Enseignante','ens-bah')">
-          <div class="msg-item-av" style="background:#EF4444">B</div>
-          <div style="flex:1;min-width:0">
-            <div class="d-flex justify-content-between"><span class="msg-item-subject">Mme Bah (SVT)</span><span class="msg-item-time">Lun.</span></div>
-            <div class="msg-item-preview">Demande de matériel de laboratoire pour le cours de SVT...</div>
-          </div>
-          <div class="msg-unread-dot"></div>
-        </div>
-        <div class="msg-item" onclick="openMsg(this,'M. Ben Ali Parent','parent-benali')">
-          <div class="msg-item-av" style="background:#06B6D4">B</div>
-          <div style="flex:1;min-width:0">
-            <div class="d-flex justify-content-between"><span class="msg-item-subject">M. Ben Ali (Parent Youssef)</span><span class="msg-item-time">Lun.</span></div>
-            <div class="msg-item-preview">Merci pour l'envoi du bulletin du 1er trimestre.</div>
-          </div>
-        </div>
+      <div class="msg-list" id="msgList">
+        <!-- Données dynamiques insérées ici -->
       </div>
     </div>
 
     <!-- Zone de chat -->
     <div class="msg-chat">
       <!-- Header chat -->
-      <div class="msg-chat-header">
-        <div class="msg-item-av" style="background:#2563EB;width:38px;height:38px">D</div>
+      <div class="msg-chat-header" id="chatHeader" style="display:none;">
+        <div class="msg-item-av" id="chatHeaderAv" style="background:#2563EB;width:38px;height:38px">D</div>
         <div>
-          <div class="fw-semibold" id="chatName">M. Diallo (Parent Amina)</div>
-          <div class="text-muted" style="font-size:.75rem">Parent d'élève · Amina Diallo – 3ème B</div>
+          <div class="fw-semibold" id="chatName">Sélectionnez une conversation</div>
+          <div class="text-muted" style="font-size:.75rem" id="chatDesc"></div>
         </div>
         <div class="ms-auto d-flex gap-2">
           <button class="topbar-btn" title="Appeler"><i class="fas fa-phone"></i></button>
@@ -154,18 +107,7 @@
       </div>
       <!-- Messages -->
       <div class="msg-chat-body" id="chatBody">
-        <div>
-          <div class="bubble received">Bonjour M. le Directeur, je voudrais avoir des informations sur les résultats du 1er trimestre de ma fille Amina Diallo (3ème B). Quand seront disponibles les bulletins ?</div>
-          <div class="bubble-meta">M. Diallo · 10:15</div>
-        </div>
-        <div>
-          <div class="bubble sent">Bonjour M. Diallo, les bulletins du 1er trimestre seront disponibles le vendredi 24 janvier. Vous recevrez une notification par SMS dès qu'ils seront prêts à télécharger. Les résultats d'Amina sont très satisfaisants ce trimestre.</div>
-          <div class="bubble-meta sent-meta">Vous · 10:20</div>
-        </div>
-        <div>
-          <div class="bubble received">Bonjour, je voudrais avoir des informations sur les résultats de ma fille. Elle a mentionné avoir eu quelques difficultés en mathématiques ce trimestre.</div>
-          <div class="bubble-meta">M. Diallo · 10:24</div>
-        </div>
+        <div class="msg-empty">Aucun message</div>
       </div>
       <!-- Input -->
       <div class="msg-chat-footer">
@@ -219,30 +161,7 @@
 <script src="/js/vendor/bootstrap.bundle.min.js"></script>
 <script src="../js/dashboard.js"></script>
 <script>
-function openMsg(el, name) {
-  document.querySelectorAll('.msg-item').forEach(i => i.classList.remove('active'));
-  el.classList.add('active');
-  el.classList.remove('unread');
-  el.querySelector('.msg-unread-dot')?.remove();
-  document.getElementById('chatName').textContent = name;
-  
-  const body = document.getElementById('chatBody');
-  body.innerHTML = '';
-  
-  let store = JSON.parse(localStorage.getItem('edu_messages') || '{}');
-  const saved = store[name] || [];
-  
-  if (saved.length === 0) {
-     body.innerHTML = `<div><div class="bubble received">Bonjour, c'est ${name}.</div><div class="bubble-meta">${name} &middot; Récemment</div></div>`;
-  } else {
-     saved.forEach(msgHtml => {
-       const wrap = document.createElement('div');
-       wrap.innerHTML = msgHtml;
-       body.appendChild(wrap);
-     });
-  }
-  body.scrollTop = body.scrollHeight;
-}
+// Logic moved to app.js
 
 function sendMessage() {
   const inp = document.getElementById('msgInput');

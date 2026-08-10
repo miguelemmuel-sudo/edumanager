@@ -42,6 +42,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         // setupNotesModal();
         setupRealtime('notes', fetchAndRenderNotes);
     }
+    // ----- MESSAGES -----
+    else if (path.includes('messages.html')) {
+        await fetchAndRenderMessages();
+        setupRealtime('messages', fetchAndRenderMessages);
+    }
     // ----- NOTIFICATIONS -----
     else if (path.includes('notifications.html')) {
         await fetchAndRenderNotifications();
@@ -437,6 +442,38 @@ async function initDashboardStats() {
     if (enseignantsCountEl && resEn.count !== null) enseignantsCountEl.textContent = resEn.count;
     if (classesCountEl && resCl.count !== null) classesCountEl.textContent = resCl.count;
     if (tauxEl) tauxEl.textContent = '100%'; // Taux de présence factice pour le moment
+
+    // Activité récente (fetch latest notifications)
+    const recentList = document.getElementById('recentActivityFeed');
+    if (recentList) {
+        const { data: recentNotifs } = await window.supabase
+            .from('notifications')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(5);
+
+        if (recentNotifs && recentNotifs.length > 0) {
+            recentList.innerHTML = '';
+            recentNotifs.forEach(n => {
+                const iconClass = n.type_notif === 'Erreur' || n.type_notif === 'Alerte' ? 'fa-exclamation-triangle' :
+                                  n.type_notif === 'Succès' ? 'fa-check-circle' : 'fa-bell';
+                const bgClass = n.type_notif === 'Erreur' || n.type_notif === 'Alerte' ? 'bg-danger-soft text-danger' :
+                                n.type_notif === 'Succès' ? 'bg-success-soft text-success' : 'bg-primary-soft text-primary';
+                recentList.innerHTML += `
+                    <div class="act-item d-flex gap-3 mb-3">
+                        <div class="act-icon ${bgClass}"><i class="fas ${iconClass}"></i></div>
+                        <div>
+                            <div style="font-size:.85rem;font-weight:600">${_e(n.titre)}</div>
+                            <div style="font-size:.78rem;color:var(--muted)">${_e(n.message)}</div>
+                            <div style="font-size:.72rem;color:var(--muted)">${new Date(n.created_at).toLocaleDateString('fr-FR')}</div>
+                        </div>
+                    </div>
+                `;
+            });
+        } else {
+            recentList.innerHTML = '<div class="text-muted" style="font-size:0.85rem">Aucune activité récente</div>';
+        }
+    }
 }
 
 // --- NOTIFICATIONS ---
@@ -498,4 +535,93 @@ async function fetchAndRenderNotifications() {
     if (document.getElementById('notifLuesVal')) document.getElementById('notifLuesVal').textContent = nbLues;
     if (document.getElementById('notifTauxVal')) document.getElementById('notifTauxVal').textContent = taux + '%';
     if (document.getElementById('notifTauxBar')) document.getElementById('notifTauxBar').style.width = taux + '%';
+}
+
+// --- MESSAGES ---
+window.openMsg = async function(el, expediteur_id, nom) {
+    document.querySelectorAll('.msg-item').forEach(i => i.classList.remove('active'));
+    if(el) {
+        el.classList.add('active');
+        el.classList.remove('unread');
+        const dot = el.querySelector('.msg-unread-dot');
+        if(dot) dot.remove();
+    }
+    
+    document.getElementById('chatHeader').style.display = 'flex';
+    document.getElementById('chatName').textContent = nom;
+    document.getElementById('chatHeaderAv').textContent = nom.charAt(0).toUpperCase();
+    document.getElementById('chatDesc').textContent = "Discussion avec " + nom;
+    
+    const body = document.getElementById('chatBody');
+    body.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin text-muted"></i></div>';
+    
+    const { data: messages, error } = await window.supabase
+        .from('messages')
+        .select('*')
+        .or(`expediteur_id.eq.${expediteur_id},destinataire_id.eq.${expediteur_id}`)
+        .order('date_envoi', { ascending: true });
+        
+    if (error) {
+        body.innerHTML = `<div class="text-danger text-center py-3">Erreur de chargement</div>`;
+        return;
+    }
+
+    if (!messages || messages.length === 0) {
+        body.innerHTML = `<div class="msg-empty">Aucun message précédent.</div>`;
+        return;
+    }
+
+    body.innerHTML = '';
+    messages.forEach(m => {
+        const isSentByMe = m.expediteur_id !== expediteur_id;
+        const time = new Date(m.date_envoi).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+        
+        body.innerHTML += `
+            <div>
+                <div class="bubble ${isSentByMe ? 'sent' : 'received'}">${_e(m.contenu)}</div>
+                <div class="bubble-meta ${isSentByMe ? 'sent-meta' : ''}">${isSentByMe ? 'Vous' : _e(nom)} · ${time}</div>
+            </div>
+        `;
+    });
+    body.scrollTop = body.scrollHeight;
+};
+
+async function fetchAndRenderMessages() {
+    const list = document.getElementById('msgList');
+    if (!list) return;
+
+    const { data: messages, error } = await window.supabase
+        .from('messages')
+        .select('*')
+        .order('date_envoi', { ascending: false });
+
+    if (error) return console.error(error);
+
+    if (!messages || messages.length === 0) {
+        list.innerHTML = `<div class="text-center py-5 text-muted" style="font-size:0.85rem">Aucune conversation</div>`;
+        return;
+    }
+
+    list.innerHTML = '';
+    const seen = new Set();
+    messages.forEach(m => {
+        if (!seen.has(m.expediteur_id)) {
+            seen.add(m.expediteur_id);
+            const isUnread = !m.lu;
+            const pseudoName = m.sujet || 'Utilisateur ' + m.expediteur_id.substring(0,5);
+            const initial = pseudoName.charAt(0).toUpperCase();
+            const time = new Date(m.date_envoi).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+            
+            list.innerHTML += `
+                <div class="msg-item ${isUnread ? 'unread' : ''}" onclick="openMsg(this, '${m.expediteur_id}', '${pseudoName.replace(/'/g, "\\'")}')">
+                    <div class="msg-item-av" style="background:#2563EB">${initial}</div>
+                    <div style="flex:1;min-width:0">
+                        <div class="d-flex justify-content-between"><span class="msg-item-subject">${_e(pseudoName)}</span><span class="msg-item-time">${time}</span></div>
+                        <div class="msg-item-preview">${_e(m.contenu)}</div>
+                    </div>
+                    ${isUnread ? '<div class="msg-unread-dot"></div>' : ''}
+                </div>
+            `;
+        }
+    });
 }
