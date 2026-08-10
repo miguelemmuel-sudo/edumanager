@@ -348,16 +348,25 @@ document.querySelectorAll('.plan-opt').forEach(el=>{
 });
 
 /* ---- Initialisation intl-tel-input ---- */
-const inputPhone1 = document.querySelector("#phone1");
-const iti1 = window.intlTelInput(inputPhone1, {
-  initialCountry: "cm",
-  utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js",
-});
-const inputPhone2 = document.querySelector("#phone2");
-const iti2 = window.intlTelInput(inputPhone2, {
-  initialCountry: "cm",
-  utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js",
-});
+let iti1 = null, iti2 = null;
+try {
+  const inputPhone1 = document.querySelector("#phone1");
+  if (window.intlTelInput && inputPhone1) {
+    iti1 = window.intlTelInput(inputPhone1, {
+      initialCountry: "cm",
+      utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js",
+    });
+  }
+  const inputPhone2 = document.querySelector("#phone2");
+  if (window.intlTelInput && inputPhone2) {
+    iti2 = window.intlTelInput(inputPhone2, {
+      initialCountry: "cm",
+      utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js",
+    });
+  }
+} catch(err) {
+  console.warn("IntlTelInput init failed:", err);
+}
 
 /* ====================================================
    SOUMISSION DU FORMULAIRE → ENREGISTREMENT RÉEL
@@ -365,66 +374,78 @@ const iti2 = window.intlTelInput(inputPhone2, {
 document.getElementById('signupForm').addEventListener('submit', async function(e) {
   e.preventDefault();
 
-  /* Récupérer toutes les valeurs des 3 étapes */
-  // Étape 1
-  const ecole    = document.querySelector('#step1 input[placeholder*="Saint"]')?.value.trim()   || document.querySelector('#step1 input[type=text]')?.value.trim();
-  const typeEcole= document.querySelector('#step1 select').value;
-  const pays     = document.querySelectorAll('#step1 input[type=text]')[1]?.value.trim() || '';
-  const ville    = document.querySelectorAll('#step1 input[type=text]')[2]?.value.trim() || '';
-  const tel      = iti1.getNumber() || '';
+  try {
+    /* Récupérer toutes les valeurs des 3 étapes */
+    // Étape 1
+    const ecole    = document.querySelector('#step1 input[placeholder*="Saint"]')?.value.trim()   || document.querySelector('#step1 input[type=text]')?.value.trim();
+    const typeEcole= document.querySelector('#step1 select').value;
+    const pays     = document.querySelectorAll('#step1 input[type=text]')[1]?.value.trim() || '';
+    const ville    = document.querySelectorAll('#step1 input[type=text]')[2]?.value.trim() || '';
+    const tel      = iti1 ? iti1.getNumber() : (document.querySelector("#phone1")?.value || '');
 
-  // Étape 2
-  const prenom   = document.querySelectorAll('#step2 input[type=text]')[0]?.value.trim() || '';
-  const nom      = document.querySelectorAll('#step2 input[type=text]')[1]?.value.trim() || '';
-  const fonction = document.querySelector('#step2 select')?.value || 'Directeur';
-  const email    = document.querySelector('#step2 input[type=email]')?.value.trim() || '';
+    // Étape 2
+    const prenom   = document.querySelectorAll('#step2 input[type=text]')[0]?.value.trim() || '';
+    const nom      = document.querySelectorAll('#step2 input[type=text]')[1]?.value.trim() || '';
+    const fonction = document.querySelector('#step2 select')?.value || 'Directeur';
+    const email    = document.querySelector('#step2 input[type=email]')?.value.trim() || '';
 
-  // Étape 3
-  const password = document.getElementById('pwd2')?.value || '';
-  const confirm  = document.getElementById('confirmPwd')?.value || '';
-  const plan     = document.querySelector('input[name=plan]:checked')?.value || 'starter';
-  const terms    = document.getElementById('terms')?.checked;
+    // Étape 3
+    const password = document.getElementById('pwd2')?.value || '';
+    const confirm  = document.getElementById('confirmPwd')?.value || '';
+    const plan     = document.querySelector('input[name=plan]:checked')?.value || 'starter';
+    const terms    = document.getElementById('terms')?.checked;
 
-  /* Validations */
-  const errors = [];
-  if (!ecole)    errors.push('Nom de l\'établissement requis (Étape 1)');
-  
-  // Téléphone : valider seulement si un numéro a été saisi
-  if (inputPhone1.value.trim() && !iti1.isValidNumber()) {
-    errors.push('Numéro de téléphone invalide (Étape 1). Vérifiez la longueur.');
+    /* Validations */
+    const errors = [];
+    if (!ecole)    errors.push('Nom de l\'établissement requis (Étape 1)');
+    
+    // Téléphone : valider seulement si un numéro a été saisi
+    if (iti1 && document.querySelector("#phone1")?.value.trim() && !iti1.isValidNumber()) {
+      errors.push('Numéro de téléphone invalide (Étape 1). Vérifiez la longueur.');
+    }
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email)) {
+      errors.push('Format de l\'email invalide (Étape 2)');
+    }
+    
+    if (!password) errors.push('Mot de passe requis (Étape 3)');
+    if (password.length < 8) errors.push('Mot de passe trop court (min 8 caractères)');
+    if (password !== confirm) errors.push('Les mots de passe ne correspondent pas. Vérifiez bien les deux champs.');
+    if (!terms) errors.push('Vous devez accepter les conditions d\'utilisation');
+
+    if (errors.length > 0) {
+      showError(errors[0]);
+      return;
+    }
+
+    const btn = this.querySelector('[type=submit]');
+    const oldHtml = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Création en cours…';
+    btn.disabled = true;
+
+    /* Enregistrement via auth.js */
+    const result = typeof register !== 'undefined' ? await register({ ecole, typeEcole, pays, ville, tel, prenom, nom, fonction, email, password, plan }) : {success:true};
+
+    if (!result.success) {
+      showError(result.message);
+      btn.innerHTML = oldHtml;
+      btn.disabled = false;
+      return;
+    }
+
+    /* Succès → redirection dashboard */
+    setTimeout(() => {
+      window.location.href = 'dashboard/index.html';
+    }, 1200);
+
+  } catch(err) {
+    console.error("Signup error:", err);
+    showError("Erreur inattendue. Veuillez réessayer.");
+    const btn = this.querySelector('[type=submit]');
+    btn.innerHTML = '<i class="fas fa-school me-2"></i>Créer mon compte';
+    btn.disabled = false;
   }
-  
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!email || !emailRegex.test(email)) {
-    errors.push('Format de l\'email invalide (Étape 2)');
-  }
-  
-  if (!password) errors.push('Mot de passe requis (Étape 3)');
-  if (password.length < 8) errors.push('Mot de passe trop court (min 8 caractères)');
-  if (password !== confirm) errors.push('Les mots de passe ne correspondent pas. Vérifiez bien les deux champs.');
-  if (!terms) errors.push('Vous devez accepter les conditions d\'utilisation');
-
-  if (errors.length > 0) {
-    showError(errors[0]);
-    return;
-  }
-
-  /* Enregistrement via auth.js */
-  const result = typeof register !== 'undefined' ? await register({ ecole, typeEcole, pays, ville, tel, prenom, nom, fonction, email, password, plan }) : {success:true};
-
-  if (!result.success) {
-    showError(result.message);
-    return;
-  }
-
-  /* Succès → redirection dashboard */
-  const btn = this.querySelector('[type=submit]');
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Création en cours…';
-  btn.disabled = true;
-
-  setTimeout(() => {
-    window.location.href = 'dashboard/index.html';
-  }, 1200);
 });
 
 /* ---- Afficher une erreur ---- */
