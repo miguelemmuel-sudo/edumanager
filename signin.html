@@ -88,10 +88,6 @@
         <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold mb-3">
           <i class="fas fa-sign-in-alt me-2"></i>Se connecter
         </button>
-        <div class="divider my-3"><span>ou</span></div>
-        <button type="button" class="btn btn-outline-secondary rounded-pill py-2 w-100 fw-medium d-flex align-items-center justify-content-center" id="btnGoogleAuth">
-          <i class="fab fa-google me-2 text-danger"></i>Continuer avec Google
-        </button>
       </form>
 
       <p class="text-center text-muted small mt-3 mb-0">
@@ -103,47 +99,6 @@
           <i class="fas fa-arrow-left me-1"></i>Retour à l'accueil
         </a>
       </p>
-    </div>
-  </div>
-</div>
-
-<!-- Modal Google Account Selection -->
-<div class="modal fade" id="googleAccountModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered" style="max-width:400px">
-    <div class="modal-content border-0 shadow-lg" style="border-radius:1.5rem; overflow:hidden">
-      <div class="modal-header border-0 bg-white pb-0 pt-4 px-4 justify-content-center position-relative">
-        <i class="fab fa-google text-danger fs-3"></i>
-        <button type="button" class="btn-close position-absolute end-0 top-0 m-3" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body text-center pt-3 pb-4 px-4">
-        <h4 class="fw-bold mb-1">Se connecter avec Google</h4>
-        <p class="text-muted small mb-4">Choisissez un compte pour continuer vers EduManager</p>
-        
-        <div class="d-flex flex-column gap-2 text-start">
-          <button class="btn border p-3 rounded-3 d-flex align-items-center gap-3 w-100 text-start bg-white hover-bg-light" onclick="selectGoogleAccount('utilisateur.google@gmail.com', 'Jean Dupont')">
-            <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-bold" style="width:40px;height:40px;background:#10B981">J</div>
-            <div style="flex:1">
-              <div class="fw-bold text-dark">Jean Dupont</div>
-              <div class="text-muted" style="font-size:12px">utilisateur.google@gmail.com</div>
-            </div>
-          </button>
-          
-          <button class="btn border p-3 rounded-3 d-flex align-items-center gap-3 w-100 text-start bg-white hover-bg-light" onclick="selectGoogleAccount('admin@ecole.com', 'Administrateur')">
-            <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-bold" style="width:40px;height:40px;background:#2563EB">A</div>
-            <div style="flex:1">
-              <div class="fw-bold text-dark">Administrateur</div>
-              <div class="text-muted" style="font-size:12px">admin@ecole.com</div>
-            </div>
-          </button>
-          
-          <div class="divider my-2"><span class="small text-muted px-2">ou</span></div>
-          
-          <button class="btn border p-3 rounded-3 d-flex align-items-center gap-3 w-100 text-start bg-white hover-bg-light" onclick="alert('Ceci est une simulation.')">
-            <div class="rounded-circle d-flex align-items-center justify-content-center text-muted" style="width:40px;height:40px;background:#f1f5f9"><i class="fas fa-user-circle fs-5"></i></div>
-            <div class="fw-medium text-dark">Utiliser un autre compte</div>
-          </button>
-        </div>
-      </div>
     </div>
   </div>
 </div>
@@ -184,49 +139,6 @@
       window.location.href = '/dashboard/';
     }
   });
-
-  document.getElementById('btnGoogleAuth').addEventListener('click', function(e) {
-    const modal = new bootstrap.Modal(document.getElementById('googleAccountModal'));
-    modal.show();
-  });
-
-  function selectGoogleAccount(email, name) {
-    const btn = document.getElementById('btnGoogleAuth');
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Connexion...';
-    
-    const modalEl = document.getElementById('googleAccountModal');
-    const modal = bootstrap.Modal.getInstance(modalEl);
-    if(modal) modal.hide();
-
-    setTimeout(() => {
-      btn.innerHTML = '<i class="fas fa-check text-success me-2"></i>Connecté';
-      
-      const prenom = name.split(' ')[0];
-      const nom = name.split(' ').slice(1).join(' ');
-
-      const googleUser = {
-        id: 'EDU-Google-' + Date.now(),
-        email: email,
-        password: '',
-        prenom: prenom,
-        nom: nom,
-        fonction: 'Directeur',
-        ecole: 'École ' + prenom,
-        plan: 'starter'
-      };
-      
-      const users = JSON.parse(localStorage.getItem('edu_users') || '[]');
-      let existing = users.find(u => u.email.toLowerCase() === email.toLowerCase());
-      if (!existing) {
-        users.push(googleUser);
-        localStorage.setItem('edu_users', JSON.stringify(users));
-        existing = googleUser;
-      }
-      localStorage.setItem('edu_session', JSON.stringify({ userId: existing.id, email: existing.email, plan: existing.plan || 'starter' }));
-      
-      window.location.href = '/dashboard/';
-    }, 1500);
-  }
 </script>
 
 <script>
