@@ -31,15 +31,15 @@ function checkAccess() {
         const path = window.location.pathname.toLowerCase();
         
         // Redirect index.html to specific dashboards if needed
-        if (path.endsWith('/dashboard/') || path.endsWith('/dashboard/index.html')) {
+        if (path.endsWith('/dashboard/') || path.endsWith('index.html')) {
             if (role === 'enseignant') {
-                window.location.href = '/dashboard/enseignant.html';
+                window.location.href = 'enseignant.html';
                 return;
             } else if (role === 'parent') {
-                window.location.href = '/dashboard/parent.html';
+                window.location.href = 'parent.html';
                 return;
             } else if (role === 'eleve') {
-                window.location.href = '/dashboard/eleve.html';
+                window.location.href = 'eleve.html';
                 return;
             }
         }
@@ -63,10 +63,10 @@ function checkAccess() {
             alert('Accès refusé. Vous n\'avez pas la permission de voir cette page.');
             
             // Redirect to appropriate dashboard
-            if (role === 'enseignant') window.location.href = '/dashboard/enseignant.html';
-            else if (role === 'parent') window.location.href = '/dashboard/parent.html';
-            else if (role === 'eleve') window.location.href = '/dashboard/eleve.html';
-            else window.location.href = '/dashboard/index.html';
+            if (role === 'enseignant') window.location.href = 'enseignant.html';
+            else if (role === 'parent') window.location.href = 'parent.html';
+            else if (role === 'eleve') window.location.href = 'eleve.html';
+            else window.location.href = 'index.html';
         }
     } catch(e) {
         console.error('Session error', e);
