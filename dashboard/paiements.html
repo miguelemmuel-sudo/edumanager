@@ -70,15 +70,15 @@
           <div class="d-flex flex-column gap-3">
             <div class="d-flex align-items-center justify-content-between p-2 rounded-2" style="background:rgba(16,185,129,.06)">
               <div class="d-flex align-items-center gap-2"><div style="width:10px;height:10px;border-radius:2px;background:var(--primary)"></div><span style="font-size:.85rem;font-weight:500">Soldés</span></div>
-              <div class="text-end"><div class="fw-bold" style="font-size:.9rem">900 élèves</div><div style="font-size:.75rem;color:var(--success)">72% · 85 000€</div></div>
+              <div class="text-end"><div class="fw-bold" style="font-size:.9rem" id="payStatsSoldesCount">0 élèves</div><div style="font-size:.75rem;color:var(--success)" id="payStatsSoldesVal">0% · 0 FCFA</div></div>
             </div>
             <div class="d-flex align-items-center justify-content-between p-2 rounded-2" style="background:rgba(245,158,11,.06)">
               <div class="d-flex align-items-center gap-2"><div style="width:10px;height:10px;border-radius:2px;background:var(--warning)"></div><span style="font-size:.85rem;font-weight:500">Partiels</span></div>
-              <div class="text-end"><div class="fw-bold" style="font-size:.9rem">200 élèves</div><div style="font-size:.75rem;color:var(--warning)">16% · 10 000€</div></div>
+              <div class="text-end"><div class="fw-bold" style="font-size:.9rem" id="payStatsPartielsCount">0 élèves</div><div style="font-size:.75rem;color:var(--warning)" id="payStatsPartielsVal">0% · 0 FCFA</div></div>
             </div>
             <div class="d-flex align-items-center justify-content-between p-2 rounded-2" style="background:rgba(239,68,68,.06)">
               <div class="d-flex align-items-center gap-2"><div style="width:10px;height:10px;border-radius:2px;background:var(--danger)"></div><span style="font-size:.85rem;font-weight:500">Impayés</span></div>
-              <div class="text-end"><div class="fw-bold" style="font-size:.9rem">148 élèves</div><div style="font-size:.75rem;color:var(--danger)">12% · 18 500€ dus</div></div>
+              <div class="text-end"><div class="fw-bold" style="font-size:.9rem" id="payStatsImpayesCount">0 élèves</div><div style="font-size:.75rem;color:var(--danger)" id="payStatsImpayesVal">0% · 0 FCFA</div></div>
             </div>
           </div>
         </div>
@@ -98,7 +98,7 @@
           <table class="dash-table">
             <thead><tr><th>Élève</th><th>Classe</th><th>Montant dû</th><th>Payé</th><th>Reste</th><th>Date</th><th>Statut</th><th>Reçu</th></tr></thead>
             <tbody id="dynamicBody">
-          <!-- Données dynamiques -->
+          <!-- Données dynamiques insérées ici -->
         </tbody>
           </table>
         </div>

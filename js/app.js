@@ -42,6 +42,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         // setupNotesModal();
         setupRealtime('notes', fetchAndRenderNotes);
     }
+    // ----- NOTIFICATIONS -----
+    else if (path.includes('notifications.html')) {
+        await fetchAndRenderNotifications();
+        setupRealtime('notifications', fetchAndRenderNotifications);
+    }
     // ----- DASHBOARD (INDEX) -----
     else if (path.includes('dashboard/index.html') || path.endsWith('dashboard/')) {
         await initDashboardStats();
@@ -143,7 +148,8 @@ window.deleteEleve = async function(id) {
 // --- ENSEIGNANTS ---
 async function fetchAndRenderEnseignants() {
     const tbody = document.getElementById('dynamicBody') || document.getElementById('enseignantsBody');
-    if (!tbody) return;
+    const gridBody = document.getElementById('ensBody');
+    if (!tbody && !gridBody) return;
 
     const { data: enseignants, error } = await window.supabase.from('enseignants').select('*');
     
@@ -155,26 +161,80 @@ async function fetchAndRenderEnseignants() {
     document.querySelectorAll('.sc-value').forEach(el => el.textContent = enseignants.length);
 
     if (enseignants.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">Aucune donnée disponible</td></tr>`;
+        if (tbody) tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">Aucune donnée disponible</td></tr>`;
+        if (gridBody) gridBody.innerHTML = `<div class="col-12 text-center py-4 text-muted">Aucune donnée disponible</div>`;
         return;
     }
 
-    tbody.innerHTML = '';
+    if (tbody) tbody.innerHTML = '';
+    if (gridBody) gridBody.innerHTML = '';
+    
     enseignants.forEach(e => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td><div class="d-flex align-items-center"><div class="table-av me-2" style="background:#10B981">${e.prenom.charAt(0)}</div><span class="fw-semibold">${_e(e.prenom)} ${_e(e.nom)}</span></div></td>
-            <td>${_e(e.matiere || '-')}</td>
-            <td><span class="status-badge primary">2</span></td>
-            <td>${_e(e.tel || '-')}</td>
-            <td>${_e(e.email || '-')}</td>
-            <td><span class="status-badge success">${_e(e.statut || 'Actif')}</span></td>
-            <td>
-                <button class="btn btn-sm btn-icon text-muted"><i class="fas fa-edit"></i></button>
-                <button class="btn btn-sm btn-icon text-danger" onclick="deleteEnseignant('${e.id}')"><i class="fas fa-trash"></i></button>
-            </td>
-        `;
-        tbody.appendChild(tr);
+        const initiale = e.prenom ? e.prenom.charAt(0).toUpperCase() : 'E';
+        const nomComplet = `${_e(e.prenom)} ${_e(e.nom)}`;
+        
+        // Render List
+        if (tbody) {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><div class="d-flex align-items-center"><div class="table-av me-2" style="background:#10B981">${initiale}</div><span class="fw-semibold">${nomComplet}</span></div></td>
+                <td>${_e(e.matiere || '-')}</td>
+                <td><span class="status-badge primary">0</span></td>
+                <td>${_e(e.tel || '-')}</td>
+                <td>${_e(e.email || '-')}</td>
+                <td><span class="status-badge success">${_e(e.statut || 'Actif')}</span></td>
+                <td>
+                    <button class="btn btn-sm btn-icon text-muted"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-sm btn-icon text-danger" onclick="deleteEnseignant('${e.id}')"><i class="fas fa-trash"></i></button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        }
+        
+        // Render Grid
+        if (gridBody) {
+            const card = document.createElement('div');
+            card.className = 'col-md-6 col-lg-4 ens-card';
+            card.dataset.matiere = _e(e.matiere || '');
+            card.dataset.name = _e(e.nom || '');
+            card.innerHTML = `
+        <div class="dash-card p-4 h-100">
+          <div class="d-flex align-items-start justify-content-between mb-3">
+            <div class="d-flex align-items-center gap-3">
+              <div class="table-av" style="width:48px;height:48px;font-size:1.2rem;background:#2563EB">${initiale}</div>
+              <div>
+                <div class="fw-bold" style="font-size:.95rem">${nomComplet}</div>
+                <div class="text-muted" style="font-size:.8rem">${_e(e.matiere || '-')}</div>
+              </div>
+            </div>
+            <span class="status-badge success">${_e(e.statut || 'Actif')}</span>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <div style="font-size:.72rem;color:var(--muted)">Classes</div>
+              <div style="font-size:.82rem;font-weight:600">-</div>
+            </div>
+            <div class="col-6">
+              <div style="font-size:.72rem;color:var(--muted)">Heures/semaine</div>
+              <div style="font-size:.82rem;font-weight:600">-</div>
+            </div>
+            <div class="col-6">
+              <div style="font-size:.72rem;color:var(--muted)">Email</div>
+              <div style="font-size:.78rem">${_e(e.email || '-')}</div>
+            </div>
+            <div class="col-6">
+              <div style="font-size:.72rem;color:var(--muted)">Tél.</div>
+              <div style="font-size:.78rem">${_e(e.tel || '-')}</div>
+            </div>
+          </div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm rounded-pill flex-1" style="background:rgba(37,99,235,.1);color:var(--primary);font-size:.8rem"><i class="fas fa-eye me-1"></i>Voir</button>
+            <button class="btn btn-sm rounded-pill flex-1" style="background:rgba(245,158,11,.1);color:var(--warning);font-size:.8rem"><i class="fas fa-edit me-1"></i>Modifier</button>
+          </div>
+        </div>
+            `;
+            gridBody.appendChild(card);
+        }
     });
 }
 
@@ -260,6 +320,45 @@ async function fetchAndRenderPaiements() {
     const { data: paiements, error } = await window.supabase.from('paiements').select('*, eleves(nom, prenom, matricule)');
     if (error) return console.error(error);
 
+    let totalCollecte = 0;
+    let nbSoldes = 0;
+    let nbPartiels = 0;
+    let nbImpayes = 0;
+    
+    paiements.forEach(p => {
+        const mt = parseFloat(p.montant) || 0;
+        totalCollecte += mt;
+        const st = (p.statut || '').toLowerCase();
+        if (st.includes('payé') && !st.includes('impayé')) nbSoldes++;
+        else if (st.includes('partiel')) nbPartiels++;
+        else if (st.includes('impayé')) nbImpayes++;
+    });
+
+    const totalEleves = nbSoldes + nbPartiels + nbImpayes;
+    const pSoldes = totalEleves ? Math.round((nbSoldes/totalEleves)*100) : 0;
+    const pPartiels = totalEleves ? Math.round((nbPartiels/totalEleves)*100) : 0;
+    const pImpayes = totalEleves ? 100 - pSoldes - pPartiels : 0;
+
+    // Update Top KPIs
+    const scValues = document.querySelectorAll('.sc-value');
+    if(scValues.length >= 4) {
+        scValues[0].textContent = totalCollecte.toLocaleString() + ' FCFA';
+        scValues[1].textContent = nbSoldes;
+        scValues[2].textContent = nbPartiels;
+        scValues[3].textContent = nbImpayes;
+    }
+
+    // Update Detailed Stats if they exist
+    const elSCnt = document.getElementById('payStatsSoldesCount');
+    if(elSCnt) {
+        elSCnt.textContent = nbSoldes + ' élèves';
+        document.getElementById('payStatsSoldesVal').textContent = pSoldes + '% · ' + (totalCollecte).toLocaleString() + ' FCFA'; // Simple approximation for UI
+        document.getElementById('payStatsPartielsCount').textContent = nbPartiels + ' élèves';
+        document.getElementById('payStatsPartielsVal').textContent = pPartiels + '%';
+        document.getElementById('payStatsImpayesCount').textContent = nbImpayes + ' élèves';
+        document.getElementById('payStatsImpayesVal').textContent = pImpayes + '%';
+    }
+
     if (paiements.length === 0) {
         tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">Aucune donnée disponible</td></tr>`;
         return;
@@ -338,4 +437,65 @@ async function initDashboardStats() {
     if (enseignantsCountEl && resEn.count !== null) enseignantsCountEl.textContent = resEn.count;
     if (classesCountEl && resCl.count !== null) classesCountEl.textContent = resCl.count;
     if (tauxEl) tauxEl.textContent = '100%'; // Taux de présence factice pour le moment
+}
+
+// --- NOTIFICATIONS ---
+async function fetchAndRenderNotifications() {
+    const list = document.getElementById('notifList');
+    if (!list) return;
+
+    const { data: notifs, error } = await window.supabase
+        .from('notifications')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error(error);
+        return;
+    }
+
+    if (notifs.length === 0) {
+        list.innerHTML = `<div class="text-center py-5 text-muted">Aucune notification disponible</div>`;
+        
+        // Update stats
+        if (document.getElementById('notifReçuesVal')) document.getElementById('notifReçuesVal').textContent = '0';
+        if (document.getElementById('notifLuesVal')) document.getElementById('notifLuesVal').textContent = '0';
+        if (document.getElementById('notifTauxVal')) document.getElementById('notifTauxVal').textContent = '0%';
+        if (document.getElementById('notifTauxBar')) document.getElementById('notifTauxBar').style.width = '0%';
+
+        return;
+    }
+
+    let nbLues = 0;
+    list.innerHTML = '';
+    notifs.forEach(n => {
+        const isUnread = !n.lu;
+        if (n.lu) nbLues++;
+        
+        const iconClass = n.type_notif === 'Erreur' || n.type_notif === 'Alerte' ? 'fa-exclamation-triangle text-danger' :
+                          n.type_notif === 'Succès' ? 'fa-check-circle text-success' : 'fa-bell text-primary';
+        const bgClass = n.type_notif === 'Erreur' || n.type_notif === 'Alerte' ? 'bg-danger-soft' :
+                        n.type_notif === 'Succès' ? 'bg-success-soft' : 'bg-primary-soft';
+        
+        list.innerHTML += `
+            <div class="notif-item d-flex align-items-start gap-3 p-3 border-bottom ${isUnread ? 'notif-unread' : ''}" data-read="${!isUnread}">
+                <div class="sc-icon ${bgClass} flex-shrink-0"><i class="fas ${iconClass}"></i></div>
+                <div class="flex-grow-1">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="fw-semibold" style="font-size:.875rem">${_e(n.titre)}</div>
+                        <span style="font-size:.72rem;color:var(--muted)">${new Date(n.created_at).toLocaleDateString('fr-FR')}</span>
+                    </div>
+                    <div class="text-muted" style="font-size:.82rem">${_e(n.message)}</div>
+                </div>
+                ${isUnread ? '<div style="width:9px;height:9px;border-radius:50%;background:var(--primary);flex-shrink:0;margin-top:5px"></div>' : ''}
+            </div>
+        `;
+    });
+
+    // Update stats
+    const taux = Math.round((nbLues / notifs.length) * 100);
+    if (document.getElementById('notifReçuesVal')) document.getElementById('notifReçuesVal').textContent = notifs.length;
+    if (document.getElementById('notifLuesVal')) document.getElementById('notifLuesVal').textContent = nbLues;
+    if (document.getElementById('notifTauxVal')) document.getElementById('notifTauxVal').textContent = taux + '%';
+    if (document.getElementById('notifTauxBar')) document.getElementById('notifTauxBar').style.width = taux + '%';
 }

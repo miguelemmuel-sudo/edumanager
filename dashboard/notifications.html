@@ -64,78 +64,7 @@
           </div>
         </div>
         <div class="dash-card-body p-0" id="notifList">
-          <!-- Notif 1 -->
-          <div class="notif-item d-flex align-items-start gap-3 p-3 border-bottom notif-unread" data-read="false">
-            <div class="sc-icon bg-success-soft flex-shrink-0"><i class="fas fa-user-plus text-success"></i></div>
-            <div class="flex-grow-1">
-              <div class="d-flex justify-content-between align-items-start">
-                <div class="fw-semibold" style="font-size:.875rem">Nouvelle inscription</div>
-                <span style="font-size:.72rem;color:var(--muted);white-space:nowrap">Il y a 10 min</span>
-              </div>
-              <div class="text-muted" style="font-size:.82rem">Amina Diallo vient d'être inscrite en 3ème B.</div>
-              <div class="d-flex gap-2 mt-2">
-                <a href="/dashboard/eleves.html" class="btn btn-sm" style="font-size:.75rem;padding:2px 10px;background:rgba(37,99,235,.1);color:var(--primary);border-radius:6px">Voir le dossier</a>
-                <button class="btn btn-sm" style="font-size:.75rem;padding:2px 10px;background:#f1f5f9;color:var(--muted);border-radius:6px" onclick="markRead(this)">Marquer lu</button>
-              </div>
-            </div>
-            <div style="width:9px;height:9px;border-radius:50%;background:var(--primary);flex-shrink:0;margin-top:5px"></div>
-          </div>
-          <!-- Notif 2 -->
-          <div class="notif-item d-flex align-items-start gap-3 p-3 border-bottom notif-unread" data-read="false">
-            <div class="sc-icon bg-danger-soft flex-shrink-0"><i class="fas fa-exclamation-triangle text-danger"></i></div>
-            <div class="flex-grow-1">
-              <div class="d-flex justify-content-between align-items-start">
-                <div class="fw-semibold" style="font-size:.875rem">Impayés détectés</div>
-                <span style="font-size:.72rem;color:var(--muted)">Il y a 35 min</span>
-              </div>
-              <div class="text-muted" style="font-size:.82rem">12 élèves ont des frais scolaires en retard de paiement.</div>
-              <div class="d-flex gap-2 mt-2">
-                <a href="/dashboard/paiements.html" class="btn btn-sm" style="font-size:.75rem;padding:2px 10px;background:rgba(239,68,68,.1);color:var(--danger);border-radius:6px">Voir paiements</a>
-                <button class="btn btn-sm" style="font-size:.75rem;padding:2px 10px;background:#f1f5f9;color:var(--muted);border-radius:6px" onclick="markRead(this)">Marquer lu</button>
-              </div>
-            </div>
-            <div style="width:9px;height:9px;border-radius:50%;background:var(--primary);flex-shrink:0;margin-top:5px"></div>
-          </div>
-          <!-- Notif 3 -->
-          <div class="notif-item d-flex align-items-start gap-3 p-3 border-bottom" data-read="true">
-            <div class="sc-icon bg-warning-soft flex-shrink-0"><i class="fas fa-clipboard-list text-warning"></i></div>
-            <div class="flex-grow-1">
-              <div class="d-flex justify-content-between align-items-start">
-                <div class="fw-semibold" style="font-size:.875rem">Notes saisies</div>
-                <span style="font-size:.72rem;color:var(--muted)">Il y a 1h</span>
-              </div>
-              <div class="text-muted" style="font-size:.82rem">M. Koné a saisi les notes de Maths – 3ème B (28 élèves).</div>
-              <div class="mt-2">
-                <a href="/dashboard/notes.html" class="btn btn-sm" style="font-size:.75rem;padding:2px 10px;background:rgba(245,158,11,.1);color:var(--warning);border-radius:6px">Voir les notes</a>
-              </div>
-            </div>
-          </div>
-          <!-- Notif 4 -->
-          <div class="notif-item d-flex align-items-start gap-3 p-3 border-bottom notif-unread" data-read="false">
-            <div class="sc-icon bg-info-soft flex-shrink-0"><i class="fas fa-comments text-info"></i></div>
-            <div class="flex-grow-1">
-              <div class="d-flex justify-content-between align-items-start">
-                <div class="fw-semibold" style="font-size:.875rem">5 nouveaux messages</div>
-                <span style="font-size:.72rem;color:var(--muted)">Il y a 2h</span>
-              </div>
-              <div class="text-muted" style="font-size:.82rem">Vous avez 5 messages non lus de parents d'élèves.</div>
-              <div class="mt-2">
-                <a href="/dashboard/messages.html" class="btn btn-sm" style="font-size:.75rem;padding:2px 10px;background:rgba(6,182,212,.1);color:var(--info);border-radius:6px">Ouvrir messages</a>
-              </div>
-            </div>
-            <div style="width:9px;height:9px;border-radius:50%;background:var(--primary);flex-shrink:0;margin-top:5px"></div>
-          </div>
-          <!-- Notif 5 -->
-          <div class="notif-item d-flex align-items-start gap-3 p-3" data-read="true">
-            <div class="sc-icon bg-primary-soft flex-shrink-0"><i class="fas fa-credit-card text-primary"></i></div>
-            <div class="flex-grow-1">
-              <div class="d-flex justify-content-between align-items-start">
-                <div class="fw-semibold" style="font-size:.875rem">Paiement reçu</div>
-                <span style="font-size:.72rem;color:var(--muted)">Hier</span>
-              </div>
-              <div class="text-muted" style="font-size:.82rem">Kofi Mensah — 75 000 FCFA payés (paiement partiel).</div>
-            </div>
-          </div>
+          <!-- Données dynamiques insérées ici -->
         </div>
       </div>
     </div>
@@ -146,39 +75,19 @@
       <div class="dash-card mb-3">
         <div class="dash-card-header"><span class="dash-card-title"><i class="fas fa-chart-bar text-primary me-2"></i>Ce mois</span></div>
         <div class="dash-card-body">
-          <div class="row g-3 text-center">
-            <div class="col-4"><div class="sc-value text-primary">248</div><div class="sc-label">Envoyées</div></div>
-            <div class="col-4"><div class="sc-value text-success">231</div><div class="sc-label">Lues</div></div>
-            <div class="col-4"><div class="sc-value text-muted">93%</div><div class="sc-label">Taux lecture</div></div>
+          <div class="row text-center mt-3 g-2">
+            <div class="col-4"><div class="sc-value text-primary" id="notifReçuesVal">0</div><div class="sc-label">Reçues</div></div>
+            <div class="col-4"><div class="sc-value text-success" id="notifLuesVal">0</div><div class="sc-label">Lues</div></div>
+            <div class="col-4"><div class="sc-value text-muted" id="notifTauxVal">0%</div><div class="sc-label">Taux lecture</div></div>
           </div>
-          <div class="prog-bar mt-3"><div class="prog-fill" style="width:93%;background:var(--success)"></div></div>
+          <div class="prog-bar mt-3"><div class="prog-fill" id="notifTauxBar" style="width:0%;background:var(--success)"></div></div>
         </div>
       </div>
       <!-- Historique envois -->
       <div class="dash-card">
         <div class="dash-card-header"><span class="dash-card-title"><i class="fas fa-history text-success me-2"></i>Derniers envois</span></div>
-        <div class="dash-card-body p-0">
-          <div class="p-3 border-bottom">
-            <div class="d-flex justify-content-between align-items-start mb-1">
-              <div class="fw-semibold" style="font-size:.85rem">📢 Réunion parents d'élèves</div>
-              <span class="status-badge success" style="font-size:.68rem">248 envoyés</span>
-            </div>
-            <div class="text-muted" style="font-size:.78rem">Tous les parents · Il y a 2h · SMS + App</div>
-          </div>
-          <div class="p-3 border-bottom">
-            <div class="d-flex justify-content-between align-items-start mb-1">
-              <div class="fw-semibold" style="font-size:.85rem">📋 Bulletins disponibles</div>
-              <span class="status-badge primary" style="font-size:.68rem">156 envoyés</span>
-            </div>
-            <div class="text-muted" style="font-size:.78rem">Parents 3ème B · Hier · Email</div>
-          </div>
-          <div class="p-3">
-            <div class="d-flex justify-content-between align-items-start mb-1">
-              <div class="fw-semibold" style="font-size:.85rem">⚠️ Relance frais scolaires</div>
-              <span class="status-badge warning" style="font-size:.68rem">12 envoyés</span>
-            </div>
-            <div class="text-muted" style="font-size:.78rem">Impayés · Lundi · SMS</div>
-          </div>
+        <div class="dash-card-body p-0" id="derniersEnvoisList">
+          <!-- Données dynamiques insérées ici -->
         </div>
       </div>
     </div>

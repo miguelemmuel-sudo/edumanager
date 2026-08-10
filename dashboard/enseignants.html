@@ -116,173 +116,11 @@
   <!-- Vue Cartes -->
   <div id="viewGrid">
     <div class="row g-3" id="ensBody">
+    <!-- Données dynamiques insérées ici -->
+  </div>
+</div>
 
-      <!-- Carte enseignant 1 -->
-      <div class="col-md-6 col-lg-4 ens-card" data-matiere="Mathématiques" data-name="koné">
-        <div class="dash-card p-4 h-100">
-          <div class="d-flex align-items-start justify-content-between mb-3">
-            <div class="d-flex align-items-center gap-3">
-              <div class="table-av" style="width:48px;height:48px;font-size:1.2rem;background:#2563EB">K</div>
-              <div>
-                <div class="fw-bold" style="font-size:.95rem">M. Koné Abdoulaye</div>
-                <div class="text-muted" style="font-size:.8rem">Mathématiques</div>
-              </div>
-            </div>
-            <span class="status-badge success">Actif</span>
-          </div>
-          <div class="row g-2 mb-3">
-            <div class="col-6">
-              <div style="font-size:.72rem;color:var(--muted)">Classes</div>
-              <div style="font-size:.82rem;font-weight:600">3ème B, 4ème A</div>
-            </div>
-            <div class="col-6">
-              <div style="font-size:.72rem;color:var(--muted)">Heures/semaine</div>
-              <div style="font-size:.82rem;font-weight:600">18h</div>
-            </div>
-            <div class="col-6">
-              <div style="font-size:.72rem;color:var(--muted)">Email</div>
-              <div style="font-size:.78rem">kone@ecole.ci</div>
-            </div>
-            <div class="col-6">
-              <div style="font-size:.72rem;color:var(--muted)">Tél.</div>
-              <div style="font-size:.78rem">07 10 00 01</div>
-            </div>
-          </div>
-          <div class="d-flex gap-2">
-            <button class="btn btn-sm rounded-pill flex-1" style="background:rgba(37,99,235,.1);color:var(--primary);font-size:.8rem" data-bs-toggle="modal" data-bs-target="#viewEnsModal"><i class="fas fa-eye me-1"></i>Voir</button>
-            <button class="btn btn-sm rounded-pill flex-1" style="background:rgba(245,158,11,.1);color:var(--warning);font-size:.8rem"><i class="fas fa-edit me-1"></i>Modifier</button>
-          </div>
-        </div>
-      </div>
-      <!-- Carte enseignant 2 -->
-      <div class="col-md-6 col-lg-4 ens-card" data-matiere="Français" data-name="diallo">
-        <div class="dash-card p-4 h-100">
-          <div class="d-flex align-items-start justify-content-between mb-3">
-            <div class="d-flex align-items-center gap-3">
-              <div class="table-av" style="width:48px;height:48px;font-size:1.2rem;background:#10B981">D</div>
-              <div>
-                <div class="fw-bold" style="font-size:.95rem">Mme Diallo Aminata</div>
-                <div class="text-muted" style="font-size:.8rem">Français</div>
-              </div>
-            </div>
-            <span class="status-badge success">Actif</span>
-          </div>
-          <div class="row g-2 mb-3">
-            <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Classes</div><div style="font-size:.82rem;font-weight:600">3ème A, 3ème B</div></div>
-            <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Heures/semaine</div><div style="font-size:.82rem;font-weight:600">16h</div></div>
-            <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Email</div><div style="font-size:.78rem">diallo@ecole.ci</div></div>
-            <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Tél.</div><div style="font-size:.78rem">07 10 00 02</div></div>
-          </div>
-          <div class="d-flex gap-2">
-            <button class="btn btn-sm rounded-pill flex-1" style="background:rgba(37,99,235,.1);color:var(--primary);font-size:.8rem"><i class="fas fa-eye me-1"></i>Voir</button>
-            <button class="btn btn-sm rounded-pill flex-1" style="background:rgba(245,158,11,.1);color:var(--warning);font-size:.8rem"><i class="fas fa-edit me-1"></i>Modifier</button>
-          </div>
-        </div>
-      </div>
-      <!-- Carte enseignant 3 -->
-      <div class="col-md-6 col-lg-4 ens-card" data-matiere="SVT" data-name="bah">
-        <div class="dash-card p-4 h-100">
-          <div class="d-flex align-items-start justify-content-between mb-3">
-            <div class="d-flex align-items-center gap-3">
-              <div class="table-av" style="width:48px;height:48px;font-size:1.2rem;background:#8B5CF6">B</div>
-              <div>
-                <div class="fw-bold" style="font-size:.95rem">Mme Bah Fatoumata</div>
-                <div class="text-muted" style="font-size:.8rem">SVT</div>
-              </div>
-            </div>
-            <span class="status-badge success">Actif</span>
-          </div>
-          <div class="row g-2 mb-3">
-            <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Classes</div><div style="font-size:.82rem;font-weight:600">6ème A, 6ème B</div></div>
-            <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Heures/semaine</div><div style="font-size:.82rem;font-weight:600">14h</div></div>
-            <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Email</div><div style="font-size:.78rem">bah@ecole.ci</div></div>
-            <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Tél.</div><div style="font-size:.78rem">07 10 00 03</div></div>
-          </div>
-          <div class="d-flex gap-2">
-            <button class="btn btn-sm rounded-pill flex-1" style="background:rgba(37,99,235,.1);color:var(--primary);font-size:.8rem"><i class="fas fa-eye me-1"></i>Voir</button>
-            <button class="btn btn-sm rounded-pill flex-1" style="background:rgba(245,158,11,.1);color:var(--warning);font-size:.8rem"><i class="fas fa-edit me-1"></i>Modifier</button>
-          </div>
-        </div>
-      </div>
-      <!-- Carte enseignant 4 -->
-      <div class="col-md-6 col-lg-4 ens-card" data-matiere="Physique-Chimie" data-name="ouédraogo">
-        <div class="dash-card p-4 h-100">
-          <div class="d-flex align-items-start justify-content-between mb-3">
-            <div class="d-flex align-items-center gap-3">
-              <div class="table-av" style="width:48px;height:48px;font-size:1.2rem;background:#EF4444">O</div>
-              <div>
-                <div class="fw-bold" style="font-size:.95rem">M. Ouédraogo Pascal</div>
-                <div class="text-muted" style="font-size:.8rem">Physique-Chimie</div>
-              </div>
-            </div>
-            <span class="status-badge warning">Congé</span>
-          </div>
-          <div class="row g-2 mb-3">
-            <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Classes</div><div style="font-size:.82rem;font-weight:600">Terminale, 1ère</div></div>
-            <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Heures/semaine</div><div style="font-size:.82rem;font-weight:600">20h</div></div>
-            <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Email</div><div style="font-size:.78rem">ouedraogo@ecole.ci</div></div>
-            <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Tél.</div><div style="font-size:.78rem">07 10 00 04</div></div>
-          </div>
-          <div class="d-flex gap-2">
-            <button class="btn btn-sm rounded-pill flex-1" style="background:rgba(37,99,235,.1);color:var(--primary);font-size:.8rem"><i class="fas fa-eye me-1"></i>Voir</button>
-            <button class="btn btn-sm rounded-pill flex-1" style="background:rgba(245,158,11,.1);color:var(--warning);font-size:.8rem"><i class="fas fa-edit me-1"></i>Modifier</button>
-          </div>
-        </div>
-      </div>
-      <!-- Carte enseignant 5 -->
-      <div class="col-md-6 col-lg-4 ens-card" data-matiere="Anglais" data-name="smith">
-        <div class="dash-card p-4 h-100">
-          <div class="d-flex align-items-start justify-content-between mb-3">
-            <div class="d-flex align-items-center gap-3">
-              <div class="table-av" style="width:48px;height:48px;font-size:1.2rem;background:#06B6D4">S</div>
-              <div>
-                <div class="fw-bold" style="font-size:.95rem">Mme Smith Grace</div>
-                <div class="text-muted" style="font-size:.8rem">Anglais</div>
-              </div>
-            </div>
-            <span class="status-badge success">Actif</span>
-          </div>
-          <div class="row g-2 mb-3">
-            <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Classes</div><div style="font-size:.82rem;font-weight:600">Toutes niveaux</div></div>
-            <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Heures/semaine</div><div style="font-size:.82rem;font-weight:600">22h</div></div>
-            <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Email</div><div style="font-size:.78rem">smith@ecole.ci</div></div>
-            <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Tél.</div><div style="font-size:.78rem">07 10 00 05</div></div>
-          </div>
-          <div class="d-flex gap-2">
-            <button class="btn btn-sm rounded-pill flex-1" style="background:rgba(37,99,235,.1);color:var(--primary);font-size:.8rem"><i class="fas fa-eye me-1"></i>Voir</button>
-            <button class="btn btn-sm rounded-pill flex-1" style="background:rgba(245,158,11,.1);color:var(--warning);font-size:.8rem"><i class="fas fa-edit me-1"></i>Modifier</button>
-          </div>
-        </div>
-      </div>
-      <!-- Carte enseignant 6 -->
-      <div class="col-md-6 col-lg-4 ens-card" data-matiere="Histoire-Géo" data-name="traoré">
-        <div class="dash-card p-4 h-100">
-          <div class="d-flex align-items-start justify-content-between mb-3">
-            <div class="d-flex align-items-center gap-3">
-              <div class="table-av" style="width:48px;height:48px;font-size:1.2rem;background:#F59E0B">T</div>
-              <div>
-                <div class="fw-bold" style="font-size:.95rem">M. Traoré Seydou</div>
-                <div class="text-muted" style="font-size:.8rem">Histoire-Géo</div>
-              </div>
-            </div>
-            <span class="status-badge success">Actif</span>
-          </div>
-          <div class="row g-2 mb-3">
-            <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Classes</div><div style="font-size:.82rem;font-weight:600">3ème A, B, 4ème</div></div>
-            <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Heures/semaine</div><div style="font-size:.82rem;font-weight:600">15h</div></div>
-            <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Email</div><div style="font-size:.78rem">traore@ecole.ci</div></div>
-            <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Tél.</div><div style="font-size:.78rem">07 10 00 06</div></div>
-          </div>
-          <div class="d-flex gap-2">
-            <button class="btn btn-sm rounded-pill flex-1" style="background:rgba(37,99,235,.1);color:var(--primary);font-size:.8rem"><i class="fas fa-eye me-1"></i>Voir</button>
-            <button class="btn btn-sm rounded-pill flex-1" style="background:rgba(245,158,11,.1);color:var(--warning);font-size:.8rem"><i class="fas fa-edit me-1"></i>Modifier</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div><!-- /viewGrid -->
-
-  <!-- Vue Tableau -->
+<!-- Vue Tableau -->
   <div id="viewList" class="d-none">
     <div class="dash-card">
       <div class="dash-card-body p-0" style="overflow-x:auto">
@@ -292,7 +130,7 @@
             <th>Heures/sem.</th><th>Contact</th><th>Statut</th><th>Actions</th>
           </tr></thead>
           <tbody id="dynamicBody">
-          <!-- Données dynamiques -->
+          <!-- Données dynamiques insérées ici -->
         </tbody>
         </table>
       </div>
