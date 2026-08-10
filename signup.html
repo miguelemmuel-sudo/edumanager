@@ -369,8 +369,8 @@ document.getElementById('signupForm').addEventListener('submit', async function(
   // Étape 1
   const ecole    = document.querySelector('#step1 input[placeholder*="Saint"]')?.value.trim()   || document.querySelector('#step1 input[type=text]')?.value.trim();
   const typeEcole= document.querySelector('#step1 select').value;
-  const pays     = document.querySelectorAll('#step1 input[type=text]')[3]?.value.trim() || '';
-  const ville    = document.querySelectorAll('#step1 input[type=text]')[4]?.value.trim() || '';
+  const pays     = document.querySelectorAll('#step1 input[type=text]')[1]?.value.trim() || '';
+  const ville    = document.querySelectorAll('#step1 input[type=text]')[2]?.value.trim() || '';
   const tel      = iti1.getNumber() || '';
 
   // Étape 2
