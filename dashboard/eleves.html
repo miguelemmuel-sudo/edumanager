@@ -99,7 +99,7 @@
     </div>
     <!-- Pagination -->
     <div class="d-flex align-items-center justify-content-between p-3 border-top flex-wrap gap-2">
-      <span style="font-size:.8rem;color:var(--muted)">Affichage de 1 à 4 sur 1 248 élèves</span>
+      <span id="elevesPaginationInfo" style="font-size:.8rem;color:var(--muted)">Affichage de 1 à 0 sur 0 élèves</span>
       <nav><ul class="pagination pagination-sm mb-0 gap-1">
         <li class="page-item disabled"><a class="page-link" href="#" style="border-radius:6px">«</a></li>
         <li class="page-item active"><a class="page-link" href="#" style="border-radius:6px;background:var(--primary);border-color:var(--primary)">1</a></li>
@@ -202,11 +202,15 @@ function deleteRow(btn) {
 /* ---- Mettre à jour le compteur affiché ---- */
 function updateCount() {
   const total = document.querySelectorAll('#elevesBody tr').length;
-  const info = document.querySelector('.pagination')?.closest('.d-flex')?.querySelector('span');
-  if (info) info.textContent = `Affichage de 1 à ${total} sur ${total} élèves`;
+  const info = document.getElementById('elevesPaginationInfo');
+  
+  let abonnement = localStorage.getItem('edu_abonnement') || 'Standard';
+  let maxEleves = abonnement.toLowerCase() === 'vip' ? 30000 : 1000;
+  
+  if (info) info.textContent = `Affichage de 1 à ${total} sur un maximum de ${maxEleves} élèves (Pack ${abonnement})`;
   // Mettre à jour la KPI carte "Total élèves"
   const kpiEl = document.querySelector('.sc-value');
-  if (kpiEl) kpiEl.textContent = total + parseInt('1244');
+  if (kpiEl) kpiEl.textContent = total;
 }
 
 /* ---- Ajouter un élève ---- */

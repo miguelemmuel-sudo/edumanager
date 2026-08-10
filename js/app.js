@@ -82,8 +82,16 @@ async function fetchAndRenderEleves() {
         return;
     }
 
-    // Mettre à jour le compteur global
+    // Update global counter
     document.querySelectorAll('.sc-value').forEach(el => el.textContent = eleves.length);
+
+    // Update pagination info based on subscription
+    const info = document.getElementById('elevesPaginationInfo');
+    if (info) {
+        let abonnement = localStorage.getItem('edu_abonnement') || 'Standard';
+        let maxEleves = abonnement.toLowerCase() === 'vip' ? 30000 : 1000;
+        info.textContent = `Affichage de 1 à ${eleves.length} sur un maximum de ${maxEleves} élèves (Pack ${abonnement})`;
+    }
 
     if (eleves.length === 0) {
         tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-muted">Aucune donnée disponible</td></tr>`;
