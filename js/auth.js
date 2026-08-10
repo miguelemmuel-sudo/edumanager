@@ -57,6 +57,13 @@ function clearSession() {
 ========================================== */
 async function supabaseRegister(data) {
   try {
+    if (!window.supabase) {
+      return { 
+        success: false, 
+        message: "Impossible de se connecter au serveur. Votre bloqueur de publicités (AdBlock/Brave) ou votre pare-feu bloque peut-être la connexion. Veuillez le désactiver et recharger la page." 
+      };
+    }
+
     // 1. Inscription Auth
     const { data: authData, error: authError } = await window.supabase.auth.signUp({
       email: data.email,
@@ -126,6 +133,13 @@ async function supabaseRegister(data) {
    CONNEXION SUPABASE
 ========================================== */
 async function supabaseLogin(email, password) {
+  if (!window.supabase) {
+    return { 
+      success: false, 
+      message: "Impossible de se connecter au serveur. Veuillez vérifier votre connexion ou désactiver votre bloqueur de publicités." 
+    };
+  }
+
   const { data, error } = await window.supabase.auth.signInWithPassword({
     email: email,
     password: password
