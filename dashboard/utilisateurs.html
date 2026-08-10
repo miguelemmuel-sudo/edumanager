@@ -11,28 +11,7 @@
   <link rel="manifest" href="../manifest.json" />
 </head>
 <body>
-<aside class="sidebar" id="sidebar">
-  <a href="/dashboard/" class="sidebar-brand"><i class="fas fa-graduation-cap brand-icon"></i><span class="brand-name">EduManager</span></a>
-  <nav class="sidebar-nav">
-    <div class="nav-section-label">Principal</div>
-    <a href="/dashboard/" class="nav-item-link"><i class="fas fa-th-large nav-icon"></i><span class="nav-item-label">Tableau de bord</span></a>
-    <div class="nav-section-label mt-2">Gestion</div>
-    <a href="/dashboard/eleves.html" class="nav-item-link"><i class="fas fa-user-graduate nav-icon"></i><span class="nav-item-label">Élèves</span></a>
-    <a href="/dashboard/enseignants.html" class="nav-item-link"><i class="fas fa-chalkboard-teacher nav-icon"></i><span class="nav-item-label">Enseignants</span></a>
-    <a href="/dashboard/classes.html" class="nav-item-link"><i class="fas fa-door-open nav-icon"></i><span class="nav-item-label">Classes</span></a>
-    <a href="/dashboard/notes.html" class="nav-item-link"><i class="fas fa-clipboard-list nav-icon"></i><span class="nav-item-label">Notes & Bulletins</span></a>
-    <a href="/dashboard/emploi-du-temps.html" class="nav-item-link"><i class="fas fa-calendar-alt nav-icon"></i><span class="nav-item-label">Emplois du temps</span></a>
-    <div class="nav-section-label mt-2">Finance</div>
-    <a href="/dashboard/paiements.html" class="nav-item-link"><i class="fas fa-credit-card nav-icon"></i><span class="nav-item-label">Paiements</span><span class="nav-badge bg-danger-soft text-danger">12</span></a>
-    <div class="nav-section-label mt-2">Communication</div>
-    <a href="/dashboard/messages.html" class="nav-item-link"><i class="fas fa-comments nav-icon"></i><span class="nav-item-label">Messages</span></a>
-    <a href="/dashboard/notifications.html" class="nav-item-link"><i class="fas fa-bell nav-icon"></i><span class="nav-item-label">Notifications</span></a>
-    <div class="nav-section-label mt-2">Administration</div>
-    <a href="/dashboard/utilisateurs.html" class="nav-item-link active"><i class="fas fa-users-cog nav-icon"></i><span class="nav-item-label">Utilisateurs</span></a>
-    <a href="/dashboard/parametres.html" class="nav-item-link"><i class="fas fa-cog nav-icon"></i><span class="nav-item-label">Paramètres</span></a>
-  </nav>
-  <div class="sidebar-footer"><div class="user-info"><div class="user-av">D</div><div><div class="user-name">M. Directeur</div><div class="user-role">Administrateur</div></div></div></div>
-</aside>
+<aside class="sidebar" id="sidebar"></aside>
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 <header class="topbar" id="topbar">
   <button class="topbar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
@@ -116,154 +95,77 @@
 <div class="modal fade" id="addUserModal" tabindex="-1">
   <div class="modal-dialog"><div class="modal-content">
     <div class="modal-header"><h5 class="modal-title fw-bold"><i class="fas fa-user-plus text-primary me-2"></i>Inviter un utilisateur</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-    <div class="modal-body">
-      <div class="mb-3"><label class="form-label">Email *</label><input type="email" id="inviteEmail" class="form-control" placeholder="email@ecole.ci"/></div>
-      <div class="mb-3">
-        <label class="form-label">Rôle *</label>
-        <select class="form-select" id="roleSelect" onchange="showRoleInfo()">
-          <option value="">Choisir un rôle…</option>
-          <option value="admin">Administrateur</option>
-          <option value="enseignant">Enseignant</option>
-          <option value="gestionnaire">Gestionnaire</option>
-        </select>
-      </div>
-      <div id="roleInfoBox" class="p-3 rounded-3 bg-light d-none mb-3" style="font-size:.82rem;color:var(--muted)"></div>
-      <div class="mb-3"><label class="form-label">Message personnalisé (optionnel)</label><textarea class="form-control" rows="2" placeholder="Ex: Bienvenue dans l'équipe !"></textarea></div>
+      <form id="formInviteUser">
+        <div class="row">
+          <div class="col-md-6 mb-3"><label class="form-label">Prénom *</label><input type="text" name="prenom" class="form-control" required/></div>
+          <div class="col-md-6 mb-3"><label class="form-label">Nom *</label><input type="text" name="nom" class="form-control" required/></div>
+        </div>
+        <div class="row">
+          <div class="col-md-6 mb-3"><label class="form-label">Sexe *</label>
+            <select class="form-select" name="sexe" required>
+              <option value="M">Masculin</option>
+              <option value="F">Féminin</option>
+            </select>
+          </div>
+          <div class="col-md-6 mb-3"><label class="form-label">Téléphone</label><input type="tel" name="tel" class="form-control"/></div>
+        </div>
+        <div class="mb-3"><label class="form-label">Email *</label><input type="email" name="email" class="form-control" placeholder="email@ecole.ci" required/></div>
+        
+        <div class="mb-3">
+          <label class="form-label">Rôle *</label>
+          <select class="form-select" name="role" id="roleSelect" onchange="toggleRoleFields()" required>
+            <option value="">Choisir un rôle…</option>
+            <option value="admin">Administrateur principal</option>
+            <option value="comptable">Comptable</option>
+            <option value="enseignant">Enseignant</option>
+            <option value="parent">Parent</option>
+            <option value="eleve">Élève</option>
+            <option value="secretaire">Secrétaire</option>
+            <option value="surveillant">Surveillant</option>
+          </select>
+        </div>
+        
+        <!-- Role Specific Fields -->
+        <div id="roleFields_eleve" class="d-none mb-3 p-3 bg-light rounded border">
+            <label class="form-label">Classe de l'élève</label>
+            <select class="form-select" name="classe_id">
+              <option value="">Choisir une classe...</option>
+              <option value="uuid1">6ème A</option>
+              <option value="uuid2">3ème B</option>
+            </select>
+            <label class="form-label mt-2">Date de naissance</label>
+            <input type="date" name="date_naissance" class="form-control"/>
+        </div>
+        
+        <div id="roleFields_enseignant" class="d-none mb-3 p-3 bg-light rounded border">
+            <label class="form-label">Matières enseignées (séparées par une virgule)</label>
+            <input type="text" name="matieres" class="form-control" placeholder="Ex: Mathématiques, Physique"/>
+        </div>
+        
+        <div id="roleInfoBox" class="p-3 rounded-3 bg-primary bg-opacity-10 d-none mb-3 text-primary fw-medium" style="font-size:.85rem"></div>
+      </form>
+      <script>
+        function toggleRoleFields() {
+            const role = document.getElementById('roleSelect').value;
+            const eleveFields = document.getElementById('roleFields_eleve');
+            const ensFields = document.getElementById('roleFields_enseignant');
+            
+            eleveFields.classList.add('d-none');
+            ensFields.classList.add('d-none');
+            
+            if (role === 'eleve') eleveFields.classList.remove('d-none');
+            if (role === 'enseignant') ensFields.classList.remove('d-none');
+            
+            if (window.showRoleInfo) window.showRoleInfo();
+        }
+      </script>
     </div>
-    <div class="modal-footer"><button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Annuler</button><button type="button" class="btn btn-primary rounded-pill px-4 fw-semibold" onclick="inviteUser()"><i class="fas fa-paper-plane me-2"></i>Envoyer l'invitation</button></div>
+    <div class="modal-footer"><button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Annuler</button><button type="button" class="btn btn-primary rounded-pill px-4 fw-semibold" id="btnInviteUser"><i class="fas fa-paper-plane me-2"></i>Envoyer l'invitation</button></div>
   </div></div>
 </div>
 
 <script src="/js/vendor/bootstrap.bundle.min.js"></script>
 <script src="../js/dashboard.js"></script>
-<script>
-function filterTable() {
-  const s = document.getElementById('searchInput').value.toLowerCase();
-  const r = document.getElementById('filterRole').value.toLowerCase();
-  document.querySelectorAll('#usersBody tr').forEach(tr => {
-    const t = tr.textContent.toLowerCase();
-    tr.style.display = t.includes(s) && (!r || t.includes(r)) ? '' : 'none';
-  });
-}
-function toggleUser(btn) {
-  const tr = btn.closest('tr');
-  const badge = tr.querySelector('.status-badge:last-of-type');
-  if (badge.classList.contains('success')) {
-    badge.className = 'status-badge danger'; badge.textContent = 'Suspendu';
-    btn.innerHTML = '<i class="fas fa-check"></i>';
-    btn.style.background = 'rgba(16,185,129,.1)'; btn.style.color = 'var(--success)';
-  } else {
-    badge.className = 'status-badge success'; badge.textContent = 'Actif';
-    btn.innerHTML = '<i class="fas fa-ban"></i>';
-    btn.style.background = 'rgba(239,68,68,.1)'; btn.style.color = 'var(--danger)';
-  }
-}
-const roleDesc = {
-  admin: '⚠️ Accès complet à toutes les fonctionnalités de la plateforme, y compris la gestion des utilisateurs et des paramètres.',
-  enseignant: '📚 Accès à ses classes, saisie des notes, emploi du temps et messagerie. Pas d\'accès aux finances.',
-  gestionnaire: '💳 Gestion des paiements, inscriptions et rapports financiers. Pas d\'accès à la gestion des utilisateurs.'
-};
-function showRoleInfo() {
-  const v = document.getElementById('roleSelect').value;
-  const box = document.getElementById('roleInfoBox');
-  if (v && roleDesc[v]) { box.textContent = roleDesc[v]; box.classList.remove('d-none'); }
-  else box.classList.add('d-none');
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  renderUsersTable();
-});
-
-function renderUsersTable() {
-  const tbody = document.getElementById('usersBody');
-  const users = JSON.parse(localStorage.getItem('edu_users') || '[]');
-  
-  if (users.length === 0) return; // garde les données fictives si aucun vrai utilisateur
-  
-  let html = '';
-  users.forEach(u => {
-    let roleText = 'Enseignant';
-    let roleClass = 'success';
-    let bgColor = '#10B981';
-    
-    let roleLower = (u.role || u.fonction || '').toLowerCase();
-    if (roleLower.includes('admin') || roleLower.includes('directeur')) {
-      roleText = 'Administrateur'; roleClass = 'danger'; bgColor = '#EF4444';
-    } else if (roleLower.includes('gestion')) {
-      roleText = 'Gestionnaire'; roleClass = 'primary'; bgColor = '#8B5CF6';
-    }
-    
-    let prenom = u.prenom || 'Utilisateur';
-    let nom = u.nom || '';
-    let initial = prenom.charAt(0).toUpperCase();
-    
-    html += `
-      <tr>
-        <td><div class="d-flex align-items-center gap-2"><div class="table-av" style="background:${bgColor}">${initial}</div><div><div style="font-weight:600;font-size:.85rem">${prenom} ${nom}</div><div style="font-size:.75rem;color:var(--muted)">${u.email}</div></div></div></td>
-        <td><span class="status-badge ${roleClass}">${roleText}</span></td>
-        <td style="font-size:.82rem">Aujourd'hui</td>
-        <td><span class="status-badge success">Actif</span></td>
-        <td><div class="d-flex gap-1">
-          <button class="btn btn-sm" style="padding:3px 8px;background:rgba(37,99,235,.1);color:var(--primary);border-radius:6px;font-size:.75rem"><i class="fas fa-edit"></i></button>
-          <button class="btn btn-sm" style="padding:3px 8px;background:rgba(239,68,68,.1);color:var(--danger);border-radius:6px;font-size:.75rem" onclick="toggleUser(this)"><i class="fas fa-ban"></i></button>
-        </div></td>
-      </tr>
-    `;
-  });
-  
-  if (html !== '') {
-    tbody.innerHTML = html;
-  }
-}
-
-function inviteUser() {
-  const email = document.getElementById('inviteEmail').value.trim();
-  const roleVal = document.getElementById('roleSelect').value;
-  const roleSelectNode = document.getElementById('roleSelect');
-  const roleText = roleVal ? roleSelectNode.options[roleSelectNode.selectedIndex].text : '';
-  
-  if (!email || !roleVal) {
-    if(typeof showToast === 'function') showToast("Veuillez remplir l'email et le rôle.", 'warning');
-    return;
-  }
-  
-  const users = JSON.parse(localStorage.getItem('edu_users') || '[]');
-  if (users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
-    if(typeof showToast === 'function') showToast("Cet utilisateur existe déjà !", 'danger');
-    return;
-  }
-  
-  const newUser = {
-    id: 'EDU-Invited-' + Date.now(),
-    email: email,
-    password: 'password123', // Mot de passe par défaut
-    prenom: 'Invité',
-    nom: '',
-    fonction: roleText,
-    role: roleVal,
-    plan: 'starter'
-  };
-  
-  users.push(newUser);
-  localStorage.setItem('edu_users', JSON.stringify(users));
-  
-  const modalEl = document.getElementById('addUserModal');
-  const modal = bootstrap.Modal.getInstance(modalEl);
-  if(modal) modal.hide();
-  
-  document.getElementById('inviteEmail').value = '';
-  document.getElementById('roleSelect').value = '';
-  document.getElementById('roleInfoBox').classList.add('d-none');
-  
-  renderUsersTable();
-  
-  if(typeof showToast === 'function') {
-    showToast("Invitation envoyée ! Le mot de passe par défaut est : password123", "success");
-  } else {
-    alert("Utilisateur invité avec succès. Mot de passe : password123");
-  }
-}
-</script>
 
 <script>
   if ('serviceWorker' in navigator) {
@@ -275,5 +177,7 @@ function inviteUser() {
 <script src="../js/config.js"></script>
 <script src="../js/supabase.js"></script>
 <script src="../js/app.js"></script>
+  <script src="../js/security.js"></script>
+  <script src="../js/sidebar.js"></script>
 </body>
 </html>

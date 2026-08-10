@@ -64,7 +64,14 @@ async function supabaseRegister(data) {
       data: {
         prenom: data.prenom,
         nom: data.nom,
-        fonction: data.fonction
+        fonction: data.fonction,
+        role: 'admin',
+        ecole: data.ecole,
+        typeEcole: data.typeEcole,
+        pays: data.pays,
+        ville: data.ville,
+        tel: data.tel,
+        plan: data.plan
       }
     }
   });
@@ -74,21 +81,36 @@ async function supabaseRegister(data) {
 
   const userId = authData.user.id;
 
-  // 2. Création de l'établissement
-  const { error: etabError } = await window.supabase.from('etablissements').insert({
-    admin_id: userId,
-    nom: data.ecole,
-    type: data.typeEcole,
-    pays: data.pays,
-    ville: data.ville,
-    tel: data.tel,
-    plan: data.plan
+  // 2. Création de l'établissement et du profil via RPC (Security Definer)
+  const { data: rpcData, error: rpcError } = await window.supabase.rpc('create_etablissement_and_profile', {
+    p_admin_id: userId,
+    p_nom: data.ecole,
+    p_type: data.typeEcole,
+    p_pays: data.pays,
+    p_ville: data.ville,
+    p_tel: data.tel,
+    p_plan: data.plan,
+    p_role: 'admin'
   });
 
-  if (etabError) return { success: false, message: etabError.message };
+  if (rpcError) {
+    console.error("RPC Error:", rpcError);
+    return { success: false, message: "Erreur lors de la configuration de votre espace." };
+  }
 
-  // Création session locale pour affichage frontend (bien que Supabase gère le token)
-  const session = { userId: userId, email: data.email, plan: data.plan, role: 'admin' };
+  if (rpcData && rpcData.success === false) {
+    console.error("RPC Logic Error:", rpcData.error);
+    return { success: false, message: "Impossible de créer l'établissement." };
+  }
+
+  // Création session locale pour affichage frontend
+  const session = { 
+    userId: userId, 
+    email: data.email, 
+    plan: data.plan, 
+    role: 'admin',
+    etablissement_id: rpcData.etablissement_id
+  };
   saveSession(session);
   localStorage.setItem('edu_abonnement', data.plan); // Pour la pagination dynamique
   
@@ -106,16 +128,43 @@ async function supabaseLogin(email, password) {
 
   if (error) return { success: false, message: error.message };
 
-  // Récupérer le plan de l'établissement
-  const { data: etabs, error: etabError } = await window.supabase
-    .from('etablissements')
-    .select('plan')
-    .eq('admin_id', data.user.id)
+  // Récupérer le profil de l'utilisateur
+  const { data: profiles, error: profError } = await window.supabase
+    .from('profiles')
+    .select('role, etablissement_id')
+    .eq('id', data.user.id)
     .limit(1);
 
-  const plan = (etabs && etabs.length > 0) ? etabs[0].plan : 'starter';
+  const profile = (profiles && profiles.length > 0) ? profiles[0] : { role: 'admin', etablissement_id: null };
 
-  const session = { userId: data.user.id, email: data.user.email, plan: plan, role: 'admin' };
+  let plan = 'starter';
+  if (profile.etablissement_id) {
+    const { data: etabs, error: etabError } = await window.supabase
+      .from('etablissements')
+      .select('plan')
+      .eq('id', profile.etablissement_id)
+      .limit(1);
+    if (etabs && etabs.length > 0) plan = etabs[0].plan;
+  } else if (profile.role === 'admin') {
+     // Fallback for older admin accounts without profiles table properly set up
+     const { data: etabs, error: etabError } = await window.supabase
+      .from('etablissements')
+      .select('id, plan')
+      .eq('admin_id', data.user.id)
+      .limit(1);
+     if (etabs && etabs.length > 0) {
+       plan = etabs[0].plan;
+       profile.etablissement_id = etabs[0].id;
+     }
+  }
+
+  const session = { 
+    userId: data.user.id, 
+    email: data.user.email, 
+    plan: plan, 
+    role: profile.role,
+    etablissement_id: profile.etablissement_id
+  };
   saveSession(session);
   localStorage.setItem('edu_abonnement', plan);
 

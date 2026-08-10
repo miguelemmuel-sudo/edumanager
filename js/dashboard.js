@@ -15,36 +15,43 @@ document.addEventListener('DOMContentLoaded', function() {
   if (sessionStr) {
     try {
       const session = JSON.parse(sessionStr);
-      const usersStr = localStorage.getItem('edu_users');
-      if (usersStr) {
-        const users = JSON.parse(usersStr);
-        const user = users.find(u => u.email === session.email);
-        if (user) {
-          // Update user-name
-          document.querySelectorAll('.user-name').forEach(el => {
-            el.textContent = `${_e(user.prenom)} ${_e(user.nom)}`;
-          });
-          // Update user-role
-          document.querySelectorAll('.user-role').forEach(el => {
-            el.textContent = user.fonction || 'Administrateur';
-          });
-          // Update user-av
-          document.querySelectorAll('.user-av').forEach(el => {
-            el.textContent = _e(user.prenom).charAt(0).toUpperCase();
-          });
-          
-          // Profil.html inputs
-          const profileForm = document.querySelector('form');
-          if (profileForm && window.location.pathname.includes('profil.html')) {
-            const inputs = profileForm.querySelectorAll('input');
-            if(inputs[0]) inputs[0].value = user.prenom || '';
-            if(inputs[1]) inputs[1].value = user.nom || '';
-            if(inputs[2]) inputs[2].value = user.email || '';
-            if(inputs[3]) inputs[3].value = user.tel || '';
-            if(inputs[4]) inputs[4].value = user.ecole || '';
-            if(inputs[5]) inputs[5].value = user.fonction || '';
+      if (window.supabase) {
+        window.supabase.auth.getUser().then(({ data: { user } }) => {
+          if (user) {
+            const meta = user.user_metadata || {};
+            const prenom = meta.prenom || 'Utilisateur';
+            const nom = meta.nom || '';
+            const fonction = meta.fonction || session.role || 'Administrateur';
+            const email = user.email || '';
+            const tel = meta.tel || '';
+            const ecole = meta.ecole || '';
+
+            // Update user-name
+            document.querySelectorAll('.user-name').forEach(el => {
+              el.textContent = `${_e(prenom)} ${_e(nom)}`;
+            });
+            // Update user-role
+            document.querySelectorAll('.user-role').forEach(el => {
+              el.textContent = _e(fonction);
+            });
+            // Update user-av
+            document.querySelectorAll('.user-av').forEach(el => {
+              el.textContent = _e(prenom).charAt(0).toUpperCase();
+            });
+            
+            // Profil.html inputs
+            const profileForm = document.querySelector('form');
+            if (profileForm && window.location.pathname.includes('profil.html')) {
+              const inputs = profileForm.querySelectorAll('input');
+              if(inputs[0]) inputs[0].value = prenom;
+              if(inputs[1]) inputs[1].value = nom;
+              if(inputs[2]) inputs[2].value = email;
+              if(inputs[3]) inputs[3].value = tel;
+              if(inputs[4]) inputs[4].value = ecole;
+              if(inputs[5]) inputs[5].value = fonction;
+            }
           }
-        }
+        }).catch(err => console.error("Erreur getUser", err));
       }
     } catch(e) { console.error('Session parsing error', e); }
   }

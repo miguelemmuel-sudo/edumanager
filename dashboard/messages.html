@@ -42,28 +42,7 @@
   <link rel="manifest" href="../manifest.json" />
 </head>
 <body>
-<aside class="sidebar" id="sidebar">
-  <a href="/dashboard/" class="sidebar-brand"><i class="fas fa-graduation-cap brand-icon"></i><span class="brand-name">EduManager</span></a>
-  <nav class="sidebar-nav">
-    <div class="nav-section-label">Principal</div>
-    <a href="/dashboard/" class="nav-item-link"><i class="fas fa-th-large nav-icon"></i><span class="nav-item-label">Tableau de bord</span></a>
-    <div class="nav-section-label mt-2">Gestion</div>
-    <a href="/dashboard/eleves.html" class="nav-item-link"><i class="fas fa-user-graduate nav-icon"></i><span class="nav-item-label">Élèves</span></a>
-    <a href="/dashboard/enseignants.html" class="nav-item-link"><i class="fas fa-chalkboard-teacher nav-icon"></i><span class="nav-item-label">Enseignants</span></a>
-    <a href="/dashboard/classes.html" class="nav-item-link"><i class="fas fa-door-open nav-icon"></i><span class="nav-item-label">Classes</span></a>
-    <a href="/dashboard/notes.html" class="nav-item-link"><i class="fas fa-clipboard-list nav-icon"></i><span class="nav-item-label">Notes & Bulletins</span></a>
-    <a href="/dashboard/emploi-du-temps.html" class="nav-item-link"><i class="fas fa-calendar-alt nav-icon"></i><span class="nav-item-label">Emplois du temps</span></a>
-    <div class="nav-section-label mt-2">Finance</div>
-    <a href="/dashboard/paiements.html" class="nav-item-link"><i class="fas fa-credit-card nav-icon"></i><span class="nav-item-label">Paiements</span><span class="nav-badge bg-danger-soft text-danger">12</span></a>
-    <div class="nav-section-label mt-2">Communication</div>
-    <a href="/dashboard/messages.html" class="nav-item-link active"><i class="fas fa-comments nav-icon"></i><span class="nav-item-label">Messages</span><span class="nav-badge bg-primary-soft text-primary">5</span></a>
-    <a href="/dashboard/notifications.html" class="nav-item-link"><i class="fas fa-bell nav-icon"></i><span class="nav-item-label">Notifications</span></a>
-    <div class="nav-section-label mt-2">Administration</div>
-    <a href="/dashboard/utilisateurs.html" class="nav-item-link"><i class="fas fa-users-cog nav-icon"></i><span class="nav-item-label">Utilisateurs</span></a>
-    <a href="/dashboard/parametres.html" class="nav-item-link"><i class="fas fa-cog nav-icon"></i><span class="nav-item-label">Paramètres</span></a>
-  </nav>
-  <div class="sidebar-footer"><div class="user-info"><div class="user-av">D</div><div><div class="user-name">M. Directeur</div><div class="user-role">Administrateur</div></div></div></div>
-</aside>
+<aside class="sidebar" id="sidebar"></aside>
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 <header class="topbar" id="topbar">
   <button class="topbar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
@@ -134,22 +113,20 @@
   <div class="modal-dialog"><div class="modal-content">
     <div class="modal-header"><h5 class="modal-title fw-bold"><i class="fas fa-pen text-primary me-2"></i>Nouveau message</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
     <div class="modal-body">
-      <div class="mb-3">
-        <label class="form-label">Destinataire(s) *</label>
-        <input type="text" class="form-control" placeholder="Nom du parent, enseignant…"/>
-      </div>
-      <div class="mb-3">
-        <label class="form-label">Ou envoyer à un groupe</label>
-        <select class="form-select">
-          <option value="">Sélectionner un groupe…</option>
-          <option>Tous les parents</option>
-          <option>Parents – 3ème B</option>
-          <option>Parents – 6ème A</option>
-          <option>Tous les enseignants</option>
-        </select>
-      </div>
-      <div class="mb-3"><label class="form-label">Objet</label><input type="text" class="form-control" placeholder="Objet du message"/></div>
-      <div class="mb-3"><label class="form-label">Message *</label><textarea class="form-control" rows="5" placeholder="Rédigez votre message…"></textarea></div>
+      <form id="formAddMessage">
+        <div class="mb-3">
+          <label class="form-label">Destinataire(s) / Groupe *</label>
+          <select name="destinataire_grp" class="form-select">
+            <option value="">Sélectionner un groupe…</option>
+            <option value="Tous les parents">Tous les parents</option>
+            <option value="Parents – 3ème B">Parents – 3ème B</option>
+            <option value="Parents – 6ème A">Parents – 6ème A</option>
+            <option value="Tous les enseignants">Tous les enseignants</option>
+          </select>
+        </div>
+        <div class="mb-3"><label class="form-label">Objet</label><input type="text" name="sujet" class="form-control" placeholder="Objet du message"/></div>
+        <div class="mb-3"><label class="form-label">Message *</label><textarea name="contenu" class="form-control" rows="5" placeholder="Rédigez votre message…"></textarea></div>
+      </form>
     </div>
     <div class="modal-footer">
       <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Annuler</button>
@@ -161,104 +138,7 @@
 <script src="/js/vendor/bootstrap.bundle.min.js"></script>
 <script src="../js/dashboard.js"></script>
 <script>
-// Logic moved to app.js
 
-function sendMessage() {
-  const inp = document.getElementById('msgInput');
-  const txt = inp.value.trim();
-  if (!txt) return;
-  const body = document.getElementById('chatBody');
-  const chatName = document.getElementById('chatName').textContent;
-  
-  let smsIndicator = '';
-  if (chatName.toLowerCase().includes('parent')) {
-    smsIndicator = ' &middot; <i class="fas fa-sms text-success" title="Notifié par SMS"></i> SMS envoyé';
-  }
-  
-  const htmlContent = `<div class="bubble sent">${txt.replace(/\\n/g,'<br>')}</div><div class="bubble-meta sent-meta">Vous &middot; maintenant${smsIndicator}</div>`;
-  
-  const wrap = document.createElement('div');
-  wrap.innerHTML = htmlContent;
-  body.appendChild(wrap);
-  
-  let store = JSON.parse(localStorage.getItem('edu_messages') || '{}');
-  if (!store[chatName]) store[chatName] = [];
-  store[chatName].push(htmlContent);
-  localStorage.setItem('edu_messages', JSON.stringify(store));
-  
-  inp.value = '';
-  body.scrollTop = body.scrollHeight;
-  
-  if (smsIndicator) {
-    if (typeof showToast === 'function') {
-      showToast("Message et SMS envoyés avec succès.", "success");
-    }
-  }
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  let store = JSON.parse(localStorage.getItem('edu_messages') || '{}');
-  if (!store['M. Diallo Parent']) {
-     store['M. Diallo Parent'] = [
-       `<div class="bubble received">Bonjour M. le Directeur, je voudrais avoir des informations sur les résultats du 1er trimestre de ma fille Amina Diallo (3ème B). Quand seront disponibles les bulletins ?</div><div class="bubble-meta">M. Diallo &middot; 10:15</div>`,
-       `<div class="bubble sent">Bonjour M. Diallo, les bulletins du 1er trimestre seront disponibles le vendredi 24 janvier. Vous recevrez une notification par SMS dès qu'ils seront prêts à télécharger. Les résultats d'Amina sont très satisfaisants ce trimestre.</div><div class="bubble-meta sent-meta">Vous &middot; 10:20</div>`,
-       `<div class="bubble received">Bonjour, je voudrais avoir des informations sur les résultats de ma fille. Elle a mentionné avoir eu quelques difficultés en mathématiques ce trimestre.</div><div class="bubble-meta">M. Diallo &middot; 10:24</div>`
-     ];
-     localStorage.setItem('edu_messages', JSON.stringify(store));
-  }
-  
-  const activeItem = document.querySelector('.msg-item.active');
-  if (activeItem) {
-     activeItem.click();
-  }
-});
-
-function sendNewMessage() {
-  const modalEl = document.getElementById('newMsgModal');
-  const modal = bootstrap.Modal.getInstance(modalEl);
-  if(modal) modal.hide();
-  
-  if (typeof showToast === 'function') {
-    showToast("Message envoyé. Si le destinataire est un parent, un SMS a également été envoyé.", "success");
-  }
-}
-function handleEnter(e) {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
-}
-// Auto-resize textarea
-document.getElementById('msgInput').addEventListener('input', function(){
-  this.style.height = 'auto';
-  this.style.height = Math.min(this.scrollHeight, 120) + 'px';
-});
-
-function insertEmoji() {
-  const inp = document.getElementById('msgInput');
-  inp.value += ' 😊';
-  inp.focus();
-}
-
-function handleFileUpload(event) {
-  if (event.target.files.length > 0) {
-    if (typeof showToast === 'function') {
-      showToast("Fichier joint : " + event.target.files[0].name, 'info');
-    }
-    // Simulate sending an attachment
-    const fileBubble = `<div class="bubble sent" style="background:#F1F5F9;color:var(--text);border:1px solid var(--border)"><i class="fas fa-paperclip me-2"></i>${event.target.files[0].name}</div><div class="bubble-meta sent-meta">Vous &middot; maintenant</div>`;
-    const chatName = document.getElementById('chatName').textContent;
-    let store = JSON.parse(localStorage.getItem('edu_messages') || '{}');
-    if (!store[chatName]) store[chatName] = [];
-    store[chatName].push(fileBubble);
-    localStorage.setItem('edu_messages', JSON.stringify(store));
-    
-    // Refresh chat
-    const activeItem = document.querySelector('.msg-item.active');
-    if (activeItem) activeItem.click();
-    
-    // Clear input so it can be triggered again
-    event.target.value = '';
-  }
-}
-</script>
 
 <script>
   if ('serviceWorker' in navigator) {
@@ -270,5 +150,7 @@ function handleFileUpload(event) {
 <script src="../js/config.js"></script>
 <script src="../js/supabase.js"></script>
 <script src="../js/app.js"></script>
+  <script src="../js/security.js"></script>
+  <script src="../js/sidebar.js"></script>
 </body>
 </html>

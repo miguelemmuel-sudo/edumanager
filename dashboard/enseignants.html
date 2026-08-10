@@ -11,28 +11,7 @@
   <link rel="manifest" href="../manifest.json" />
 </head>
 <body>
-<aside class="sidebar" id="sidebar">
-  <a href="/dashboard/" class="sidebar-brand"><i class="fas fa-graduation-cap brand-icon"></i><span class="brand-name">EduManager</span></a>
-  <nav class="sidebar-nav">
-    <div class="nav-section-label">Principal</div>
-    <a href="/dashboard/" class="nav-item-link"><i class="fas fa-th-large nav-icon"></i><span class="nav-item-label">Tableau de bord</span></a>
-    <div class="nav-section-label mt-2">Gestion</div>
-    <a href="/dashboard/eleves.html" class="nav-item-link"><i class="fas fa-user-graduate nav-icon"></i><span class="nav-item-label">Élèves</span></a>
-    <a href="/dashboard/enseignants.html" class="nav-item-link active"><i class="fas fa-chalkboard-teacher nav-icon"></i><span class="nav-item-label">Enseignants</span></a>
-    <a href="/dashboard/classes.html" class="nav-item-link"><i class="fas fa-door-open nav-icon"></i><span class="nav-item-label">Classes</span></a>
-    <a href="/dashboard/notes.html" class="nav-item-link"><i class="fas fa-clipboard-list nav-icon"></i><span class="nav-item-label">Notes & Bulletins</span></a>
-    <a href="/dashboard/emploi-du-temps.html" class="nav-item-link"><i class="fas fa-calendar-alt nav-icon"></i><span class="nav-item-label">Emplois du temps</span></a>
-    <div class="nav-section-label mt-2">Finance</div>
-    <a href="/dashboard/paiements.html" class="nav-item-link"><i class="fas fa-credit-card nav-icon"></i><span class="nav-item-label">Paiements</span><span class="nav-badge bg-danger-soft text-danger">12</span></a>
-    <div class="nav-section-label mt-2">Communication</div>
-    <a href="/dashboard/messages.html" class="nav-item-link"><i class="fas fa-comments nav-icon"></i><span class="nav-item-label">Messages</span><span class="nav-badge bg-primary-soft text-primary">5</span></a>
-    <a href="/dashboard/notifications.html" class="nav-item-link"><i class="fas fa-bell nav-icon"></i><span class="nav-item-label">Notifications</span></a>
-    <div class="nav-section-label mt-2">Administration</div>
-    <a href="/dashboard/utilisateurs.html" class="nav-item-link"><i class="fas fa-users-cog nav-icon"></i><span class="nav-item-label">Utilisateurs</span></a>
-    <a href="/dashboard/parametres.html" class="nav-item-link"><i class="fas fa-cog nav-icon"></i><span class="nav-item-label">Paramètres</span></a>
-  </nav>
-  <div class="sidebar-footer"><div class="user-info"><div class="user-av">D</div><div><div class="user-name">M. Directeur</div><div class="user-role">Administrateur</div></div></div></div>
-</aside>
+<aside class="sidebar" id="sidebar"></aside>
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
 <header class="topbar" id="topbar">
@@ -146,10 +125,10 @@
     <div class="modal-body">
       <div class="row g-3">
         <div class="col-md-4"><label class="form-label">Prénom *</label><input type="text" class="form-control" placeholder="Prénom"/></div>
-        <div class="col-md-4"><label class="form-label">Nom *</label><input type="text" class="form-control" placeholder="Nom"/></div>
+        <div class="col-md-4"><label class="form-label">Nom *</label><input type="text" name="nom" class="form-control" placeholder="Nom"/></div>
         <div class="col-md-4"><label class="form-label">Sexe</label><select class="form-select"><option>Masculin</option><option>Féminin</option></select></div>
-        <div class="col-md-6"><label class="form-label">Email professionnel *</label><input type="email" class="form-control" placeholder="ens@ecole.ci"/></div>
-        <div class="col-md-6"><label class="form-label">Téléphone *</label><input type="tel" class="form-control" placeholder="07 00 00 00"/></div>
+        <div class="col-md-6"><label class="form-label">Email professionnel *</label><input type="email" name="email" class="form-control" placeholder="ens@ecole.ci"/></div>
+        <div class="col-md-6"><label class="form-label">Téléphone *</label><input type="tel" name="tel" class="form-control" placeholder="07 00 00 00"/></div>
         <div class="col-md-6"><label class="form-label">Matière principale *</label>
           <select class="form-select"><option>Mathématiques</option><option>Français</option><option>Histoire-Géo</option><option>SVT</option><option>Physique-Chimie</option><option>Anglais</option><option>EPS</option></select>
         </div>
@@ -202,132 +181,13 @@
 
 <script src="/js/vendor/bootstrap.bundle.min.js"></script>
 <script src="../js/dashboard.js"></script>
-<script>
-/* ---- Vue grid / liste ---- */
-function setView(v) {
-  document.getElementById('viewGrid').classList.toggle('d-none', v === 'list');
-  document.getElementById('viewList').classList.toggle('d-none', v === 'grid');
-  document.getElementById('btnGrid').className = v === 'grid' ? 'btn btn-sm btn-primary rounded-pill px-3' : 'btn btn-sm btn-outline-secondary rounded-pill px-3';
-  document.getElementById('btnList').className = v === 'list' ? 'btn btn-sm btn-primary rounded-pill px-3' : 'btn btn-sm btn-outline-secondary rounded-pill px-3';
-}
-
-/* ---- Filtre ---- */
-function filterTable() {
-  const s = document.getElementById('searchInput').value.toLowerCase();
-  const m = document.getElementById('filterMatiere').value.toLowerCase();
-  document.querySelectorAll('.ens-card').forEach(c => {
-    const mat = (c.dataset.matiere || '').toLowerCase();
-    const txt = c.textContent.toLowerCase();
-    c.style.display = txt.includes(s) && (!m || mat === m) ? '' : 'none';
-  });
-}
-
-/* ---- Couleurs avatars ---- */
-const ensColors = ['#2563EB','#10B981','#F59E0B','#8B5CF6','#EF4444','#06B6D4','#EC4899','#1E293B'];
-let ensCount = 6;
-
-/* ---- Supprimer une carte ---- */
-function deleteEns(btn) {
-  if (!confirm('Supprimer cet enseignant ?')) return;
-  const card = btn.closest('.ens-card');
-  card.style.transition = 'opacity .3s, transform .3s';
-  card.style.opacity = '0';
-  card.style.transform = 'scale(.95)';
-  setTimeout(() => card.remove(), 300);
-  showToast('Enseignant supprimé.', 'success');
-}
-
-/* ---- Ajouter un enseignant ---- */
-document.querySelector('#addEnsModal .modal-footer .btn-primary').addEventListener('click', function () {
-  const modal   = document.getElementById('addEnsModal');
-  const inputs  = modal.querySelectorAll('input, select, textarea');
-
-  const prenom  = inputs[0].value.trim();
-  const nom     = inputs[1].value.trim();
-  const sexe    = inputs[2].value;
-  const email   = inputs[3].value.trim();
-  const tel     = inputs[4].value.trim();
-  const matiere = inputs[5].value;
-  const heures  = inputs[6].value || '0';
-
-  /* Validation */
-  if (!prenom || !nom || !matiere) {
-    if (!prenom) inputs[0].style.borderColor = '#EF4444';
-    if (!nom)    inputs[1].style.borderColor = '#EF4444';
-    if (!matiere) inputs[5].style.borderColor = '#EF4444';
-    showToast('Veuillez remplir les champs obligatoires (Prénom, Nom, Matière).', 'warning');
-    return;
-  }
-
-  ensCount++;
-  const titre    = sexe === 'Féminin' ? 'Mme' : 'M.';
-  const fullName = `${titre} ${prenom} ${nom}`;
-  const initiale = prenom.charAt(0).toUpperCase();
-  const color    = ensColors[ensCount % ensColors.length];
-  const slug     = nom.toLowerCase();
-
-  /* Créer la carte */
-  const col = document.createElement('div');
-  col.className = 'col-md-6 col-lg-4 ens-card';
-  col.dataset.matiere = matiere;
-  col.dataset.name = slug;
-  col.innerHTML = `
-    <div class="dash-card p-4 h-100">
-      <div class="d-flex align-items-start justify-content-between mb-3">
-        <div class="d-flex align-items-center gap-3">
-          <div class="table-av" style="width:48px;height:48px;font-size:1.2rem;background:${color}">${initiale}</div>
-          <div>
-            <div class="fw-bold" style="font-size:.95rem">${fullName}</div>
-            <div class="text-muted" style="font-size:.8rem">${matiere}</div>
-          </div>
-        </div>
-        <span class="status-badge success">Actif</span>
-      </div>
-      <div class="row g-2 mb-3">
-        <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Email</div><div style="font-size:.78rem">${email || '—'}</div></div>
-        <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Tél.</div><div style="font-size:.78rem">${tel || '—'}</div></div>
-        <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Heures/semaine</div><div style="font-size:.82rem;font-weight:600">${heures}h</div></div>
-        <div class="col-6"><div style="font-size:.72rem;color:var(--muted)">Classes</div><div style="font-size:.82rem;font-weight:600">—</div></div>
-      </div>
-      <div class="d-flex gap-2">
-        <button class="btn btn-sm rounded-pill flex-1" style="background:rgba(37,99,235,.1);color:var(--primary);font-size:.8rem"><i class="fas fa-eye me-1"></i>Voir</button>
-        <button class="btn btn-sm rounded-pill flex-1" style="background:rgba(245,158,11,.1);color:var(--warning);font-size:.8rem"><i class="fas fa-edit me-1"></i>Modifier</button>
-        <button class="btn btn-sm rounded-pill" onclick="deleteEns(this)" style="background:rgba(239,68,68,.1);color:var(--danger);font-size:.8rem;padding:0 .6rem"><i class="fas fa-trash"></i></button>
-      </div>
-    </div>`;
-
-  col.style.opacity = '0';
-  col.style.transform = 'scale(.95)';
-  col.style.transition = 'opacity .35s, transform .35s';
-  document.getElementById('ensBody').prepend(col);
-  requestAnimationFrame(() => {
-    col.style.opacity = '1';
-    col.style.transform = 'scale(1)';
-  });
-
-  /* Reset + fermer */
-  bootstrap.Modal.getInstance(modal).hide();
-  modal.querySelectorAll('input, textarea').forEach(i => { i.value = ''; i.style.borderColor = ''; });
-  modal.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
-  modal.querySelectorAll('input[type=checkbox]').forEach(c => c.checked = false);
-
-  /* KPI update */
-  const kpi = document.querySelector('.sc-value');
-  if (kpi) kpi.textContent = String(parseInt(kpi.textContent.replace(/\s/g,'')) + 1);
-
-  showToast(`✅ ${fullName} ajouté(e) avec succès !`, 'success');
-});
-</script>
-
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('../sw.js');
-  }
-</script>
-
+<script src="/js/vendor/bootstrap.bundle.min.js"></script>
+<script src="../js/dashboard.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../js/config.js"></script>
 <script src="../js/supabase.js"></script>
 <script src="../js/app.js"></script>
+  <script src="../js/security.js"></script>
+  <script src="../js/sidebar.js"></script>
 </body>
 </html>
