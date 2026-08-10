@@ -158,13 +158,13 @@
     else { f.type = 'password'; i.classList.replace('fa-eye-slash','fa-eye'); }
   }
   
-  document.getElementById('signinForm').addEventListener('submit', function(e){
+  document.getElementById('signinForm').addEventListener('submit', async function(e){
     e.preventDefault();
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('pwd').value;
     
     if (typeof login !== 'undefined') {
-      const result = login(email, password);
+      const result = await login(email, password);
       if (result.success) {
         window.location.href = '/dashboard/';
       } else {

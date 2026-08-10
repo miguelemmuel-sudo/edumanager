@@ -125,24 +125,9 @@ document.querySelectorAll('.act-icon').forEach(el => {
         <span style="font-weight:700;font-size:.9rem">Notifications</span>
         <span style="font-size:.75rem;color:var(--primary);cursor:pointer" onclick="document.getElementById('notifDropdown').firstElementChild.style.display='none'">Tout marquer lu</span>
       </div>
-      <div style="max-height:300px;overflow-y:auto">
-        <div style="display:flex;align-items:flex-start;gap:.75rem;padding:.85rem 1rem;border-bottom:1px solid #f8fafc;background:rgba(37,99,235,.02)">
-          <div style="width:34px;height:34px;border-radius:10px;background:rgba(16,185,129,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="fas fa-user-plus" style="color:#10B981;font-size:.8rem"></i></div>
-          <div style="flex:1;min-width:0"><div style="font-size:.83rem;font-weight:600">Nouvelle inscription</div><div style="font-size:.75rem;color:var(--muted)">Amina Diallo — 3ème B</div><div style="font-size:.7rem;color:var(--muted)">Il y a 10 min</div></div>
-          <div style="width:8px;height:8px;border-radius:50%;background:#2563EB;flex-shrink:0;margin-top:4px"></div>
-        </div>
-        <div style="display:flex;align-items:flex-start;gap:.75rem;padding:.85rem 1rem;border-bottom:1px solid #f8fafc;background:rgba(37,99,235,.02)">
-          <div style="width:34px;height:34px;border-radius:10px;background:rgba(239,68,68,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="fas fa-exclamation-triangle" style="color:#EF4444;font-size:.8rem"></i></div>
-          <div style="flex:1;min-width:0"><div style="font-size:.83rem;font-weight:600">Impayés détectés</div><div style="font-size:.75rem;color:var(--muted)">12 élèves en retard</div><div style="font-size:.7rem;color:var(--muted)">Il y a 35 min</div></div>
-          <div style="width:8px;height:8px;border-radius:50%;background:#2563EB;flex-shrink:0;margin-top:4px"></div>
-        </div>
-        <div style="display:flex;align-items:flex-start;gap:.75rem;padding:.85rem 1rem;border-bottom:1px solid #f8fafc">
-          <div style="width:34px;height:34px;border-radius:10px;background:rgba(245,158,11,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="fas fa-clipboard-list" style="color:#F59E0B;font-size:.8rem"></i></div>
-          <div style="flex:1;min-width:0"><div style="font-size:.83rem;font-weight:600">Notes saisies</div><div style="font-size:.75rem;color:var(--muted)">M. Koné — Maths 3ème B</div><div style="font-size:.7rem;color:var(--muted)">Il y a 1h</div></div>
-        </div>
-        <div style="display:flex;align-items:flex-start;gap:.75rem;padding:.85rem 1rem">
-          <div style="width:34px;height:34px;border-radius:10px;background:rgba(6,182,212,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="fas fa-comments" style="color:#06B6D4;font-size:.8rem"></i></div>
-          <div style="flex:1;min-width:0"><div style="font-size:.83rem;font-weight:600">5 nouveaux messages</div><div style="font-size:.75rem;color:var(--muted)">Parents d'élèves</div><div style="font-size:.7rem;color:var(--muted)">Il y a 2h</div></div>
+      <div style="max-height:300px;overflow-y:auto" id="topbarNotifList">
+        <div style="padding:1.5rem 1rem;text-align:center;color:var(--muted);font-size:.8rem">
+          Aucune notification
         </div>
       </div>
       <div style="padding:.75rem 1rem;border-top:1px solid var(--border);text-align:center">

@@ -1,8 +1,34 @@
--- Script de création des tables EduManager
+-- Script de création des tables EduManager - Architecture Multi-tenant
+
+-- Extension nécessaire pour gen_random_uuid() si non existante
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- 0. Table Établissements (Multi-tenant)
+CREATE TABLE IF NOT EXISTS public.etablissements (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    admin_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    nom VARCHAR(255) NOT NULL,
+    type VARCHAR(100),
+    pays VARCHAR(100),
+    ville VARCHAR(100),
+    tel VARCHAR(50),
+    plan VARCHAR(50) DEFAULT 'starter',
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Fonction utilitaire pour obtenir l'ID de l'établissement courant de l'utilisateur
+CREATE OR REPLACE FUNCTION public.get_current_etablissement_id()
+RETURNS UUID
+LANGUAGE sql STABLE
+AS $$
+  SELECT id FROM public.etablissements WHERE admin_id = auth.uid() LIMIT 1;
+$$;
 
 -- 1. Table Classes
 CREATE TABLE IF NOT EXISTS public.classes (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    etablissement_id UUID REFERENCES public.etablissements(id) ON DELETE CASCADE DEFAULT public.get_current_etablissement_id(),
     nom VARCHAR(100) NOT NULL,
     niveau VARCHAR(100),
     annee_scolaire VARCHAR(20) DEFAULT '2025-2026',
@@ -14,6 +40,7 @@ CREATE TABLE IF NOT EXISTS public.classes (
 -- 2. Table Enseignants
 CREATE TABLE IF NOT EXISTS public.enseignants (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    etablissement_id UUID REFERENCES public.etablissements(id) ON DELETE CASCADE DEFAULT public.get_current_etablissement_id(),
     user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL, -- optionnel si l'enseignant se connecte
     prenom VARCHAR(100) NOT NULL,
     nom VARCHAR(100) NOT NULL,
@@ -30,7 +57,8 @@ ALTER TABLE public.classes ADD CONSTRAINT fk_classes_enseignant FOREIGN KEY (ens
 -- 3. Table Eleves
 CREATE TABLE IF NOT EXISTS public.eleves (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    matricule VARCHAR(50) UNIQUE,
+    etablissement_id UUID REFERENCES public.etablissements(id) ON DELETE CASCADE DEFAULT public.get_current_etablissement_id(),
+    matricule VARCHAR(50),
     prenom VARCHAR(100) NOT NULL,
     nom VARCHAR(100) NOT NULL,
     date_naissance DATE,
@@ -42,13 +70,16 @@ CREATE TABLE IF NOT EXISTS public.eleves (
     parent_email VARCHAR(150),
     classe_id UUID REFERENCES public.classes(id) ON DELETE SET NULL,
     statut VARCHAR(50) DEFAULT 'Actif',
+    statut_paiement VARCHAR(50) DEFAULT 'Inconnu',
     created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE (etablissement_id, matricule)
 );
 
 -- 4. Table Paiements
 CREATE TABLE IF NOT EXISTS public.paiements (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    etablissement_id UUID REFERENCES public.etablissements(id) ON DELETE CASCADE DEFAULT public.get_current_etablissement_id(),
     eleve_id UUID REFERENCES public.eleves(id) ON DELETE CASCADE,
     montant NUMERIC(12,2) NOT NULL,
     date_paiement DATE DEFAULT CURRENT_DATE,
@@ -63,6 +94,7 @@ CREATE TABLE IF NOT EXISTS public.paiements (
 -- 5. Table Notes (Notes & Bulletins)
 CREATE TABLE IF NOT EXISTS public.notes (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    etablissement_id UUID REFERENCES public.etablissements(id) ON DELETE CASCADE DEFAULT public.get_current_etablissement_id(),
     eleve_id UUID REFERENCES public.eleves(id) ON DELETE CASCADE,
     enseignant_id UUID REFERENCES public.enseignants(id) ON DELETE SET NULL,
     matiere VARCHAR(100) NOT NULL,
@@ -79,6 +111,7 @@ CREATE TABLE IF NOT EXISTS public.notes (
 -- 6. Table Emplois du Temps
 CREATE TABLE IF NOT EXISTS public.emplois_temps (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    etablissement_id UUID REFERENCES public.etablissements(id) ON DELETE CASCADE DEFAULT public.get_current_etablissement_id(),
     classe_id UUID REFERENCES public.classes(id) ON DELETE CASCADE,
     enseignant_id UUID REFERENCES public.enseignants(id) ON DELETE SET NULL,
     matiere VARCHAR(100) NOT NULL,
@@ -93,6 +126,7 @@ CREATE TABLE IF NOT EXISTS public.emplois_temps (
 -- 7. Table Messages
 CREATE TABLE IF NOT EXISTS public.messages (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    etablissement_id UUID REFERENCES public.etablissements(id) ON DELETE CASCADE DEFAULT public.get_current_etablissement_id(),
     expediteur_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
     destinataire_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
     sujet VARCHAR(255),
@@ -104,7 +138,8 @@ CREATE TABLE IF NOT EXISTS public.messages (
 -- 8. Table Notifications
 CREATE TABLE IF NOT EXISTS public.notifications (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE, -- si NULL, notif globale
+    etablissement_id UUID REFERENCES public.etablissements(id) ON DELETE CASCADE DEFAULT public.get_current_etablissement_id(),
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE, -- si NULL, notif globale pour l'établissement
     titre VARCHAR(255) NOT NULL,
     message TEXT NOT NULL,
     type_notif VARCHAR(50) DEFAULT 'Info',
@@ -112,7 +147,8 @@ CREATE TABLE IF NOT EXISTS public.notifications (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Paramétrage RLS (Row Level Security) - Désactivé pour le développement initial, activé plus tard si besoin
+-- Paramétrage RLS (Row Level Security) - ACTIVÉ
+ALTER TABLE public.etablissements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.classes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.enseignants ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.eleves ENABLE ROW LEVEL SECURITY;
@@ -122,23 +158,40 @@ ALTER TABLE public.emplois_temps ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 
--- Creation de policies permissives pour l'audit/developpement 
--- (Puisque l'application est statique et n'a pas encore de backend strict)
-CREATE POLICY "Activer l'acces public pour eleves" ON public.eleves FOR ALL USING (true);
-CREATE POLICY "Activer l'acces public pour enseignants" ON public.enseignants FOR ALL USING (true);
-CREATE POLICY "Activer l'acces public pour classes" ON public.classes FOR ALL USING (true);
-CREATE POLICY "Activer l'acces public pour paiements" ON public.paiements FOR ALL USING (true);
-CREATE POLICY "Activer l'acces public pour notes" ON public.notes FOR ALL USING (true);
-CREATE POLICY "Activer l'acces public pour emplois_temps" ON public.emplois_temps FOR ALL USING (true);
-CREATE POLICY "Activer l'acces public pour messages" ON public.messages FOR ALL USING (true);
-CREATE POLICY "Activer l'acces public pour notifications" ON public.notifications FOR ALL USING (true);
+-- Creation des policies de sécurité strictes
+CREATE POLICY "Etablissement owner policy" ON public.etablissements 
+    FOR ALL USING (admin_id = auth.uid());
 
--- Activer le Realtime sur les nouvelles tables
--- Note: Requires `supabase_realtime` publication setup
+CREATE POLICY "Tenant Isolation classes" ON public.classes 
+    FOR ALL USING (etablissement_id = public.get_current_etablissement_id());
+
+CREATE POLICY "Tenant Isolation enseignants" ON public.enseignants 
+    FOR ALL USING (etablissement_id = public.get_current_etablissement_id());
+
+CREATE POLICY "Tenant Isolation eleves" ON public.eleves 
+    FOR ALL USING (etablissement_id = public.get_current_etablissement_id());
+
+CREATE POLICY "Tenant Isolation paiements" ON public.paiements 
+    FOR ALL USING (etablissement_id = public.get_current_etablissement_id());
+
+CREATE POLICY "Tenant Isolation notes" ON public.notes 
+    FOR ALL USING (etablissement_id = public.get_current_etablissement_id());
+
+CREATE POLICY "Tenant Isolation emplois_temps" ON public.emplois_temps 
+    FOR ALL USING (etablissement_id = public.get_current_etablissement_id());
+
+CREATE POLICY "Tenant Isolation messages" ON public.messages 
+    FOR ALL USING (etablissement_id = public.get_current_etablissement_id());
+
+CREATE POLICY "Tenant Isolation notifications" ON public.notifications 
+    FOR ALL USING (etablissement_id = public.get_current_etablissement_id());
+
+-- Activer le Realtime sur toutes les tables
 begin;
   -- drop publication if exists supabase_realtime;
   -- create publication supabase_realtime;
   commit;
+alter publication supabase_realtime add table public.etablissements;
 alter publication supabase_realtime add table public.eleves;
 alter publication supabase_realtime add table public.enseignants;
 alter publication supabase_realtime add table public.classes;

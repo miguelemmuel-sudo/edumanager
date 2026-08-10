@@ -359,7 +359,7 @@ const iti2 = window.intlTelInput(inputPhone2, {
 /* ====================================================
    SOUMISSION DU FORMULAIRE → ENREGISTREMENT RÉEL
 ==================================================== */
-document.getElementById('signupForm').addEventListener('submit', function(e) {
+document.getElementById('signupForm').addEventListener('submit', async function(e) {
   e.preventDefault();
 
   /* Récupérer toutes les valeurs des 3 étapes */
@@ -407,7 +407,7 @@ document.getElementById('signupForm').addEventListener('submit', function(e) {
   }
 
   /* Enregistrement via auth.js */
-  const result = typeof register !== 'undefined' ? register({ ecole, typeEcole, pays, ville, tel, prenom, nom, fonction, email, password, plan }) : {success:true};
+  const result = typeof register !== 'undefined' ? await register({ ecole, typeEcole, pays, ville, tel, prenom, nom, fonction, email, password, plan }) : {success:true};
 
   if (!result.success) {
     showError(result.message);
