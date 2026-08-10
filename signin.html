@@ -124,7 +124,7 @@
     if (typeof login !== 'undefined') {
       const result = await login(email, password);
       if (result.success) {
-        window.location.href = '/dashboard/';
+        window.location.href = 'dashboard/index.html';
       } else {
         const btn = document.querySelector('#signinForm button[type="submit"]');
         const oldHtml = btn.innerHTML;
@@ -136,7 +136,7 @@
         }, 2000);
       }
     } else {
-      window.location.href = '/dashboard/';
+      window.location.href = 'dashboard/index.html';
     }
   });
 </script>

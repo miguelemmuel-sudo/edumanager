@@ -25,9 +25,28 @@ const PLANS = {
 function getSession() {
   return JSON.parse(localStorage.getItem('edu_session') || 'null');
 }
+
 function saveSession(session) {
-  localStorage.setItem('edu_session', JSON.stringify(session));
+  if (typeof saveSecureSession === 'function') {
+    saveSecureSession(session);
+  } else {
+    // Fallback if security.js is not loaded
+    const raw = JSON.stringify({
+      userId: session.userId,
+      email:  session.email,
+      ua:     navigator.userAgent
+    });
+    let hash = 0;
+    for (let i = 0; i < raw.length; i++) {
+      const chr = raw.charCodeAt(i);
+      hash = ((hash << 5) - hash) + chr;
+      hash |= 0;
+    }
+    session._fp = Math.abs(hash).toString(36);
+    localStorage.setItem('edu_session', JSON.stringify(session));
+  }
 }
+
 function clearSession() {
   localStorage.removeItem('edu_session');
   localStorage.removeItem('edu_abonnement');
