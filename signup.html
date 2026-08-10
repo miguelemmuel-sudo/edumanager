@@ -441,7 +441,7 @@ document.getElementById('signupForm').addEventListener('submit', async function(
 
   } catch(err) {
     console.error("Signup error:", err);
-    showError("Erreur inattendue. Veuillez réessayer.");
+    showError("Erreur inattendue: " + (err.message || err));
     const btn = this.querySelector('[type=submit]');
     btn.innerHTML = '<i class="fas fa-school me-2"></i>Créer mon compte';
     btn.disabled = false;

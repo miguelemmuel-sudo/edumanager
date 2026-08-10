@@ -56,65 +56,70 @@ function clearSession() {
    INSCRIPTION SUPABASE
 ========================================== */
 async function supabaseRegister(data) {
-  // 1. Inscription Auth
-  const { data: authData, error: authError } = await window.supabase.auth.signUp({
-    email: data.email,
-    password: data.password,
-    options: {
-      data: {
-        prenom: data.prenom,
-        nom: data.nom,
-        fonction: data.fonction,
-        role: 'admin',
-        ecole: data.ecole,
-        typeEcole: data.typeEcole,
-        pays: data.pays,
-        ville: data.ville,
-        tel: data.tel,
-        plan: data.plan
+  try {
+    // 1. Inscription Auth
+    const { data: authData, error: authError } = await window.supabase.auth.signUp({
+      email: data.email,
+      password: data.password,
+      options: {
+        data: {
+          prenom: data.prenom,
+          nom: data.nom,
+          fonction: data.fonction,
+          role: 'admin',
+          ecole: data.ecole,
+          typeEcole: data.typeEcole,
+          pays: data.pays,
+          ville: data.ville,
+          tel: data.tel,
+          plan: data.plan
+        }
       }
+    });
+
+    if (authError) return { success: false, message: authError.message };
+    if (!authData || !authData.user) return { success: false, message: 'Erreur inconnue lors de l\'inscription.' };
+
+    const userId = authData.user.id;
+
+    // 2. Création de l'établissement et du profil via RPC (Security Definer)
+    const { data: rpcData, error: rpcError } = await window.supabase.rpc('create_etablissement_and_profile', {
+      p_admin_id: userId,
+      p_nom: data.ecole,
+      p_type: data.typeEcole,
+      p_pays: data.pays,
+      p_ville: data.ville,
+      p_tel: data.tel,
+      p_plan: data.plan,
+      p_role: 'admin'
+    });
+
+    if (rpcError) {
+      console.error("RPC Error:", rpcError);
+      return { success: false, message: "Erreur de configuration Supabase. Assurez-vous que les requêtes SQL (RPC) ont été exécutées." };
     }
-  });
 
-  if (authError) return { success: false, message: authError.message };
-  if (!authData.user) return { success: false, message: 'Erreur inconnue lors de l\'inscription.' };
+    if (rpcData && rpcData.success === false) {
+      console.error("RPC Logic Error:", rpcData.error);
+      return { success: false, message: "Impossible de créer l'établissement: " + (rpcData.error || '') };
+    }
 
-  const userId = authData.user.id;
-
-  // 2. Création de l'établissement et du profil via RPC (Security Definer)
-  const { data: rpcData, error: rpcError } = await window.supabase.rpc('create_etablissement_and_profile', {
-    p_admin_id: userId,
-    p_nom: data.ecole,
-    p_type: data.typeEcole,
-    p_pays: data.pays,
-    p_ville: data.ville,
-    p_tel: data.tel,
-    p_plan: data.plan,
-    p_role: 'admin'
-  });
-
-  if (rpcError) {
-    console.error("RPC Error:", rpcError);
-    return { success: false, message: "Erreur lors de la configuration de votre espace." };
+    // Création session locale pour affichage frontend
+    const session = { 
+      userId: userId, 
+      email: data.email, 
+      plan: data.plan, 
+      role: 'admin',
+      etablissement_id: rpcData ? rpcData.etablissement_id : null
+    };
+    saveSession(session);
+    localStorage.setItem('edu_abonnement', data.plan); // Pour la pagination dynamique
+    
+    return { success: true, user: session };
+  } catch(err) {
+    console.error("supabaseRegister exception:", err);
+    return { success: false, message: "Exception interne: " + err.message };
   }
-
-  if (rpcData && rpcData.success === false) {
-    console.error("RPC Logic Error:", rpcData.error);
-    return { success: false, message: "Impossible de créer l'établissement." };
-  }
-
-  // Création session locale pour affichage frontend
-  const session = { 
-    userId: userId, 
-    email: data.email, 
-    plan: data.plan, 
-    role: 'admin',
-    etablissement_id: rpcData.etablissement_id
-  };
-  saveSession(session);
-  localStorage.setItem('edu_abonnement', data.plan); // Pour la pagination dynamique
-  
-  return { success: true, user: session };
 }
 
 /* ==========================================
