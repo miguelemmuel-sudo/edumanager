@@ -3,6 +3,17 @@
 -- Extension nécessaire pour gen_random_uuid() si non existante
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+-- /!\ ATTENTION : Ce bloc supprime les tables existantes pour assurer une architecture multi-tenant propre
+DROP TABLE IF EXISTS public.notifications CASCADE;
+DROP TABLE IF EXISTS public.messages CASCADE;
+DROP TABLE IF EXISTS public.emplois_temps CASCADE;
+DROP TABLE IF EXISTS public.notes CASCADE;
+DROP TABLE IF EXISTS public.paiements CASCADE;
+DROP TABLE IF EXISTS public.eleves CASCADE;
+DROP TABLE IF EXISTS public.classes CASCADE;
+DROP TABLE IF EXISTS public.enseignants CASCADE;
+DROP TABLE IF EXISTS public.etablissements CASCADE;
+
 -- 0. Table Établissements (Multi-tenant)
 CREATE TABLE IF NOT EXISTS public.etablissements (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
