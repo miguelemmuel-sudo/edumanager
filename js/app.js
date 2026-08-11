@@ -80,7 +80,16 @@ function getFormData(modalId) {
     const inputs = modal.querySelectorAll('input[name], select[name], textarea[name]');
     const data = {};
     inputs.forEach(i => {
-        if (i.type === 'checkbox' || i.type === 'radio') {
+        if (i.type === 'checkbox') {
+            if (i.checked) {
+                if (data[i.name] === undefined) {
+                    data[i.name] = i.value;
+                } else {
+                    if (!Array.isArray(data[i.name])) data[i.name] = [data[i.name]];
+                    data[i.name].push(i.value);
+                }
+            }
+        } else if (i.type === 'radio') {
             if (i.checked) data[i.name] = i.value;
         } else {
             let val = i.value.trim();
@@ -99,17 +108,48 @@ function clearFormData(modalId) {
     });
 }
 
+// --- UTILITAIRES DYNAMIQUES (Classes & Matières) ---
+let cachedClasses = null;
+let cachedMatieres = null;
+
+async function fetchEtablissementClasses(force = false) {
+    if (cachedClasses && !force) return cachedClasses;
+    const { data, error } = await window.supabase.from('classes').select('id, nom').order('nom');
+    if (error) { console.error('Erreur chargement classes:', error); return []; }
+    cachedClasses = data || [];
+    return cachedClasses;
+}
+
+async function fetchEtablissementMatieres(force = false) {
+    if (cachedMatieres && !force) return cachedMatieres;
+    const { data, error } = await window.supabase.from('enseignants').select('matiere');
+    if (error) { console.error('Erreur chargement matières:', error); return []; }
+    const uniqueMatieres = [...new Set((data || []).map(e => e.matiere).filter(m => m && m.trim() !== ''))];
+    cachedMatieres = uniqueMatieres.map(m => m.charAt(0).toUpperCase() + m.slice(1)).sort();
+    cachedMatieres = [...new Set(cachedMatieres)];
+    return cachedMatieres;
+}
+
 // --- ÉLÈVES ---
 async function fetchAndRenderEleves() {
     const tbody = document.getElementById('dynamicBody') || document.getElementById('elevesBody');
     if (!tbody) return;
 
-    // Load classes for the dropdown
-    const classeSelect = document.getElementById('classeSelect');
-    if (classeSelect && classeSelect.children.length <= 1) {
-        const { data: classes } = await window.supabase.from('classes').select('id, nom');
-        if (classes) {
-            classeSelect.innerHTML = '<option value="">Sélectionner une classe</option>' + classes.map(c => `<option value="${c.id}">${_e(c.nom)}</option>`).join('');
+    // Load classes for dropdowns
+    const eleveClasseSelect = document.getElementById('eleveClasseSelect') || document.getElementById('classeSelect');
+    const filterClasse = document.getElementById('filterClasse');
+    
+    if (eleveClasseSelect || filterClasse) {
+        const classes = await fetchEtablissementClasses();
+        if (eleveClasseSelect) {
+            const currentVal = eleveClasseSelect.value;
+            eleveClasseSelect.innerHTML = '<option value="">Sélectionner une classe</option>' + classes.map(c => `<option value="${c.id}">${_e(c.nom)}</option>`).join('');
+            eleveClasseSelect.value = currentVal;
+        }
+        if (filterClasse) {
+            const currentVal = filterClasse.value;
+            filterClasse.innerHTML = '<option value="">Toutes les classes</option>' + classes.map(c => `<option value="${c.nom}">${_e(c.nom)}</option>`).join('');
+            filterClasse.value = currentVal;
         }
     }
 
@@ -181,6 +221,31 @@ async function fetchAndRenderEnseignants() {
     const tbody = document.getElementById('dynamicBody') || document.getElementById('enseignantsBody');
     const gridBody = document.getElementById('ensGrid');
     if (!tbody && !gridBody) return;
+
+    // Load dynamic subjects and classes
+    const filterMatiere = document.getElementById('filterMatiere');
+    const matieresList = document.getElementById('matieresList');
+    const classesContainer = document.getElementById('enseignantClassesContainer');
+    
+    if (filterMatiere || matieresList) {
+        const matieres = await fetchEtablissementMatieres(true); // force refresh
+        if (filterMatiere) {
+            const currentVal = filterMatiere.value;
+            filterMatiere.innerHTML = '<option value="">Toutes les matières</option>' + matieres.map(m => `<option value="${_e(m)}">${_e(m)}</option>`).join('');
+            filterMatiere.value = currentVal;
+        }
+        if (matieresList) {
+            matieresList.innerHTML = matieres.map(m => `<option value="${_e(m)}">`).join('');
+        }
+    }
+    if (classesContainer) {
+        const classes = await fetchEtablissementClasses();
+        classesContainer.innerHTML = classes.map(c => `
+            <label class="d-flex align-items-center gap-1 border rounded-2 px-2 py-1 cursor-pointer" style="font-size:.82rem">
+                <input type="checkbox" name="classes_assignees" value="${c.id}" class="me-1"/>${_e(c.nom)}
+            </label>
+        `).join('');
+    }
 
     const { data: enseignants, error } = await window.supabase.from('enseignants').select('*');
     if (error) return console.error(error);
@@ -261,6 +326,13 @@ function setupEnseignantsModal() {
             if(window.showToast) window.showToast('Prénom, nom et email requis', 'warning');
             return;
         }
+        
+        // Remove fields that are not in the DB schema
+        delete data.heures;
+        delete data.classes_assignees;
+        delete data.notes;
+        if(data.sexe) delete data.sexe; // Sexe is not in the schema either
+
         btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
         const { error } = await window.supabase.from('enseignants').insert([data]);
         btn.disabled = false; btn.innerHTML = 'Enregistrer';
@@ -388,12 +460,37 @@ async function fetchAndRenderNotes() {
     const tbody = document.getElementById('dynamicBody') || document.getElementById('notesBody');
     if (!tbody) return;
     
-    // Charger les classes pour le select de configuration
+    // Charger les classes et matières pour les filtres et selects
     const noteClasseSelect = document.getElementById('noteClasseSelect');
-    if (noteClasseSelect && noteClasseSelect.children.length <= 1) {
-        const { data: classes } = await window.supabase.from('classes').select('id, nom');
-        if (classes) {
+    const noteMatiereSelect = document.getElementById('noteMatiereSelect');
+    const selClasse = document.getElementById('selClasse');
+    const selMatiere = document.getElementById('selMatiere');
+    
+    if (noteClasseSelect || selClasse) {
+        const classes = await fetchEtablissementClasses();
+        if (noteClasseSelect) {
+            const currentVal = noteClasseSelect.value;
             noteClasseSelect.innerHTML = '<option value="">Sélectionner une classe</option>' + classes.map(c => `<option value="${c.id}">${_e(c.nom)}</option>`).join('');
+            noteClasseSelect.value = currentVal;
+        }
+        if (selClasse) {
+            const currentVal = selClasse.value;
+            selClasse.innerHTML = '<option value="">Toutes les classes</option>' + classes.map(c => `<option value="${c.nom}">${_e(c.nom)}</option>`).join('');
+            selClasse.value = currentVal;
+        }
+    }
+    
+    if (noteMatiereSelect || selMatiere) {
+        const matieres = await fetchEtablissementMatieres();
+        if (noteMatiereSelect) {
+            const currentVal = noteMatiereSelect.value;
+            noteMatiereSelect.innerHTML = '<option value="">Sélectionner une matière</option>' + matieres.map(m => `<option value="${_e(m)}">${_e(m)}</option>`).join('');
+            noteMatiereSelect.value = currentVal;
+        }
+        if (selMatiere) {
+            const currentVal = selMatiere.value;
+            selMatiere.innerHTML = '<option value="">Toutes les matières</option>' + matieres.map(m => `<option value="${_e(m)}">${_e(m)}</option>`).join('');
+            selMatiere.value = currentVal;
         }
     }
 
@@ -533,14 +630,26 @@ async function fetchAndRenderEmploi() {
     if (!classeSelectFiltre) return; // Not on the page
 
     // Load classes for filters if not loaded
-    if (classeSelectFiltre.children.length <= 3 && !classeSelectFiltre.dataset.loaded) {
-        const { data: classes } = await window.supabase.from('classes').select('id, nom');
-        if (classes) {
-            const html = classes.map(c => `<option value="${c.id}">${_e(c.nom)}</option>`).join('');
-            classeSelectFiltre.innerHTML = html;
-            if(creneauClasseSelect) creneauClasseSelect.innerHTML = '<option value="">Sélectionner...</option>' + html;
-            classeSelectFiltre.dataset.loaded = 'true';
+    if (classeSelectFiltre && !classeSelectFiltre.dataset.loaded) {
+        const classes = await fetchEtablissementClasses();
+        const html = '<option value="">Sélectionner une classe</option>' + classes.map(c => `<option value="${c.id}">${_e(c.nom)}</option>`).join('');
+        const currentVal = classeSelectFiltre.value;
+        classeSelectFiltre.innerHTML = html;
+        classeSelectFiltre.value = currentVal;
+        
+        if (creneauClasseSelect) {
+            const currentCreneauVal = creneauClasseSelect.value;
+            creneauClasseSelect.innerHTML = html;
+            creneauClasseSelect.value = currentCreneauVal;
         }
+        classeSelectFiltre.dataset.loaded = 'true';
+    }
+
+    const edtMatieresList = document.getElementById('edtMatieresList');
+    if (edtMatieresList && !edtMatieresList.dataset.loaded) {
+        const matieres = await fetchEtablissementMatieres();
+        edtMatieresList.innerHTML = matieres.map(m => `<option value="${_e(m)}">`).join('');
+        edtMatieresList.dataset.loaded = 'true';
     }
     
     // Load profs for modal
@@ -1105,6 +1214,56 @@ async function fetchAndRenderRapports() {
                     <span class="text-muted" style="font-size:0.85rem">Filles (${filles})</span>
                 </div>
             `;
+        }
+    }
+    
+    // Classes chart
+    const rapportClassesContainer = document.getElementById('rapportClassesContainer');
+    if (rapportClassesContainer) {
+        const { data: classes } = await window.supabase.from('classes').select('nom, eleves(count)');
+        if (classes && classes.length > 0) {
+            let maxEleves = Math.max(...classes.map(c => c.eleves && c.eleves[0] ? c.eleves[0].count : 0), 1);
+            rapportClassesContainer.innerHTML = classes.map((c, i) => {
+                let nb = c.eleves && c.eleves[0] ? c.eleves[0].count : 0;
+                let pct = Math.round((nb / maxEleves) * 100);
+                let colors = ['#2563EB', '#10B981', '#F59E0B', '#8B5CF6', '#EF4444', '#06B6D4', '#1E293B'];
+                let color = colors[i % colors.length];
+                return `<div class="chart-bar-h"><div class="bar-label">${_e(c.nom)}</div><div class="bar-track"><div class="prog-fill" style="width:${pct}%;background:${color};height:100%"></div></div><div class="bar-val" style="color:${color}">${nb}</div></div>`;
+            }).join('');
+        } else {
+            rapportClassesContainer.innerHTML = '<div class="text-center py-3 text-muted">Aucune donnée</div>';
+        }
+    }
+
+    // Matieres chart
+    const rapportMatieresContainer = document.getElementById('rapportMatieresContainer');
+    if (rapportMatieresContainer) {
+        const uniqueMatieres = await fetchEtablissementMatieres();
+        
+        if (uniqueMatieres && uniqueMatieres.length > 0) {
+            let statsMatieres = {};
+            uniqueMatieres.forEach(m => statsMatieres[m] = { total: 0, count: 0 });
+            
+            const { data: allNotes } = await window.supabase.from('notes').select('matiere, valeur');
+            if (allNotes) {
+                allNotes.forEach(n => {
+                    let m = n.matiere ? n.matiere.charAt(0).toUpperCase() + n.matiere.slice(1) : null;
+                    if (m && statsMatieres[m]) {
+                        statsMatieres[m].total += parseFloat(n.valeur || 0);
+                        statsMatieres[m].count++;
+                    }
+                });
+            }
+            
+            rapportMatieresContainer.innerHTML = uniqueMatieres.map((m, i) => {
+                let moy = statsMatieres[m].count > 0 ? (statsMatieres[m].total / statsMatieres[m].count).toFixed(1) : 0;
+                let pct = Math.round((moy / 20) * 100);
+                let colors = ['#2563EB', '#10B981', '#06B6D4', '#F59E0B', '#EF4444', '#8B5CF6', '#1E293B'];
+                let color = colors[i % colors.length];
+                return `<div class="chart-bar-h"><div class="bar-label">${_e(m)}</div><div class="bar-track"><div class="prog-fill" style="width:${pct}%;background:${color};height:100%"></div></div><div class="bar-val" style="color:${color}">${moy}</div></div>`;
+            }).join('');
+        } else {
+            rapportMatieresContainer.innerHTML = '<div class="text-center py-3 text-muted">Aucune donnée</div>';
         }
     }
 }

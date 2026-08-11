@@ -86,9 +86,6 @@
     </div>
     <select class="form-select form-select-sm" style="width:160px" id="filterMatiere" onchange="filterTable()">
       <option value="">Toutes les matières</option>
-      <option>Mathématiques</option><option>Français</option>
-      <option>Histoire-Géo</option><option>SVT</option>
-      <option>Physique-Chimie</option><option>Anglais</option><option>EPS</option>
     </select>
   </div>
 
@@ -124,25 +121,23 @@
     <div class="modal-header"><h5 class="modal-title fw-bold"><i class="fas fa-chalkboard-teacher text-primary me-2"></i>Ajouter un enseignant</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
     <div class="modal-body">
       <div class="row g-3">
-        <div class="col-md-4"><label class="form-label">Prénom *</label><input type="text" class="form-control" placeholder="Prénom"/></div>
+        <div class="col-md-4"><label class="form-label">Prénom *</label><input type="text" name="prenom" class="form-control" placeholder="Prénom"/></div>
         <div class="col-md-4"><label class="form-label">Nom *</label><input type="text" name="nom" class="form-control" placeholder="Nom"/></div>
-        <div class="col-md-4"><label class="form-label">Sexe</label><select class="form-select"><option>Masculin</option><option>Féminin</option></select></div>
+        <div class="col-md-4"><label class="form-label">Sexe</label><select name="sexe" class="form-select"><option>Masculin</option><option>Féminin</option></select></div>
         <div class="col-md-6"><label class="form-label">Email professionnel *</label><input type="email" name="email" class="form-control" placeholder="ens@ecole.ci"/></div>
         <div class="col-md-6"><label class="form-label">Téléphone *</label><input type="tel" name="tel" class="form-control" placeholder="07 00 00 00"/></div>
         <div class="col-md-6"><label class="form-label">Matière principale *</label>
-          <select class="form-select"><option>Mathématiques</option><option>Français</option><option>Histoire-Géo</option><option>SVT</option><option>Physique-Chimie</option><option>Anglais</option><option>EPS</option></select>
+          <input type="text" name="matiere" list="matieresList" class="form-control" autocomplete="off" placeholder="Ex: Mathématiques"/>
+          <datalist id="matieresList"></datalist>
         </div>
-        <div class="col-md-6"><label class="form-label">Heures/semaine</label><input type="number" class="form-control" placeholder="18" min="1" max="40"/></div>
+        <div class="col-md-6"><label class="form-label">Heures/semaine</label><input type="number" name="heures" class="form-control" placeholder="18" min="1" max="40"/></div>
         <div class="col-12"><label class="form-label">Classes assignées</label>
-          <div class="d-flex flex-wrap gap-2">
-            <label class="d-flex align-items-center gap-1 border rounded-2 px-2 py-1 cursor-pointer" style="font-size:.82rem"><input type="checkbox" class="me-1"/>6ème A</label>
-            <label class="d-flex align-items-center gap-1 border rounded-2 px-2 py-1 cursor-pointer" style="font-size:.82rem"><input type="checkbox" class="me-1"/>6ème B</label>
-            <label class="d-flex align-items-center gap-1 border rounded-2 px-2 py-1 cursor-pointer" style="font-size:.82rem"><input type="checkbox" class="me-1"/>3ème A</label>
-            <label class="d-flex align-items-center gap-1 border rounded-2 px-2 py-1 cursor-pointer" style="font-size:.82rem"><input type="checkbox" class="me-1"/>3ème B</label>
-            <label class="d-flex align-items-center gap-1 border rounded-2 px-2 py-1 cursor-pointer" style="font-size:.82rem"><input type="checkbox" class="me-1"/>Terminale</label>
+          <div id="enseignantClassesContainer" class="d-flex flex-wrap gap-2">
+            <!-- Classes dynamically injected here -->
           </div>
         </div>
-        <div class="col-12"><label class="form-label">Notes / Remarques</label><textarea class="form-control" rows="2" placeholder="Optionnel…"></textarea></div>
+        <div class="col-12"><label class="form-label">Notes / Remarques</label><textarea name="notes" class="form-control" rows="2" placeholder="Optionnel…"></textarea></div>
+
       </div>
     </div>
     <div class="modal-footer"><button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Annuler</button><button type="button" class="btn btn-primary rounded-pill px-4 fw-semibold">Enregistrer</button></div>

@@ -50,7 +50,7 @@
   <!-- Sélecteur -->
   <div class="dash-card mb-4 p-3">
     <div class="row g-3 align-items-end">
-      <div class="col-md-3"><label class="form-label">Classe</label><select class="form-select" id="emploi_classe"><option>3ème B</option><option>6ème A</option><option>Terminale</option></select></div>
+      <div class="col-md-3"><label class="form-label">Classe</label><select class="form-select" id="emploi_classe"><option value="">Sélectionner une classe</option></select></div>
       <div class="col-md-3"><label class="form-label">Semaine</label><input type="week" class="form-control" id="emploi_semaine" value="2026-W03"/></div>
       <div class="col-md-3"><label class="form-label">Vue</label><select class="form-select" id="emploi_vue"><option>Semaine</option><option>Jour</option><option>Mois</option></select></div>
       <div class="col-md-3"><button class="btn btn-primary w-100 rounded-pill" id="btnAfficherEmploi">Afficher</button></div>
@@ -102,7 +102,10 @@
               <div class="col-md-6"><label class="form-label">Jour *</label><select class="form-select" name="jour_semaine"><option value="Lundi">Lundi</option><option value="Mardi">Mardi</option><option value="Mercredi">Mercredi</option><option value="Jeudi">Jeudi</option><option value="Vendredi">Vendredi</option><option value="Samedi">Samedi</option></select></div>
               <div class="col-md-6"><label class="form-label">Heure de début *</label><input type="time" name="heure_debut" class="form-control" value="08:00"></div>
               <div class="col-md-6"><label class="form-label">Heure de fin *</label><input type="time" name="heure_fin" class="form-control" value="10:00"></div>
-              <div class="col-md-6"><label class="form-label">Matière *</label><input type="text" class="form-control" name="matiere" placeholder="Ex: Mathématiques"></div>
+              <div class="col-md-6"><label class="form-label">Matière *</label>
+                <input type="text" class="form-control" name="matiere" list="edtMatieresList" placeholder="Ex: Mathématiques">
+                <datalist id="edtMatieresList"></datalist>
+              </div>
               <div class="col-md-6"><label class="form-label">Enseignant</label><select class="form-select" name="enseignant_id" id="creneauProfSelect"><option value="">Sélectionner...</option></select></div>
               <div class="col-md-6"><label class="form-label">Salle</label><input type="text" class="form-control" name="salle" placeholder="Ex: Salle 3"></div>
             </div>

@@ -53,9 +53,6 @@
       <div class="d-flex gap-2 ms-auto flex-wrap">
         <select class="form-select form-select-sm" style="width:140px" id="filterClasse" onchange="filterTable()">
           <option value="">Toutes les classes</option>
-          <option>6ème A</option><option>6ème B</option>
-          <option>3ème A</option><option>3ème B</option>
-          <option>Terminale</option>
         </select>
         <select class="form-select form-select-sm" style="width:130px" id="filterStatut" onchange="filterTable()">
           <option value="">Tous les statuts</option>
@@ -101,7 +98,7 @@
         <div class="row g-3">
           <div class="col-md-4"><label class="form-label">Prénom *</label><input type="text" class="form-control" placeholder="Prénom"/></div>
           <div class="col-md-4"><label class="form-label">Nom *</label><input type="text" name="nom" class="form-control" placeholder="Nom"/></div>
-          <div class="col-md-4"><label class="form-label">Classe *</label><select class="form-select"><option>6ème A</option><option>6ème B</option><option>3ème A</option><option>3ème B</option><option>Terminale</option></select></div>
+          <div class="col-md-4"><label class="form-label">Classe *</label><select name="classe_id" id="eleveClasseSelect" class="form-select"><option value="">Sélectionner une classe</option></select></div>
           <div class="col-md-4"><label class="form-label">Date de naissance</label><input type="date" name="date_naissance" class="form-control"/></div>
           <div class="col-md-4"><label class="form-label">Sexe</label><select name="sexe" class="form-select"><option value="Masculin">Masculin</option><option>Féminin</option></select></div>
           <div class="col-md-4"><label class="form-label">Nationalité</label><input type="text" name="nationalite" class="form-control" placeholder="Ex: Ivoirienne"/></div>

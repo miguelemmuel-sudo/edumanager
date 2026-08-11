@@ -34,8 +34,8 @@
   <!-- Sélecteur Classe / Matière / Trimestre -->
   <div class="dash-card mb-4 p-3">
     <div class="row g-3 align-items-end">
-      <div class="col-md-3"><label class="form-label">Classe</label><select class="form-select" id="selClasse" onchange="updateTable()"><option>3ème B</option><option>6ème A</option><option>Terminale</option></select></div>
-      <div class="col-md-3"><label class="form-label">Matière</label><select class="form-select" id="selMatiere"><option>Mathématiques</option><option>Français</option><option>Histoire-Géo</option><option>SVT</option><option>Physique-Chimie</option><option>Anglais</option></select></div>
+      <div class="col-md-3"><label class="form-label">Classe</label><select class="form-select" id="selClasse" onchange="updateTable()"><option value="">Sélectionner une classe</option></select></div>
+      <div class="col-md-3"><label class="form-label">Matière</label><select class="form-select" id="selMatiere"><option value="">Sélectionner une matière</option></select></div>
       <div class="col-md-3"><label class="form-label">Trimestre</label><select class="form-select"><option>1er Trimestre</option><option>2ème Trimestre</option><option>3ème Trimestre</option></select></div>
       <div class="col-md-3"><button class="btn btn-primary w-100 rounded-pill">Charger les notes</button></div>
     </div>
@@ -85,7 +85,7 @@
     <div class="modal-body">
       <div class="row g-3">
         <div class="col-6"><label class="form-label">Classe *</label><select name="classe_id" class="form-select" id="noteClasseSelect"><option value="">Sélectionner...</option></select></div>
-        <div class="col-6"><label class="form-label">Matière *</label><select name="matiere" class="form-select"><option value="Mathématiques">Mathématiques</option><option value="Français">Français</option></select></div>
+        <div class="col-6"><label class="form-label">Matière *</label><select name="matiere" class="form-select" id="noteMatiereSelect"><option value="">Sélectionner...</option></select></div>
         <div class="col-6"><label class="form-label">Type d'évaluation *</label><select name="type_evaluation" class="form-select"><option value="Devoir">Devoir</option><option value="Composition">Composition</option><option value="Interrogation">Interrogation</option></select></div>
         <div class="col-6"><label class="form-label">Note sur</label><input type="number" name="note_sur" class="form-control" value="20"/></div>
         <div class="col-6"><label class="form-label">Coefficient</label><input type="number" name="coefficient" class="form-control" value="2"/></div>
