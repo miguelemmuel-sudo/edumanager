@@ -62,14 +62,14 @@ const menuItems = [];
 
     // Finance
     if (['admin', 'comptable'].includes(role)) {
-        menuItems.push({ label: 'Paiements', icon: 'fa-credit-card', link: 'paiements.html', section: 'Finance', badge: '12', badgeClass: 'bg-danger-soft text-danger' });
+        menuItems.push({ label: 'Paiements', icon: 'fa-credit-card', link: 'paiements.html', section: 'Finance', badge: '0', badgeClass: 'bg-danger-soft text-danger', badgeId: 'sidebarBadgePaiements' });
     }
     if (['parent'].includes(role)) {
         menuItems.push({ label: 'Mes Paiements', icon: 'fa-credit-card', link: 'paiements.html', section: 'Finance' });
     }
 
     // Communication
-    menuItems.push({ label: 'Messages', icon: 'fa-comments', link: 'messages.html', section: 'Communication', badge: '5', badgeClass: 'bg-primary-soft text-primary' });
+    menuItems.push({ label: 'Messages', icon: 'fa-comments', link: 'messages.html', section: 'Communication', badge: '0', badgeClass: 'bg-primary-soft text-primary', badgeId: 'sidebarBadgeMessages' });
     menuItems.push({ label: 'Notifications', icon: 'fa-bell', link: 'notifications.html', section: 'Communication' });
 
     // Administration
@@ -96,7 +96,7 @@ const menuItems = [];
         }
         
         let active = (currentPage === item.link) ? 'active' : '';
-        let badgeHTML = item.badge ? `<span class="nav-badge ${item.badgeClass}">${item.badge}</span>` : '';
+        let badgeHTML = item.badge ? `<span class="nav-badge ${item.badgeClass}" ${item.badgeId ? 'id="'+item.badgeId+'"' : ''}>${item.badge}</span>` : '';
         
         menuHTML += `
             <a href="${basePath}${item.link}" class="nav-item-link ${active}">
