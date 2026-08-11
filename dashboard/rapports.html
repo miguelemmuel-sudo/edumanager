@@ -110,19 +110,10 @@
           </div>
         </div>
         <div class="dash-card-body">
-          <div class="bar-chart mb-3" style="height:150px">
-            <div class="bar-item" style="height:35%;background:linear-gradient(180deg,#2563EB,#93C5FD)" title="Sep: 85"></div>
-            <div class="bar-item" style="height:48%;background:linear-gradient(180deg,#2563EB,#93C5FD)" title="Oct: 118"></div>
-            <div class="bar-item" style="height:62%;background:linear-gradient(180deg,#10B981,#6EE7B7)" title="Nov: 152"></div>
-            <div class="bar-item" style="height:44%;background:linear-gradient(180deg,#2563EB,#93C5FD)" title="Déc: 108"></div>
-            <div class="bar-item" style="height:78%;background:linear-gradient(180deg,#10B981,#6EE7B7)" title="Jan: 192"></div>
-            <div class="bar-item" style="height:66%;background:linear-gradient(180deg,#2563EB,#93C5FD)" title="Fév: 162"></div>
-            <div class="bar-item" style="height:88%;background:linear-gradient(180deg,#10B981,#6EE7B7)" title="Mar: 216"></div>
-            <div class="bar-item" style="height:100%;background:linear-gradient(180deg,#10B981,#6EE7B7)" title="Avr: 245"></div>
-            <div class="bar-item" style="height:72%;background:linear-gradient(180deg,#2563EB,#93C5FD)" title="Mai: 177"></div>
-            <div class="bar-item" style="height:55%;background:linear-gradient(180deg,#2563EB,#93C5FD)" title="Jun: 135"></div>
+          <div class="bar-chart mb-3" style="height:150px" id="inscriptionsChart">
+            <!-- Dynamically populated by JS -->
           </div>
-          <div class="d-flex justify-content-between px-1" style="font-size:.72rem;color:var(--muted)">
+          <div class="d-flex justify-content-between px-1" style="font-size:.72rem;color:var(--muted)" id="inscriptionsChartLabels">
             <span>Sep</span><span>Oct</span><span>Nov</span><span>Déc</span><span>Jan</span><span>Fév</span><span>Mar</span><span>Avr</span><span>Mai</span><span>Jun</span>
           </div>
         </div>
@@ -158,35 +149,29 @@
           <div class="row g-3 mb-3 text-center">
             <div class="col-4">
               <div class="p-2 rounded-2 bg-success-soft">
-                <div class="fw-bold text-success">137 000€</div>
+                <div class="fw-bold text-success" id="totalAttendu">0</div>
                 <div class="text-muted" style="font-size:.72rem">Total attendu</div>
               </div>
             </div>
             <div class="col-4">
               <div class="p-2 rounded-2 bg-primary-soft">
-                <div class="fw-bold text-primary">98 750€</div>
+                <div class="fw-bold text-primary" id="totalEncaisse">0</div>
                 <div class="text-muted" style="font-size:.72rem">Encaissé</div>
               </div>
             </div>
             <div class="col-4">
               <div class="p-2 rounded-2 bg-danger-soft">
-                <div class="fw-bold text-danger">38 250€</div>
+                <div class="fw-bold text-danger" id="resteCollecter">0</div>
                 <div class="text-muted" style="font-size:.72rem">Reste à collecter</div>
               </div>
             </div>
           </div>
           <div style="font-size:.82rem;font-weight:600;margin-bottom:.5rem">Évolution des encaissements</div>
-          <div class="bar-chart" style="height:80px">
-            <div class="bar-item" style="height:38%;background:linear-gradient(180deg,#10B981,#34D399)"></div>
-            <div class="bar-item" style="height:52%;background:linear-gradient(180deg,#10B981,#34D399)"></div>
-            <div class="bar-item" style="height:71%;background:linear-gradient(180deg,#10B981,#34D399)"></div>
-            <div class="bar-item" style="height:48%;background:linear-gradient(180deg,#10B981,#34D399)"></div>
-            <div class="bar-item" style="height:85%;background:linear-gradient(180deg,#10B981,#34D399)"></div>
-            <div class="bar-item" style="height:64%;background:linear-gradient(180deg,#10B981,#34D399)"></div>
-            <div class="bar-item" style="height:100%;background:linear-gradient(180deg,#10B981,#34D399)"></div>
+          <div class="bar-chart" style="height:80px" id="financeChart">
+            <!-- Dynamically populated by JS -->
           </div>
-          <div class="d-flex justify-content-between mt-1" style="font-size:.7rem;color:var(--muted)">
-            <span>Oct</span><span>Nov</span><span>Déc</span><span>Jan</span><span>Fév</span><span>Mar</span><span>Avr</span>
+          <div class="d-flex justify-content-between mt-1" style="font-size:.7rem;color:var(--muted)" id="financeChartLabels">
+            <!-- Dynamically populated by JS -->
           </div>
         </div>
       </div>
@@ -197,64 +182,56 @@
   <div class="dash-card">
     <div class="dash-card-header">
       <span class="dash-card-title"><i class="fas fa-file-alt text-primary me-2"></i>Rapports disponibles</span>
+      <button class="btn btn-sm btn-primary rounded-pill px-3 ms-auto" onclick="showGenerateReportModal()">
+        <i class="fas fa-plus me-1"></i>Nouveau
+      </button>
     </div>
     <div class="dash-card-body">
-      <div class="row g-3">
-        <div class="col-md-6 col-lg-4">
-          <div class="d-flex align-items-center justify-content-between p-3 rounded-3 border hover-shadow">
-            <div class="d-flex align-items-center gap-3">
-              <div class="sc-icon bg-primary-soft" style="width:40px;height:40px"><i class="fas fa-file-pdf text-primary"></i></div>
-              <div><div class="fw-semibold" style="font-size:.875rem">Rapport général T1</div><div class="text-muted" style="font-size:.75rem">Toutes classes · PDF · 2.3 MB</div></div>
+      <div class="row g-3" id="rapportsList">
+        <!-- Dynamically populated by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Generate Report Modal -->
+  <div class="modal fade" id="generateReportModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-header border-bottom-0 pb-0">
+          <h5 class="modal-title fw-bold" style="color:var(--heading)"><i class="fas fa-file-export text-primary me-2"></i>Générer un rapport</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label fw-medium text-muted small">Type de rapport</label>
+            <select class="form-select" id="newReportType">
+              <option value="Liste des élèves">Liste des élèves (Toutes classes)</option>
+              <option value="Rapport financier">Rapport financier (Paiements)</option>
+              <option value="Rapport général">Rapport général (Notes & Moyennes)</option>
+              <option value="Impayés">Liste des impayés et relances</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-medium text-muted small">Format d'exportation</label>
+            <div class="d-flex gap-2">
+              <input type="radio" class="btn-check" name="reportFormat" id="formatPdf" value="PDF" checked>
+              <label class="btn btn-outline-danger px-4 rounded-pill flex-1" for="formatPdf"><i class="fas fa-file-pdf me-2"></i>PDF</label>
+              
+              <input type="radio" class="btn-check" name="reportFormat" id="formatExcel" value="Excel">
+              <label class="btn btn-outline-success px-4 rounded-pill flex-1" for="formatExcel"><i class="fas fa-file-excel me-2"></i>Excel</label>
+              
+              <input type="radio" class="btn-check" name="reportFormat" id="formatCsv" value="CSV">
+              <label class="btn btn-outline-info px-4 rounded-pill flex-1" for="formatCsv"><i class="fas fa-file-csv me-2"></i>CSV</label>
             </div>
-            <button class="btn btn-sm btn-outline-primary rounded-pill px-3" style="font-size:.78rem"><i class="fas fa-download me-1"></i>PDF</button>
           </div>
         </div>
-        <div class="col-md-6 col-lg-4">
-          <div class="d-flex align-items-center justify-content-between p-3 rounded-3 border hover-shadow">
-            <div class="d-flex align-items-center gap-3">
-              <div class="sc-icon bg-success-soft" style="width:40px;height:40px"><i class="fas fa-file-excel text-success"></i></div>
-              <div><div class="fw-semibold" style="font-size:.875rem">Rapport financier</div><div class="text-muted" style="font-size:.75rem">Paiements · Excel · 890 KB</div></div>
-            </div>
-            <button class="btn btn-sm btn-outline-success rounded-pill px-3" style="font-size:.78rem"><i class="fas fa-download me-1"></i>Excel</button>
-          </div>
-        </div>
-        <div class="col-md-6 col-lg-4">
-          <div class="d-flex align-items-center justify-content-between p-3 rounded-3 border hover-shadow">
-            <div class="d-flex align-items-center gap-3">
-              <div class="sc-icon bg-warning-soft" style="width:40px;height:40px"><i class="fas fa-file-pdf text-warning"></i></div>
-              <div><div class="fw-semibold" style="font-size:.875rem">Bulletins – 3ème B</div><div class="text-muted" style="font-size:.75rem">28 bulletins · PDF · 4.1 MB</div></div>
-            </div>
-            <button class="btn btn-sm btn-outline-warning rounded-pill px-3" style="font-size:.78rem"><i class="fas fa-download me-1"></i>PDF</button>
-          </div>
-        </div>
-        <div class="col-md-6 col-lg-4">
-          <div class="d-flex align-items-center justify-content-between p-3 rounded-3 border hover-shadow">
-            <div class="d-flex align-items-center gap-3">
-              <div class="sc-icon bg-info-soft" style="width:40px;height:40px"><i class="fas fa-file-csv text-info"></i></div>
-              <div><div class="fw-semibold" style="font-size:.875rem">Liste des élèves</div><div class="text-muted" style="font-size:.75rem">Tous niveaux · CSV · 145 KB</div></div>
-            </div>
-            <button class="btn btn-sm btn-outline-info rounded-pill px-3" style="font-size:.78rem"><i class="fas fa-download me-1"></i>CSV</button>
-          </div>
-        </div>
-        <div class="col-md-6 col-lg-4">
-          <div class="d-flex align-items-center justify-content-between p-3 rounded-3 border hover-shadow">
-            <div class="d-flex align-items-center gap-3">
-              <div class="sc-icon bg-danger-soft" style="width:40px;height:40px"><i class="fas fa-file-pdf text-danger"></i></div>
-              <div><div class="fw-semibold" style="font-size:.875rem">Impayés & relances</div><div class="text-muted" style="font-size:.75rem">148 élèves · PDF · 1.2 MB</div></div>
-            </div>
-            <button class="btn btn-sm btn-outline-danger rounded-pill px-3" style="font-size:.78rem"><i class="fas fa-download me-1"></i>PDF</button>
-          </div>
-        </div>
-        <div class="col-md-6 col-lg-4">
-          <div class="d-flex align-items-center justify-content-between p-3 rounded-3 border hover-shadow">
-            <div class="d-flex align-items-center gap-3">
-              <div class="sc-icon bg-purple-soft" style="width:40px;height:40px"><i class="fas fa-file-alt text-purple"></i></div>
-              <div><div class="fw-semibold" style="font-size:.875rem">Planning enseignants</div><div class="text-muted" style="font-size:.75rem">87 profs · PDF · 780 KB</div></div>
-            </div>
-            <button class="btn btn-sm rounded-pill px-3" style="font-size:.78rem;border:1px solid #8B5CF6;color:#8B5CF6"><i class="fas fa-download me-1"></i>PDF</button>
-          </div>
+        <div class="modal-footer border-top-0 pt-0">
+          <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Annuler</button>
+          <button type="button" class="btn btn-primary rounded-pill px-4" onclick="generateNewReport()">Générer <i class="fas fa-magic ms-2"></i></button>
         </div>
       </div>
+    </div>
+  </div>
     </div>
   </div>
 </main>
