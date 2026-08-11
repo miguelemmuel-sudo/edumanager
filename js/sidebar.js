@@ -91,7 +91,7 @@ function renderSidebar() {
         let badgeHTML = item.badge ? `<span class="nav-badge ${item.badgeClass}">${item.badge}</span>` : '';
         
         menuHTML += `
-            <a href="/dashboard/${item.link}" class="nav-item-link ${active}">
+            <a href="${item.link}" class="nav-item-link ${active}">
                 <i class="fas ${item.icon} nav-icon"></i>
                 <span class="nav-item-label">${item.label}</span>
                 ${badgeHTML}
@@ -104,7 +104,7 @@ function renderSidebar() {
     const sidebar = document.getElementById('sidebar');
     if (sidebar) {
         sidebar.innerHTML = `
-            <a href="/dashboard/" class="sidebar-brand">
+            <a href="index.html" class="sidebar-brand">
                 <i class="fas fa-graduation-cap brand-icon"></i>
                 <span class="brand-name">EduManager</span>
             </a>
