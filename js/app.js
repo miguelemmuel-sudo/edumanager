@@ -1307,6 +1307,8 @@ fetchAndRenderNotifs();
     
 // --- RAPPORTS ---
 async function fetchAndRenderRapports() {
+    if (!document.getElementById('rapportClassesContainer')) return;
+    try {
     // Only run if on rapports page (check a specific element)
     const isRapportsPage = document.querySelector('.dash-card-title') && document.querySelector('.dash-card-title').textContent.includes('Évolution des inscriptions');
     if (!isRapportsPage) return;
@@ -1611,6 +1613,9 @@ async function fetchAndRenderRapports() {
             rapportMatieresContainer.innerHTML = '<div class="text-center py-3 text-muted">Aucune donnée</div>';
         }
     }
+    } catch (err) {
+        console.error("Error in fetchAndRenderRapports:", err);
+    }
 }
 
 
@@ -1880,6 +1885,7 @@ fetchAndRenderProfil();
 
 // --- DASHBOARD (STATS GLOBALES) ---
 async function initDashboardStats() {
+    try {
     const elevesCountEl = document.querySelectorAll('.sc-value')[0];
     const revenusCountEl = document.querySelectorAll('.sc-value')[1];
     const enseignantsCountEl = document.querySelectorAll('.sc-value')[2];
@@ -1912,6 +1918,10 @@ async function initDashboardStats() {
         });
     }
 
+    if (resEl.error) {
+        console.error("Erreur fetch eleves:", resEl.error);
+        if(window.showToast) window.showToast("Erreur eleves: " + resEl.error.message, 'danger');
+    }
     const elevesData = resEl.data || [];
     const nbEleves = elevesData.length;
     const nbEnseignants = resEn.count || 0;
@@ -2082,6 +2092,9 @@ async function initDashboardStats() {
         } else {
             recentList.innerHTML = '<div class="text-muted" style="font-size:0.85rem">Aucune activité récente</div>';
         }
+    }
+    } catch (err) {
+        console.error("Error in initDashboardStats:", err);
     }
 }
 
