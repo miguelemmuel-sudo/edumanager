@@ -458,11 +458,16 @@ async function fetchAndRenderClasses() {
     if (!container) return;
 
     // Load enseignants for dropdown
-    const profSelect = document.getElementById('profSelect');
-    if (profSelect && profSelect.children.length <= 1) {
+    const profSelects = [document.getElementById('profSelect'), document.getElementById('profPrincipalSelect')].filter(Boolean);
+    if (profSelects.length > 0) {
         const { data: profs } = await window.supabase.from('enseignants').select('id, prenom, nom');
         if (profs) {
-            profSelect.innerHTML = '<option value="">Sélectionner un prof</option>' + profs.map(p => `<option value="${p.id}">${_e(p.prenom)} ${_e(p.nom)}</option>`).join('');
+            const optionsHtml = '<option value="">Sélectionner un professeur</option>' + profs.map(p => `<option value="${p.id}">${_e(p.prenom)} ${_e(p.nom)}</option>`).join('');
+            profSelects.forEach(sel => {
+                if (sel.children.length <= 1) {
+                    sel.innerHTML = optionsHtml;
+                }
+            });
         }
     }
 
