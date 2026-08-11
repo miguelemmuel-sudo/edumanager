@@ -254,8 +254,8 @@ function setupElevesModal() {
     if (!btn) return;
     btn.addEventListener('click', async () => {
         const data = getFormData('addEleveModal');
-        if (!data.prenom || !data.nom || !data.classe_id) {
-            if(window.showToast) window.showToast('Prénom, nom et classe requis', 'warning');
+        if (!data.matricule || !data.prenom || !data.nom || !data.classe_id) {
+            if(window.showToast) window.showToast('Matricule, Prénom, nom et classe requis', 'warning');
             return;
         }
         
