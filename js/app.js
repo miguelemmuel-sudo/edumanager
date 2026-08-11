@@ -107,6 +107,20 @@ function clearFormData(modalId) {
         else i.value = '';
     });
 }
+function closeModal(modalId) {
+    const modalEl = document.getElementById(modalId);
+    if (!modalEl) return;
+    const modal = bootstrap.Modal.getInstance(modalEl) || bootstrap.Modal.getOrCreateInstance(modalEl);
+    if (modal) modal.hide();
+    
+    // Fallback cleanup to prevent black screen (backdrop bug)
+    setTimeout(() => {
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
+        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+    }, 300);
+}
 
 // --- UTILITAIRES DYNAMIQUES (Classes & Matières) ---
 let cachedClasses = null;
@@ -253,8 +267,7 @@ function setupElevesModal() {
             if(window.showToast) window.showToast(error.message, 'danger');
         } else {
             if(window.showToast) window.showToast('Élève ajouté', 'success');
-            const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('addEleveModal'));
-            if(modal) modal.hide();
+            closeModal('addEleveModal');
             clearFormData('addEleveModal');
             fetchAndRenderEleves();
         }
@@ -438,8 +451,7 @@ function setupEnseignantsModal() {
             if(window.showToast) window.showToast(error.message, 'danger');
         } else {
             if(window.showToast) window.showToast('Enseignant ajouté', 'success');
-            const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('addEnsModal'));
-            if(modal) modal.hide();
+            closeModal('addEnsModal');
             clearFormData('addEnsModal');
             fetchAndRenderEnseignants();
         }
@@ -540,8 +552,7 @@ function setupClassesModal() {
             if(window.showToast) window.showToast(error.message, 'danger');
         } else {
             if(window.showToast) window.showToast('Classe ajoutée', 'success');
-            const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('addClasseModal'));
-            if(modal) modal.hide();
+            closeModal('addClasseModal');
             clearFormData('addClasseModal');
             fetchAndRenderClasses();
         }
@@ -668,7 +679,7 @@ function setupNotesModal() {
             `;
         });
         
-        bootstrap.Modal.getOrCreateInstance(document.getElementById('addNoteModal')).hide();
+        closeModal('addNoteModal');
         new bootstrap.Modal(document.getElementById('saisieGrilleModal')).show();
     });
     
@@ -705,9 +716,11 @@ function setupNotesModal() {
             if (error) {
                 if (window.showToast) window.showToast(error.message, 'danger');
             } else {
-                if (window.showToast) window.showToast('Notes enregistrées avec succès', 'success');
-                bootstrap.Modal.getOrCreateInstance(document.getElementById('saisieGrilleModal')).hide();
-                fetchAndRenderNotes();
+                if(window.showToast) window.showToast('Notes enregistrées', 'success');
+                setTimeout(() => {
+                    closeModal('saisieGrilleModal');
+                    fetchAndRenderNotes();
+                }, 1000);
             }
         });
     }
@@ -846,8 +859,7 @@ function setupEmploiModal() {
                 if(window.showToast) window.showToast(error.message, 'danger');
             } else {
                 if(window.showToast) window.showToast('Créneau ajouté', 'success');
-                const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('addCreneauModal'));
-                if(modal) modal.hide();
+                closeModal('addCreneauModal');
                 clearFormData('addCreneauModal');
                 fetchAndRenderEmploi();
             }
@@ -1017,9 +1029,8 @@ function setupPaiementsModal() {
         if (error) {
             if(window.showToast) window.showToast(error.message, 'danger');
         } else {
-            if(window.showToast) window.showToast('Paiement enregistré avec succès', 'success');
-            const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('addPaiementModal'));
-            if(modal) modal.hide();
+            if(window.showToast) window.showToast('Paiement enregistré', 'success');
+            closeModal('addPaiementModal');
             clearFormData('addPaiementModal');
             fetchAndRenderPaiements();
         }
@@ -1168,7 +1179,7 @@ window.sendNewMessage = async function() {
     if (error) {
         if(window.showToast) window.showToast(error.message, 'danger');
     } else {
-        bootstrap.Modal.getOrCreateInstance(document.getElementById('newMsgModal')).hide();
+        closeModal('newMsgModal');
         clearFormData('newMsgModal');
         fetchAndRenderMessages();
         if (form.destinataire_grp.toLowerCase().includes('parent')) {
@@ -1285,8 +1296,8 @@ function setupNotifsModal() {
         if (error) {
             if(window.showToast) window.showToast(error.message, 'danger');
         } else {
-            if(window.showToast) window.showToast('Notification envoyée avec succès', 'success');
-            bootstrap.Modal.getOrCreateInstance(document.getElementById('sendNotifModal')).hide();
+            if(window.showToast) window.showToast('Notification envoyée', 'success');
+            closeModal('sendNotifModal');
             clearFormData('sendNotifModal');
             fetchAndRenderNotifs();
         }
@@ -1761,7 +1772,7 @@ function setupUtilisateursModal() {
             }
         }
         
-        bootstrap.Modal.getOrCreateInstance(document.getElementById('addUserModal')).hide();
+        closeModal('addUserModal');
         clearFormData('addUserModal');
         
         // If we are dynamically fetching profiles instead of using local storage:
@@ -2375,10 +2386,13 @@ function setupUtilisateursModal() {
             }
         }
         
-        const modalEl = document.getElementById('addUserModal');
-        if(modalEl && window.bootstrap) bootstrap.Modal.getOrCreateInstance(modalEl).hide();
+        closeModal('addUserModal');
         clearFormData('addUserModal');
         
         fetchAndRenderUtilisateurs();
     });
 }
+
+window.closeCurrentModal = function(modalId) {
+    closeModal(modalId);
+};
