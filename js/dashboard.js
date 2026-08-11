@@ -159,6 +159,10 @@ var profilePanel;
   const av = document.querySelector('.topbar-actions .user-av');
   if (!av) return;
 
+  const p = window.location.pathname;
+  const idx = p.indexOf('/dashboard');
+  const basePath = idx >= 0 ? p.substring(0, idx) + '/dashboard/' : '/dashboard/';
+
   const wrap = document.createElement('div');
   wrap.innerHTML = `
     <div id="profilePanel" style="position:fixed;top:var(--topbar-h);right:1rem;width:240px;background:white;border:1px solid var(--border);border-radius:.875rem;box-shadow:0 16px 40px rgba(0,0,0,.12);z-index:999;display:none;overflow:hidden">
@@ -167,11 +171,11 @@ var profilePanel;
         <div><div style="font-weight:700;font-size:.875rem">M. Directeur</div><div style="font-size:.75rem;color:var(--muted)">Administrateur</div></div>
       </div>
       <div style="padding:.4rem 0">
-        <a href="parametres.html" style="display:flex;align-items:center;gap:.75rem;padding:.6rem 1rem;text-decoration:none;color:var(--text);font-size:.875rem;transition:background .15s" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='none'"><i class="fas fa-user" style="width:16px;color:var(--muted)"></i>Mon profil</a>
-        <a href="parametres.html" style="display:flex;align-items:center;gap:.75rem;padding:.6rem 1rem;text-decoration:none;color:var(--text);font-size:.875rem;transition:background .15s" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='none'"><i class="fas fa-cog" style="width:16px;color:var(--muted)"></i>Paramètres</a>
-        <a href="rapports.html" style="display:flex;align-items:center;gap:.75rem;padding:.6rem 1rem;text-decoration:none;color:var(--text);font-size:.875rem;transition:background .15s" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='none'"><i class="fas fa-chart-line" style="width:16px;color:var(--muted)"></i>Rapports</a>
+        <a href="${basePath}parametres.html" style="display:flex;align-items:center;gap:.75rem;padding:.6rem 1rem;text-decoration:none;color:var(--text);font-size:.875rem;transition:background .15s" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='none'"><i class="fas fa-user" style="width:16px;color:var(--muted)"></i>Mon profil</a>
+        <a href="${basePath}parametres.html" style="display:flex;align-items:center;gap:.75rem;padding:.6rem 1rem;text-decoration:none;color:var(--text);font-size:.875rem;transition:background .15s" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='none'"><i class="fas fa-cog" style="width:16px;color:var(--muted)"></i>Paramètres</a>
+        <a href="${basePath}rapports.html" style="display:flex;align-items:center;gap:.75rem;padding:.6rem 1rem;text-decoration:none;color:var(--text);font-size:.875rem;transition:background .15s" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='none'"><i class="fas fa-chart-line" style="width:16px;color:var(--muted)"></i>Rapports</a>
         <div style="height:1px;background:var(--border);margin:.3rem 0"></div>
-        <a href="../signin.html" style="display:flex;align-items:center;gap:.75rem;padding:.6rem 1rem;text-decoration:none;color:#EF4444;font-size:.875rem;transition:background .15s" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='none'"><i class="fas fa-sign-out-alt" style="width:16px"></i>Se déconnecter</a>
+        <a href="${basePath}../signin.html" style="display:flex;align-items:center;gap:.75rem;padding:.6rem 1rem;text-decoration:none;color:#EF4444;font-size:.875rem;transition:background .15s" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='none'"><i class="fas fa-sign-out-alt" style="width:16px"></i>Se déconnecter</a>
       </div>
     </div>`;
   document.body.appendChild(wrap);

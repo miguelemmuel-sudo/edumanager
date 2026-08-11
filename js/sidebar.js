@@ -23,7 +23,14 @@ function renderSidebar() {
         } catch(e){}
     }
 
-    const menuItems = [];
+    function getBasePath() {
+    const p = window.location.pathname;
+    const idx = p.indexOf('/dashboard');
+    if (idx >= 0) return p.substring(0, idx) + '/dashboard/';
+    return '/dashboard/';
+}
+
+const menuItems = [];
 
     // Dashboard Base
     if (role === 'admin' || role === 'secretaire' || role === 'surveillant' || role === 'comptable') {
@@ -80,6 +87,7 @@ function renderSidebar() {
     let currentSection = '';
     
     const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+    const basePath = getBasePath();
 
     menuItems.forEach(item => {
         if (item.section !== currentSection) {
@@ -91,7 +99,7 @@ function renderSidebar() {
         let badgeHTML = item.badge ? `<span class="nav-badge ${item.badgeClass}">${item.badge}</span>` : '';
         
         menuHTML += `
-            <a href="${item.link}" class="nav-item-link ${active}">
+            <a href="${basePath}${item.link}" class="nav-item-link ${active}">
                 <i class="fas ${item.icon} nav-icon"></i>
                 <span class="nav-item-label">${item.label}</span>
                 ${badgeHTML}
@@ -104,13 +112,13 @@ function renderSidebar() {
     const sidebar = document.getElementById('sidebar');
     if (sidebar) {
         sidebar.innerHTML = `
-            <a href="index.html" class="sidebar-brand">
+            <a href="${basePath}index.html" class="sidebar-brand">
                 <i class="fas fa-graduation-cap brand-icon"></i>
                 <span class="brand-name">EduManager</span>
             </a>
             ${menuHTML}
             <div class="sidebar-footer">
-                <div class="user-info" onclick="window.location.href='parametres.html'" style="cursor:pointer">
+                <div class="user-info" onclick="window.location.href='${basePath}parametres.html'" style="cursor:pointer">
                     <div class="user-av">${userInitial}</div>
                     <div>
                         <div class="user-name">${userName}</div>
