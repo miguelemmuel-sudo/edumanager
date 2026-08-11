@@ -167,7 +167,7 @@ var profilePanel;
         <div><div style="font-weight:700;font-size:.875rem">M. Directeur</div><div style="font-size:.75rem;color:var(--muted)">Administrateur</div></div>
       </div>
       <div style="padding:.4rem 0">
-        <a href="profil.html" style="display:flex;align-items:center;gap:.75rem;padding:.6rem 1rem;text-decoration:none;color:var(--text);font-size:.875rem;transition:background .15s" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='none'"><i class="fas fa-user" style="width:16px;color:var(--muted)"></i>Mon profil</a>
+        <a href="parametres.html" style="display:flex;align-items:center;gap:.75rem;padding:.6rem 1rem;text-decoration:none;color:var(--text);font-size:.875rem;transition:background .15s" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='none'"><i class="fas fa-user" style="width:16px;color:var(--muted)"></i>Mon profil</a>
         <a href="parametres.html" style="display:flex;align-items:center;gap:.75rem;padding:.6rem 1rem;text-decoration:none;color:var(--text);font-size:.875rem;transition:background .15s" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='none'"><i class="fas fa-cog" style="width:16px;color:var(--muted)"></i>Paramètres</a>
         <a href="rapports.html" style="display:flex;align-items:center;gap:.75rem;padding:.6rem 1rem;text-decoration:none;color:var(--text);font-size:.875rem;transition:background .15s" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='none'"><i class="fas fa-chart-line" style="width:16px;color:var(--muted)"></i>Rapports</a>
         <div style="height:1px;background:var(--border);margin:.3rem 0"></div>

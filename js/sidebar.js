@@ -110,7 +110,7 @@ function renderSidebar() {
             </a>
             ${menuHTML}
             <div class="sidebar-footer">
-                <div class="user-info" onclick="window.location.href='profil.html'" style="cursor:pointer">
+                <div class="user-info" onclick="window.location.href='parametres.html'" style="cursor:pointer">
                     <div class="user-av">${userInitial}</div>
                     <div>
                         <div class="user-name">${userName}</div>
