@@ -25,7 +25,6 @@ const supabaseClient = window.supabase
   ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
   : null;
 window.supabase = supabaseClient; // Rend le client initialisé disponible globalement
-const supabase = supabaseClient;
 
 if (!supabase) {
   console.warn('[EduManager] Supabase client non disponible. Incluez le CDN Supabase dans votre HTML.');
