@@ -435,6 +435,13 @@ document.getElementById('signupForm').addEventListener('submit', async function(
     }
 
     /* Succès → redirection dashboard */
+    const alertDiv = document.getElementById('step3-error'); // reusing the error div to show success
+    if (alertDiv) {
+      alertDiv.className = 'alert alert-success d-flex align-items-center mt-3';
+      alertDiv.innerHTML = '<i class="fas fa-check-circle me-2"></i>Compte créé avec succès ! Redirection vers votre tableau de bord...';
+      alertDiv.classList.remove('d-none');
+    }
+    
     setTimeout(() => {
       window.location.href = 'dashboard/index.html';
     }, 1200);
