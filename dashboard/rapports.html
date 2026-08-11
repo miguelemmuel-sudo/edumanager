@@ -182,53 +182,14 @@
   <div class="dash-card">
     <div class="dash-card-header">
       <span class="dash-card-title"><i class="fas fa-file-alt text-primary me-2"></i>Rapports disponibles</span>
-      <button class="btn btn-sm btn-primary rounded-pill px-3 ms-auto" onclick="showGenerateReportModal()">
+      <button class="btn btn-sm btn-primary rounded-pill px-3 ms-auto" onclick="document.getElementById('reportUpload').click()">
         <i class="fas fa-plus me-1"></i>Nouveau
       </button>
+      <input type="file" id="reportUpload" accept=".pdf,.csv,.xls,.xlsx" style="display:none" onchange="uploadNewReport(this)">
     </div>
     <div class="dash-card-body">
       <div class="row g-3" id="rapportsList">
         <!-- Dynamically populated by JS -->
-      </div>
-    </div>
-  </div>
-
-  <!-- Generate Report Modal -->
-  <div class="modal fade" id="generateReportModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content border-0 shadow-lg">
-        <div class="modal-header border-bottom-0 pb-0">
-          <h5 class="modal-title fw-bold" style="color:var(--heading)"><i class="fas fa-file-export text-primary me-2"></i>Générer un rapport</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <div class="mb-3">
-            <label class="form-label fw-medium text-muted small">Type de rapport</label>
-            <select class="form-select" id="newReportType">
-              <option value="Liste des élèves">Liste des élèves (Toutes classes)</option>
-              <option value="Rapport financier">Rapport financier (Paiements)</option>
-              <option value="Rapport général">Rapport général (Notes & Moyennes)</option>
-              <option value="Impayés">Liste des impayés et relances</option>
-            </select>
-          </div>
-          <div class="mb-3">
-            <label class="form-label fw-medium text-muted small">Format d'exportation</label>
-            <div class="d-flex gap-2">
-              <input type="radio" class="btn-check" name="reportFormat" id="formatPdf" value="PDF" checked>
-              <label class="btn btn-outline-danger px-4 rounded-pill flex-1" for="formatPdf"><i class="fas fa-file-pdf me-2"></i>PDF</label>
-              
-              <input type="radio" class="btn-check" name="reportFormat" id="formatExcel" value="Excel">
-              <label class="btn btn-outline-success px-4 rounded-pill flex-1" for="formatExcel"><i class="fas fa-file-excel me-2"></i>Excel</label>
-              
-              <input type="radio" class="btn-check" name="reportFormat" id="formatCsv" value="CSV">
-              <label class="btn btn-outline-info px-4 rounded-pill flex-1" for="formatCsv"><i class="fas fa-file-csv me-2"></i>CSV</label>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer border-top-0 pt-0">
-          <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Annuler</button>
-          <button type="button" class="btn btn-primary rounded-pill px-4" onclick="generateNewReport()">Générer <i class="fas fa-magic ms-2"></i></button>
-        </div>
       </div>
     </div>
   </div>

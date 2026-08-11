@@ -1297,23 +1297,26 @@ async function fetchAndRenderRapports() {
     // --- Dynamic Rapports List ---
     const rapportsList = document.getElementById('rapportsList');
     if (rapportsList) {
-        window.generatedReports = window.generatedReports || [
-            { type: 'Liste des élèves', format: 'CSV', desc: `Tous niveaux · CSV · ${(countEleves * 1.5 / 1024).toFixed(1)} KB`, color: 'info' },
-            { type: 'Rapport financier', format: 'Excel', desc: `Paiements · Excel · ${(revenus > 0 ? 890 : 12)} KB`, color: 'success' },
-            { type: 'Rapport général', format: 'PDF', desc: `Notes et moyennes · PDF · 2.3 MB`, color: 'primary' }
-        ];
+        window.generatedReports = window.generatedReports || [];
 
         window.renderRapports = function() {
+            if (window.generatedReports.length === 0) {
+                rapportsList.innerHTML = '<div class="col-12 text-center py-4 text-muted">Aucun rapport disponible. Cliquez sur Nouveau pour ajouter un fichier.</div>';
+                return;
+            }
             rapportsList.innerHTML = window.generatedReports.map(r => {
-                let icon = r.format === 'PDF' ? 'fa-file-pdf' : (r.format === 'Excel' ? 'fa-file-excel' : 'fa-file-csv');
+                let icon = r.format === 'PDF' ? 'fa-file-pdf' : (r.format === 'Excel' ? 'fa-file-excel' : (r.format === 'CSV' ? 'fa-file-csv' : 'fa-file-alt'));
                 return `
                 <div class="col-md-6 col-lg-4">
                   <div class="d-flex align-items-center justify-content-between p-3 rounded-3 border hover-shadow">
-                    <div class="d-flex align-items-center gap-3">
-                      <div class="sc-icon bg-${r.color}-soft" style="width:40px;height:40px"><i class="fas ${icon} text-${r.color}"></i></div>
-                      <div><div class="fw-semibold" style="font-size:.875rem">${r.type}</div><div class="text-muted" style="font-size:.75rem">${r.desc}</div></div>
+                    <div class="d-flex align-items-center gap-3" style="overflow: hidden;">
+                      <div class="sc-icon bg-${r.color}-soft flex-shrink-0" style="width:40px;height:40px"><i class="fas ${icon} text-${r.color}"></i></div>
+                      <div style="min-width: 0;">
+                        <div class="fw-semibold text-truncate" style="font-size:.875rem" title="${r.type}">${r.type}</div>
+                        <div class="text-muted" style="font-size:.75rem">${r.desc}</div>
+                      </div>
                     </div>
-                    <button class="btn btn-sm btn-outline-${r.color} rounded-pill px-3" style="font-size:.78rem" onclick="alert('Téléchargement du rapport en cours...')"><i class="fas fa-download me-1"></i>${r.format}</button>
+                    <button class="btn btn-sm btn-outline-${r.color} rounded-pill px-3 flex-shrink-0 ms-2" style="font-size:.78rem" onclick="alert('Téléchargement du rapport en cours...')"><i class="fas fa-download me-1"></i>${r.format}</button>
                   </div>
                 </div>`;
             }).join('');
@@ -1321,35 +1324,37 @@ async function fetchAndRenderRapports() {
         
         window.renderRapports();
         
-        // Expose generation function globally so modal can call it
-        window.showGenerateReportModal = function() {
-            const modal = new bootstrap.Modal(document.getElementById('generateReportModal'));
-            modal.show();
-        };
-
-        window.generateNewReport = function() {
-            const type = document.getElementById('newReportType').value;
-            const formatEl = document.querySelector('input[name="reportFormat"]:checked');
-            const format = formatEl ? formatEl.value : 'PDF';
-            
-            let color = 'primary';
-            if (format === 'Excel') color = 'success';
-            if (format === 'CSV') color = 'info';
-            if (type === 'Impayés') color = 'danger';
-            
-            window.generatedReports.unshift({
-                type: type,
-                format: format,
-                desc: `Généré à l'instant · ${format} · ${(Math.random() * 3 + 0.5).toFixed(1)} MB`,
-                color: color
-            });
-            
-            window.renderRapports();
-            const modalEl = document.getElementById('generateReportModal');
-            const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
-            modal.hide();
-            
-            if(window.showToast) window.showToast('Rapport généré avec succès !', 'success');
+        window.uploadNewReport = function(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                let ext = file.name.split('.').pop().toLowerCase();
+                let format = 'PDF';
+                let color = 'primary';
+                
+                if (ext === 'csv') {
+                    format = 'CSV';
+                    color = 'info';
+                } else if (ext === 'xls' || ext === 'xlsx') {
+                    format = 'Excel';
+                    color = 'success';
+                }
+                
+                let sizeStr = (file.size / 1024 / 1024).toFixed(1) + ' MB';
+                if (file.size < 1024 * 1024) {
+                    sizeStr = (file.size / 1024).toFixed(1) + ' KB';
+                }
+                
+                window.generatedReports.unshift({
+                    type: file.name,
+                    format: format,
+                    desc: `Ajouté à l'instant · ${format} · ${sizeStr}`,
+                    color: color
+                });
+                
+                window.renderRapports();
+                input.value = ''; // clear input
+                if(window.showToast) window.showToast('Rapport ajouté avec succès !', 'success');
+            }
         };
     }
     
