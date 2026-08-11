@@ -1894,7 +1894,7 @@ async function initDashboardStats() {
 
     // Parallel fetching
     const [resEl, resEn, resCl, resPaiements, resEtab] = await Promise.all([
-        window.supabase.from('eleves').select('id', { count: 'exact' }),
+        window.supabase.from('eleves').select('id, nom, prenom, statut, created_at, classes(nom)').order('created_at', { ascending: false }),
         window.supabase.from('enseignants').select('id', { count: 'exact' }),
         window.supabase.from('classes').select('id', { count: 'exact' }),
         window.supabase.from('paiements').select('montant, statut'),
@@ -1912,7 +1912,8 @@ async function initDashboardStats() {
         });
     }
 
-    const nbEleves = resEl.count || 0;
+    const elevesData = resEl.data || [];
+    const nbEleves = elevesData.length;
     const nbEnseignants = resEn.count || 0;
     const nbClasses = resCl.count || 0;
 
@@ -1979,6 +1980,75 @@ async function initDashboardStats() {
             badgeMessages.style.display = 'inline-flex';
         } else {
             badgeMessages.style.display = 'none';
+        }
+    }
+
+    // Update main dashboard charts if present
+    const enrollmentsChart = document.getElementById('enrollmentsChart');
+    const enrollmentsLabels = document.getElementById('enrollmentsLabels');
+    if (enrollmentsChart && enrollmentsLabels) {
+        let inscCounts = new Array(8).fill(0);
+        elevesData.forEach(e => {
+            if (e.created_at) {
+                const date = new Date(e.created_at);
+                let m = date.getMonth(); // 0-11
+                let idx = m >= 8 ? m - 8 : m + 4; // roughly Sep=0
+                if (idx >= 0 && idx < 8) inscCounts[idx]++;
+            }
+        });
+        const maxInsc = Math.max(...inscCounts, 10);
+        const monthsInsc = ['Sep', 'Oct', 'Nov', 'Déc', 'Jan', 'Fév', 'Mar', 'Avr'];
+        
+        enrollmentsChart.innerHTML = inscCounts.map((val, i) => {
+            let height = Math.max((val / maxInsc) * 100, 5); 
+            return `<div class="bar-item" style="height:${height}%;background:linear-gradient(180deg,#2563EB,#60A5FA)" title="${monthsInsc[i]}: ${val}"></div>`;
+        }).join('');
+        enrollmentsLabels.innerHTML = monthsInsc.map(m => `<span>${m}</span>`).join('');
+    }
+
+    const paymentsDonut = document.getElementById('paymentsDonut');
+    if (paymentsDonut && resPaiements && resPaiements.data) {
+        let payesCount = 0; let partielsCount = 0; let impayesCount = 0;
+        resPaiements.data.forEach(p => {
+            let s = (p.statut || '').toLowerCase();
+            if (s === 'payé' || s === 'paye') payesCount++;
+            else if (s === 'partiel') partielsCount++;
+            else impayesCount++;
+        });
+        const totalP = payesCount + partielsCount + impayesCount;
+        let pctPaye = totalP ? Math.round((payesCount/totalP)*100) : 0;
+        let pctPartiel = totalP ? Math.round((partielsCount/totalP)*100) : 0;
+        let pctImpaye = totalP ? Math.round((impayesCount/totalP)*100) : 0;
+        
+        paymentsDonut.style.background = `conic-gradient(var(--primary) 0% ${pctPaye}%, var(--warning) ${pctPaye}% ${pctPaye + pctPartiel}%, var(--danger) ${pctPaye + pctPartiel}% 100%)`;
+        
+        const pt = document.getElementById('paymentsPaidText'); if(pt) pt.textContent = `${pctPaye}% · ${payesCount} paiements`;
+        const ppart = document.getElementById('paymentsPartialText'); if(ppart) ppart.textContent = `${pctPartiel}% · ${partielsCount} paiements`;
+        const punp = document.getElementById('paymentsUnpaidText'); if(punp) punp.textContent = `${pctImpaye}% · ${impayesCount} paiements`;
+    }
+
+    const dynamicBody = document.getElementById('dynamicBody');
+    if (dynamicBody) {
+        const recents = elevesData.slice(0, 5);
+        if (recents.length === 0) {
+            dynamicBody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Aucune inscription récente</td></tr>';
+        } else {
+            dynamicBody.innerHTML = recents.map(e => {
+                let badgeClass = e.statut === 'Actif' ? 'success' : (e.statut === 'En attente' ? 'warning' : 'danger');
+                return `
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="table-av">${e.prenom ? e.prenom.charAt(0).toUpperCase() : '?'}</div>
+                            <div class="fw-semibold" style="font-size:.85rem">${_e(e.prenom)} ${_e(e.nom)}</div>
+                        </div>
+                    </td>
+                    <td><span class="status-badge" style="background:rgba(37,99,235,0.1);color:#2563eb">${_e(e.classes?.nom || 'Non assigné')}</span></td>
+                    <td class="text-muted" style="font-size:.8rem">${new Date(e.created_at).toLocaleDateString('fr-FR')}</td>
+                    <td><span class="status-badge ${badgeClass}">${_e(e.statut || 'En attente')}</span></td>
+                    <td><button class="btn btn-sm btn-icon"><i class="fas fa-ellipsis-v"></i></button></td>
+                </tr>`;
+            }).join('');
         }
     }
 
