@@ -253,7 +253,7 @@ function setupElevesModal() {
             if(window.showToast) window.showToast(error.message, 'danger');
         } else {
             if(window.showToast) window.showToast('Élève ajouté', 'success');
-            const modal = bootstrap.Modal.getInstance(document.getElementById('addEleveModal'));
+            const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('addEleveModal'));
             if(modal) modal.hide();
             clearFormData('addEleveModal');
             fetchAndRenderEleves();
@@ -438,7 +438,7 @@ function setupEnseignantsModal() {
             if(window.showToast) window.showToast(error.message, 'danger');
         } else {
             if(window.showToast) window.showToast('Enseignant ajouté', 'success');
-            const modal = bootstrap.Modal.getInstance(document.getElementById('addEnsModal'));
+            const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('addEnsModal'));
             if(modal) modal.hide();
             clearFormData('addEnsModal');
             fetchAndRenderEnseignants();
@@ -540,7 +540,7 @@ function setupClassesModal() {
             if(window.showToast) window.showToast(error.message, 'danger');
         } else {
             if(window.showToast) window.showToast('Classe ajoutée', 'success');
-            const modal = bootstrap.Modal.getInstance(document.getElementById('addClasseModal'));
+            const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('addClasseModal'));
             if(modal) modal.hide();
             clearFormData('addClasseModal');
             fetchAndRenderClasses();
@@ -668,7 +668,7 @@ function setupNotesModal() {
             `;
         });
         
-        bootstrap.Modal.getInstance(document.getElementById('addNoteModal')).hide();
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('addNoteModal')).hide();
         new bootstrap.Modal(document.getElementById('saisieGrilleModal')).show();
     });
     
@@ -706,7 +706,7 @@ function setupNotesModal() {
                 if (window.showToast) window.showToast(error.message, 'danger');
             } else {
                 if (window.showToast) window.showToast('Notes enregistrées avec succès', 'success');
-                bootstrap.Modal.getInstance(document.getElementById('saisieGrilleModal')).hide();
+                bootstrap.Modal.getOrCreateInstance(document.getElementById('saisieGrilleModal')).hide();
                 fetchAndRenderNotes();
             }
         });
@@ -846,7 +846,7 @@ function setupEmploiModal() {
                 if(window.showToast) window.showToast(error.message, 'danger');
             } else {
                 if(window.showToast) window.showToast('Créneau ajouté', 'success');
-                const modal = bootstrap.Modal.getInstance(document.getElementById('addCreneauModal'));
+                const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('addCreneauModal'));
                 if(modal) modal.hide();
                 clearFormData('addCreneauModal');
                 fetchAndRenderEmploi();
@@ -1018,7 +1018,7 @@ function setupPaiementsModal() {
             if(window.showToast) window.showToast(error.message, 'danger');
         } else {
             if(window.showToast) window.showToast('Paiement enregistré avec succès', 'success');
-            const modal = bootstrap.Modal.getInstance(document.getElementById('addPaiementModal'));
+            const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('addPaiementModal'));
             if(modal) modal.hide();
             clearFormData('addPaiementModal');
             fetchAndRenderPaiements();
@@ -1168,7 +1168,7 @@ window.sendNewMessage = async function() {
     if (error) {
         if(window.showToast) window.showToast(error.message, 'danger');
     } else {
-        bootstrap.Modal.getInstance(document.getElementById('newMsgModal')).hide();
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('newMsgModal')).hide();
         clearFormData('newMsgModal');
         fetchAndRenderMessages();
         if (form.destinataire_grp.toLowerCase().includes('parent')) {
@@ -1286,7 +1286,7 @@ function setupNotifsModal() {
             if(window.showToast) window.showToast(error.message, 'danger');
         } else {
             if(window.showToast) window.showToast('Notification envoyée avec succès', 'success');
-            bootstrap.Modal.getInstance(document.getElementById('sendNotifModal')).hide();
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('sendNotifModal')).hide();
             clearFormData('sendNotifModal');
             fetchAndRenderNotifs();
         }
@@ -1756,7 +1756,7 @@ function setupUtilisateursModal() {
             }
         }
         
-        bootstrap.Modal.getInstance(document.getElementById('addUserModal')).hide();
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('addUserModal')).hide();
         clearFormData('addUserModal');
         
         // If we are dynamically fetching profiles instead of using local storage:
@@ -2293,7 +2293,7 @@ function setupUtilisateursModal() {
         }
         
         const modalEl = document.getElementById('addUserModal');
-        if(modalEl && window.bootstrap) bootstrap.Modal.getInstance(modalEl).hide();
+        if(modalEl && window.bootstrap) bootstrap.Modal.getOrCreateInstance(modalEl).hide();
         clearFormData('addUserModal');
         
         fetchAndRenderUtilisateurs();
