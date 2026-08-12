@@ -593,20 +593,39 @@ async function fetchAndRenderClasses() {
     const { data: classes, error } = await window.supabase.from('classes').select('*, enseignants(nom, prenom), eleves(count)');
     if (error) return console.error(error);
 
-    document.querySelectorAll('.sc-value').forEach((el, i) => { if(i===0) el.textContent = classes.length; });
-
     if (classes.length === 0) {
         container.innerHTML = '<div class="text-center py-5 text-muted">Aucune classe disponible</div>';
         return;
     }
 
-    // Group by niveau
+    // Group by niveau and calculate KPIs
     const niveaux = {};
+    let totalEleves = 0;
     classes.forEach(c => {
         const niv = c.niveau || 'Autre';
         if (!niveaux[niv]) niveaux[niv] = [];
         niveaux[niv].push(c);
+        
+        let count = 0;
+        if(c.eleves && c.eleves.length > 0 && c.eleves[0].count !== undefined) {
+            count = c.eleves[0].count;
+        } else if (c.eleves && !Array.isArray(c.eleves) && c.eleves.count !== undefined) {
+            count = c.eleves.count; // Sometimes Supabase returns object instead of array for count
+        }
+        c._elevesCount = count; // Cache it for the render below
+        totalEleves += count;
     });
+
+    const uniqueNiveauxCount = Object.keys(niveaux).length;
+    const avgEleves = classes.length > 0 ? Math.round(totalEleves / classes.length) : 0;
+
+    const scValues = document.querySelectorAll('.sc-value');
+    if(scValues.length >= 4) {
+        scValues[0].textContent = classes.length;
+        scValues[1].textContent = totalEleves;
+        scValues[2].textContent = avgEleves;
+        scValues[3].textContent = uniqueNiveauxCount;
+    }
 
     const niveauColors = { 'Terminale':'#1E293B', '1ère':'#EF4444', '2nde':'#8B5CF6', '3ème':'#10B981', '4ème':'#F59E0B', '5ème':'#06B6D4', '6ème':'#2563EB', 'Autre': '#64748b' };
 
@@ -618,7 +637,7 @@ async function fetchAndRenderClasses() {
             <div class="row g-3 mb-4">
                 ${cls.map(c => {
                     const prof = c.enseignants ? `${c.enseignants.prenom} ${c.enseignants.nom}` : 'Non assigné';
-                    const nbEleves = c.eleves && c.eleves[0] ? c.eleves[0].count : 0;
+                    const nbEleves = c._elevesCount || 0;
                     return `
                     <div class="col-md-6 col-lg-3">
                         <div class="dash-card p-4 h-100" style="border-top:3px solid ${color}">
