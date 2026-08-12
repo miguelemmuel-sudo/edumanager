@@ -739,6 +739,32 @@ async function fetchAndRenderNotes() {
 
     const { data: notes, error } = await window.supabase.from('notes').select('*, eleves(nom, prenom)');
     if (error) return console.error(error);
+    
+    // Update KPIs for Notes page
+    const scValues = document.querySelectorAll('.sc-value');
+    if (scValues.length >= 4) {
+        if (!notes || notes.length === 0) {
+            scValues[0].textContent = 0;
+            scValues[1].textContent = 0;
+            scValues[2].textContent = 0;
+            scValues[3].textContent = 0;
+        } else {
+            let sum = 0, max = -1, min = 21;
+            const uniqueEleves = new Set();
+            notes.forEach(n => {
+                const v = parseFloat(n.valeur) || 0;
+                sum += v;
+                if(v > max) max = v;
+                if(v < min) min = v;
+                uniqueEleves.add(n.eleve_id || n.id);
+            });
+            const avg = (sum / notes.length).toFixed(2);
+            scValues[0].textContent = uniqueEleves.size;
+            scValues[1].textContent = avg;
+            scValues[2].textContent = max;
+            scValues[3].textContent = min;
+        }
+    }
 
     if (notes.length === 0) {
         tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">Aucune donnée disponible</td></tr>';
@@ -1680,7 +1706,7 @@ async function fetchAndRenderRapports() {
     // 1. Fetch Eleves
     const { data: eleves } = await window.supabase.from('eleves').select('id, sexe, created_at, statut');
     // 2. Fetch Paiements
-    const { data: paiements } = await window.supabase.from('paiements').select('montant, created_at').eq('statut', 'payé');
+    const { data: paiements } = await window.supabase.from('paiements').select('montant, created_at');
     // 3. Fetch Notes
     const { data: notes } = await window.supabase.from('notes').select('valeur');
     
