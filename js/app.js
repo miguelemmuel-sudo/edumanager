@@ -2405,8 +2405,9 @@ async function initDashboardStats() {
     let impayes = 0;
     if (resPaiements && resPaiements.data) {
         resPaiements.data.forEach(p => {
-            if (p.statut === 'payé' || p.statut === 'Payé') revenus += parseFloat(p.montant || 0);
-            if (p.statut === 'impayé' || p.statut === 'en retard' || p.statut === 'Impayé') impayes++;
+            revenus += parseFloat(p.montant || 0);
+            const st = (p.statut || '').toLowerCase();
+            if (st.includes('impayé') || st.includes('retard')) impayes++;
         });
     }
 
