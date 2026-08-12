@@ -84,6 +84,9 @@ function setupRealtime(table, callback) {
 
 // --- HELPER: SaaS Dynamique ---
 async function initEtablissementSettings() {
+    // S'assurer que la session est chargée pour passer la sécurité RLS
+    await window.supabase.auth.getSession();
+    
     const { data: etabData } = await window.supabase.from('etablissements').select('*').limit(1).single();
     if (etabData) {
         window.EduSettings = {
