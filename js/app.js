@@ -1,3 +1,13 @@
+// Ensure EduSettings exists
+window.EduSettings = window.EduSettings || { currency: 'FCFA' };
+
+// Utility to fix double timezone offsets from Supabase
+window.formatDateLocal = function(dateStr) {
+    if (!dateStr) return '';
+    const localStr = dateStr.replace(/(Z|\+00:00)$/, '');
+    return new Date(localStr).toLocaleString('fr-FR');
+};
+
 /* =======================================================================
    EduManager – Application Controller (app.js)
    Gère l'intégration dynamique de Supabase pour tous les modules
@@ -921,10 +931,20 @@ async function fetchAndRenderEmploi() {
     }
 
     const edtMatieresList = document.getElementById('edtMatieresList');
+    const edtLegendContainer = document.getElementById('edtLegendContainer');
+    
     if (edtMatieresList && !edtMatieresList.dataset.loaded) {
         const matieres = await fetchEtablissementMatieres();
         edtMatieresList.innerHTML = matieres.map(m => `<option value="${_e(m)}">`).join('');
         edtMatieresList.dataset.loaded = 'true';
+        
+        if (edtLegendContainer) {
+            const colors = ['math', 'french', 'hist', 'svt', 'phys', 'eng', 'eps'];
+            edtLegendContainer.innerHTML = matieres.map((m, i) => {
+                const colorClass = colors[i % colors.length];
+                return `<span class="tt-slot tt-${colorClass} px-3">${_e(m)}</span>`;
+            }).join('');
+        }
     }
     
     // Load profs for modal
@@ -1417,7 +1437,7 @@ window.printReceipt = async function(id) {
     const recNumber = 'REC-' + d.getFullYear() + (d.getMonth()+1).toString().padStart(2, '0') + d.getDate().toString().padStart(2, '0') + '-' + p.id.substring(0, 5).toUpperCase();
     
     document.getElementById('receiptNumber').textContent = recNumber;
-    document.getElementById('receiptDate').textContent = d.toLocaleString('fr-FR');
+    document.getElementById('receiptDate').textContent = window.formatDateLocal(p.created_at || p.date_paiement);
     
     const el = p.eleves || {};
     document.getElementById('receiptStudentName').textContent = `${el.prenom || ''} ${el.nom || ''}`;
@@ -1673,7 +1693,7 @@ async function fetchAndRenderNotifs() {
                 <div class="text-muted" style="font-size:0.8rem">${_e(n.message).substring(0,60)}...</div>
                 <div class="d-flex align-items-center gap-2 mt-2">
                   <span class="status-badge ${n.lu ? 'success' : 'primary'}" style="font-size:0.7rem">${group}</span>
-                  <span class="text-muted" style="font-size:0.7rem"><i class="fas fa-clock me-1"></i>${new Date(n.created_at).toLocaleString('fr-FR')}</span>
+                  <span class="text-muted" style="font-size:0.7rem"><i class="fas fa-clock me-1"></i>${window.formatDateLocal(n.created_at)}</span>
                 </div>
               </div>
               <div class="d-flex flex-column align-items-end">
@@ -2721,7 +2741,7 @@ async function initDashboardStats() {
                         <div>
                             <div style="font-size:.85rem;font-weight:600">${_e(n.titre)}</div>
                             <div style="font-size:.78rem;color:var(--muted)">${_e(n.message)}</div>
-                            <div style="font-size:.72rem;color:var(--muted)">${new Date(n.created_at).toLocaleString('fr-FR')}</div>
+                            <div style="font-size:.72rem;color:var(--muted)">${window.formatDateLocal(n.created_at)}</div>
                         </div>
                     </div>
                 `;
