@@ -68,18 +68,7 @@
             <div>
               <button id="btnChangerLogo" class="btn btn-outline-primary rounded-pill btn-sm px-3 d-block mb-2"><i class="fas fa-upload me-1"></i>Changer le logo</button>
               <input type="file" id="logoUploadInput" class="d-none" accept="image/png, image/jpeg">
-              <script>
-                document.getElementById('btnChangerLogo').addEventListener('click', function(e) {
-                  e.preventDefault();
-                  document.getElementById('logoUploadInput').click();
-                });
-                document.getElementById('logoUploadInput').addEventListener('change', function(e) {
-                  if (e.target.files.length > 0) {
-                    showToast('Logo sélectionné: ' + e.target.files[0].name, 'info');
-                    // Add actual upload logic here if needed
-                  }
-                });
-              </script>
+
               <div class="text-muted" style="font-size:.78rem">PNG ou JPG · max 2MB · recommandé 200Ã—200px</div>
             </div>
           </div>

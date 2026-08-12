@@ -89,10 +89,11 @@ async function initEtablissementSettings() {
         window.EduSettings = {
             nom: etabData.nom || 'Votre établissement',
             type: etabData.type || 'Collège / Secondaire',
-            systeme: etabData.systeme_educatif || 'Francophone'
+            systeme: etabData.systeme_educatif || 'Francophone',
+            logo_url: etabData.logo_url || null
         };
     } else {
-        window.EduSettings = { nom: 'Votre établissement', type: 'Collège / Secondaire', systeme: 'Francophone' };
+        window.EduSettings = { nom: 'Votre établissement', type: 'Collège / Secondaire', systeme: 'Francophone', logo_url: null };
     }
 }
 
@@ -144,6 +145,22 @@ function adaptAppTaxonomy() {
             if (el.textContent.trim() === 'Classe *') el.textContent = 'Promotion *';
         });
         document.querySelectorAll('.univ-field').forEach(el => el.classList.remove('d-none'));
+    }
+    
+    // Update logo in sidebar
+    if (window.EduSettings.logo_url) {
+        const brandIcon = document.querySelector('.brand-icon');
+        if (brandIcon) {
+            const img = document.createElement('img');
+            img.src = window.EduSettings.logo_url;
+            img.style.width = '32px';
+            img.style.height = '32px';
+            img.style.objectFit = 'cover';
+            img.style.borderRadius = '50%';
+            img.className = 'me-2';
+            brandIcon.parentNode.insertBefore(img, brandIcon);
+            brandIcon.remove();
+        }
     }
 
     // Gérer les menus déroulants de niveau
@@ -1921,6 +1938,16 @@ async function fetchAndRenderParametres() {
         if(document.getElementById('etab_pays')) document.getElementById('etab_pays').value = etab.pays || '';
         if(document.getElementById('etab_ville')) document.getElementById('etab_ville').value = etab.ville || '';
         if(document.getElementById('etab_tel')) document.getElementById('etab_tel').value = etab.tel || '';
+        if(document.getElementById('etab_email')) document.getElementById('etab_email').value = etab.email || '';
+        if(document.getElementById('etab_adresse')) document.getElementById('etab_adresse').value = etab.adresse || '';
+        if(document.getElementById('etab_site')) document.getElementById('etab_site').value = etab.site_web || '';
+        
+        // Update logo preview in parametres if exists
+        const logoPreview = document.querySelector('.table-av');
+        if (logoPreview && etab.logo_url) {
+            logoPreview.innerHTML = `<img src="${etab.logo_url}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;" />`;
+            logoPreview.style.background = 'transparent';
+        }
     }
 }
 
@@ -1962,6 +1989,9 @@ function setupProfilParametres() {
                 const pays = document.getElementById('etab_pays').value;
                 const ville = document.getElementById('etab_ville').value;
                 const tel = document.getElementById('etab_tel').value;
+                const email = document.getElementById('etab_email') ? document.getElementById('etab_email').value : null;
+                const adresse = document.getElementById('etab_adresse') ? document.getElementById('etab_adresse').value : null;
+                const site_web = document.getElementById('etab_site') ? document.getElementById('etab_site').value : null;
                 
                 btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
                 
@@ -1969,7 +1999,7 @@ function setupProfilParametres() {
                 const { data: etab } = await window.supabase.from('etablissements').select('id').limit(1).single();
                 if (etab) {
                     const { error } = await window.supabase.from('etablissements').update({
-                        nom, type, systeme_educatif, pays, ville, tel
+                        nom, type, systeme_educatif, pays, ville, tel, email, adresse, site_web
                     }).eq('id', etab.id);
                     
                     if (error) {
@@ -1983,6 +2013,59 @@ function setupProfilParametres() {
             }
         });
     });
+
+    // LOGO UPLOAD LOGIC
+    const btnChangerLogo = document.getElementById('btnChangerLogo');
+    const logoUploadInput = document.getElementById('logoUploadInput');
+    if (btnChangerLogo && logoUploadInput) {
+        btnChangerLogo.addEventListener('click', function(e) {
+            e.preventDefault();
+            logoUploadInput.click();
+        });
+        
+        logoUploadInput.addEventListener('change', async function(e) {
+            if (e.target.files.length > 0) {
+                const file = e.target.files[0];
+                if(window.showToast) window.showToast('Téléchargement du logo en cours...', 'info');
+                
+                btnChangerLogo.disabled = true;
+                btnChangerLogo.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                
+                const fileExt = file.name.split('.').pop();
+                const fileName = `logo_${Date.now()}.${fileExt}`;
+                
+                const { data, error } = await window.supabase.storage
+                    .from('logos')
+                    .upload(fileName, file, { cacheControl: '3600', upsert: false });
+                    
+                if (error) {
+                    if (window.showToast) window.showToast('Erreur: ' + error.message, 'danger');
+                    btnChangerLogo.disabled = false;
+                    btnChangerLogo.innerHTML = '<i class="fas fa-upload me-1"></i>Changer le logo';
+                    return;
+                }
+                
+                const { data: { publicUrl } } = window.supabase.storage.from('logos').getPublicUrl(fileName);
+                
+                // Update DB
+                const { data: etab } = await window.supabase.from('etablissements').select('id').limit(1).single();
+                if (etab) {
+                    await window.supabase.from('etablissements').update({ logo_url: publicUrl }).eq('id', etab.id);
+                    if (window.showToast) window.showToast('Logo mis à jour avec succès', 'success');
+                    
+                    // Update UI preview
+                    const logoPreview = document.querySelector('.table-av');
+                    if(logoPreview) {
+                        logoPreview.innerHTML = `<img src="${publicUrl}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;" />`;
+                        logoPreview.style.background = 'transparent';
+                    }
+                }
+                
+                btnChangerLogo.disabled = false;
+                btnChangerLogo.innerHTML = '<i class="fas fa-upload me-1"></i>Changer le logo';
+            }
+        });
+    }
 }
 
 
