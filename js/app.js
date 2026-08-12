@@ -675,6 +675,10 @@ function setupClassesModal() {
             return;
         }
         btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        
+        const { data: etabData } = await window.supabase.from('etablissements').select('id').limit(1).maybeSingle();
+        if (etabData) data.etablissement_id = etabData.id;
+        
         const { error } = await window.supabase.from('classes').insert([data]);
         btn.disabled = false; btn.innerHTML = 'Enregistrer';
         
@@ -1051,6 +1055,8 @@ async function fetchAndRenderPaiements() {
     }
     const { data: classes } = await window.supabase.from('classes').select('id, niveau, etablissement_id');
     const { data: frais } = await window.supabase.from('frais_scolaires').select('*');
+    const { data: etabData } = await window.supabase.from('etablissements').select('id').limit(1).maybeSingle();
+    const currentEtabId = etabData ? etabData.id : null;
     
     // Map classes to niveaux
     const classNiveau = {};
@@ -1063,7 +1069,8 @@ async function fetchAndRenderPaiements() {
     function getExpectedFraisForClass(c) {
         if (!c || !frais) return 0;
         let total = 0;
-        const matchingFrais = frais.filter(f => f.etablissement_id === c.etablissement_id);
+        const targetEtabId = c.etablissement_id || currentEtabId;
+        const matchingFrais = frais.filter(f => f.etablissement_id === targetEtabId);
         
         // Add up all fees (Inscription, Scolarité, etc.) that match the class level
         const uniqueFraisTypes = [...new Set(matchingFrais.map(f => f.type_frais))];
@@ -1256,10 +1263,14 @@ function setupPaiementsModal() {
         const { data: classe } = await window.supabase.from('classes').select('niveau, etablissement_id').eq('id', eleve.classe_id).single();
         if (!classe) return;
         
+        const { data: etabData } = await window.supabase.from('etablissements').select('id').limit(1).maybeSingle();
+        const currentEtabId = etabData ? etabData.id : null;
+        const targetEtabId = classe.etablissement_id || currentEtabId;
+        
         // 3. Get the expected fee from frais_scolaires
         const { data: allFrais } = await window.supabase.from('frais_scolaires')
             .select('niveau, montant')
-            .eq('etablissement_id', classe.etablissement_id)
+            .eq('etablissement_id', targetEtabId)
             .eq('type_frais', type_frais);
             
         function normalizeString(str) {
