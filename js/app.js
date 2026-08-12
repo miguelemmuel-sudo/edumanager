@@ -14,7 +14,51 @@ window.formatDateLocal = function(dateStr) {
    ======================================================================= */
 'use strict';
 
+window.filterTable = function() {
+    // Find the active search input
+    const searchInputs = document.querySelectorAll('.topbar-search input, input[placeholder^="Rechercher"]');
+    let term = '';
+    searchInputs.forEach(input => {
+        if (input.value) term = input.value.toLowerCase();
+    });
+    
+    const filterClasse = document.getElementById('filterClasse');
+    const classeTerm = filterClasse && filterClasse.value ? filterClasse.value.toLowerCase() : '';
+    
+    const filterStatut = document.getElementById('filterStatut');
+    const statutTerm = filterStatut && filterStatut.value ? filterStatut.value.toLowerCase() : '';
+
+    // Select all table rows in the main body
+    const rows = document.querySelectorAll('table tbody tr');
+    rows.forEach(tr => {
+        // Ignore empty state rows
+        if (tr.querySelector('td') && tr.querySelector('td').colSpan > 2 && tr.textContent.includes('Aucun')) return;
+        const text = tr.textContent.toLowerCase();
+        const show = text.includes(term) && (!classeTerm || text.includes(classeTerm)) && (!statutTerm || text.includes(statutTerm));
+        tr.style.display = show ? '' : 'none';
+    });
+    
+    // Support filtering cards (e.g. for classes)
+    const cards = document.querySelectorAll('.col-md-4 .dash-card, .col-md-6 .dash-card, .col-12 .dash-card, .col-lg-3 .dash-card');
+    cards.forEach(card => {
+        // Only filter cards that look like list items, not main layout cards
+        if (!card.classList.contains('p-3') && !card.classList.contains('mb-4')) {
+            const container = card.closest('[class*="col-"]');
+            if (container && container.parentElement && container.parentElement.classList.contains('row')) {
+                const text = card.textContent.toLowerCase();
+                const show = text.includes(term) && (!classeTerm || text.includes(classeTerm)) && (!statutTerm || text.includes(statutTerm));
+                container.style.display = show ? '' : 'none';
+            }
+        }
+    });
+};
+
 document.addEventListener('DOMContentLoaded', async () => {
+    // Attach filterTable to all search inputs automatically
+    document.querySelectorAll('.topbar-search input, input[placeholder^="Rechercher"]').forEach(input => {
+        input.addEventListener('input', window.filterTable);
+    });
+
     if (!window.supabase) {
         console.error('Supabase non chargé');
         return;
