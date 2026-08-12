@@ -9,6 +9,7 @@
   <link href="/css/vendor/all.min.css" rel="stylesheet"/>
   <link href="../css/dashboard.css" rel="stylesheet"/>
   <link rel="manifest" href="../manifest.json" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
 <aside class="sidebar" id="sidebar"></aside>
@@ -33,10 +34,10 @@
 
   <!-- KPIs -->
   <div class="row g-3 mb-4">
-    <div class="col-6 col-md-3"><div class="stat-card"><div class="d-flex align-items-center justify-content-between mb-2"><div class="sc-icon bg-success-soft"><i class="fas fa-check-circle text-success"></i></div><span class="sc-trend up" id="payTrend1">+0%</span></div><div class="sc-value">0</div><div class="sc-label">Total collecté</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-card"><div class="d-flex align-items-center justify-content-between mb-2"><div class="sc-icon bg-success-soft"><i class="fas fa-check-circle text-success"></i></div><span class="sc-trend up" id="payTrend1">+0%</span></div><div class="sc-value">0</div><div class="sc-label">Total encaissé</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-card"><div class="d-flex align-items-center justify-content-between mb-2"><div class="sc-icon bg-warning-soft"><i class="fas fa-hourglass-half text-warning"></i></div><span class="sc-trend down" id="payTrend3" style="display:none;"></span></div><div class="sc-value">0</div><div class="sc-label">Reste à recouvrer</div></div></div>
     <div class="col-6 col-md-3"><div class="stat-card"><div class="d-flex align-items-center justify-content-between mb-2"><div class="sc-icon bg-primary-soft"><i class="fas fa-users text-primary"></i></div><span class="sc-trend up" id="payTrend2">0%</span></div><div class="sc-value">0</div><div class="sc-label">Élèves soldés</div></div></div>
-    <div class="col-6 col-md-3"><div class="stat-card"><div class="d-flex align-items-center justify-content-between mb-2"><div class="sc-icon bg-warning-soft"><i class="fas fa-hourglass-half text-warning"></i></div><span class="sc-trend up" id="payTrend3" style="display:none;"></span></div><div class="sc-value">0</div><div class="sc-label">Paiements partiels</div></div></div>
-    <div class="col-6 col-md-3"><div class="stat-card"><div class="d-flex align-items-center justify-content-between mb-2"><div class="sc-icon bg-danger-soft"><i class="fas fa-times-circle text-danger"></i></div><span class="sc-trend down" id="payTrend4">0%</span></div><div class="sc-value">0</div><div class="sc-label">Impayés</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-card"><div class="d-flex align-items-center justify-content-between mb-2"><div class="sc-icon bg-danger-soft"><i class="fas fa-times-circle text-danger"></i></div><span class="sc-trend down" id="payTrend4">0%</span></div><div class="sc-value">0</div><div class="sc-label">Impayés & Partiels</div></div></div>
   </div>
 
   <div class="row g-3 mb-4">
@@ -102,15 +103,95 @@
     <div class="modal-body">
       <div class="mb-3"><label class="form-label">Élève *</label><select name="eleve_id" id="paiementEleveSelect" class="form-select"><option value="">Sélectionner un élève...</option></select></div>
       <div class="row g-3">
-        <div class="col-6"><label class="form-label">Montant payé *</label><input type="number" name="montant" class="form-control" placeholder="0"/></div>
+        <div class="col-6"><label class="form-label">Type de frais *</label><select name="type_frais" id="paiementTypeSelect" class="form-select"><option value="Scolarité">Scolarité</option><option value="Inscription">Inscription</option></select></div>
+        <div class="col-6"><label class="form-label">Montant attendu (FCFA)</label><input type="text" id="paiementAttendu" class="form-control bg-light" readonly placeholder="Calcul automatique..."/></div>
+        
+        <div class="col-12"><label class="form-label text-danger">Reste à payer avant versement</label><input type="text" id="paiementResteAvant" class="form-control text-danger fw-bold bg-light" readonly placeholder="0"/></div>
+
+        <div class="col-6"><label class="form-label">Montant versé *</label><input type="number" name="montant" id="paiementMontant" class="form-control" placeholder="0" min="1"/></div>
         <div class="col-6"><label class="form-label">Mode de paiement</label><select name="methode" class="form-select"><option value="Espèces">Espèces</option><option value="Virement">Virement</option><option value="Mobile Money">Mobile Money</option><option value="Chèque">Chèque</option></select></div>
+        
+        <div class="col-12"><label class="form-label text-success">Nouveau Reste à Payer</label><input type="text" id="paiementResteApres" name="reste_a_payer" class="form-control text-success fw-bold bg-light" readonly placeholder="0"/></div>
+
         <div class="col-12"><label class="form-label">Date du paiement</label><input type="date" name="date_paiement" class="form-control"/></div>
-        <div class="col-12"><label class="form-label">Motif / Remarque</label><textarea name="motif" class="form-control" rows="2" placeholder="Scolarité, Cantine, Transport..."></textarea></div>
+        <div class="col-12"><label class="form-label">Remarque (Optionnel)</label><textarea name="motif" class="form-control" rows="2" placeholder="Informations complémentaires..."></textarea></div>
       </div>
     </div>
     <div class="modal-footer"><button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Annuler</button><button type="button" class="btn btn-primary rounded-pill px-4 fw-semibold" id="btnSavePaiement">Enregistrer &amp; Générer reçu</button></div>
   </div></div>
 </div>
+
+<!-- Receipt Template (Hidden by default, used for printing) -->
+<div id="receiptTemplate" style="display:none;">
+    <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; border: 1px solid #ddd;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #000; padding-bottom: 10px; mb-4">
+            <div style="flex: 1;">
+                <img id="receiptLogo" src="" alt="Logo" style="max-height: 80px; display: none;">
+                <h2 id="receiptEtabNom" style="margin: 10px 0 5px; font-size: 24px; font-weight: bold;">-</h2>
+                <div id="receiptEtabInfos" style="font-size: 14px; color: #555;">-</div>
+            </div>
+            <div style="text-align: right; flex: 1;">
+                <h1 style="margin: 0; font-size: 28px; color: #333; text-transform: uppercase;">Reçu Officiel</h1>
+                <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">N° <span id="receiptNumber">-</span></div>
+                <div style="font-size: 14px;">Date : <span id="receiptDate">-</span></div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 30px; display: flex; justify-content: space-between;">
+            <div style="width: 45%;">
+                <div style="font-weight: bold; font-size: 16px; margin-bottom: 5px; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 5px;">Informations de l'élève</div>
+                <div style="font-size: 15px; line-height: 1.5;">
+                    <div><strong>Nom complet :</strong> <span id="receiptStudentName">-</span></div>
+                    <div><strong>Matricule :</strong> <span id="receiptStudentMatricule">-</span></div>
+                    <div><strong>Classe :</strong> <span id="receiptStudentClass">-</span></div>
+                </div>
+            </div>
+            <div style="width: 45%;">
+                <div style="font-weight: bold; font-size: 16px; margin-bottom: 5px; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 5px;">Détails de la transaction</div>
+                <div style="font-size: 15px; line-height: 1.5;">
+                    <div><strong>Type de paiement :</strong> <span id="receiptType">-</span></div>
+                    <div><strong>Mode de paiement :</strong> <span id="receiptMethod">-</span></div>
+                    <div><strong>Caissier :</strong> <span id="receiptCaissier">-</span></div>
+                </div>
+            </div>
+        </div>
+
+        <table style="width: 100%; margin-top: 40px; border-collapse: collapse; font-size: 15px;">
+            <thead>
+                <tr style="background-color: #f8f9fa;">
+                    <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Description</th>
+                    <th style="padding: 12px; text-align: right; border: 1px solid #ddd;">Montant attendu</th>
+                    <th style="padding: 12px; text-align: right; border: 1px solid #ddd; background-color: #e9ecef;">Montant versé</th>
+                    <th style="padding: 12px; text-align: right; border: 1px solid #ddd;">Reste à payer</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold;"><span id="receiptItemDesc">-</span></td>
+                    <td style="padding: 12px; text-align: right; border: 1px solid #ddd;"><span id="receiptExpectedAmount">-</span></td>
+                    <td style="padding: 12px; text-align: right; border: 1px solid #ddd; font-weight: bold; font-size: 16px;"><span id="receiptPaidAmount">-</span></td>
+                    <td style="padding: 12px; text-align: right; border: 1px solid #ddd;"><span id="receiptRemainingAmount">-</span></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div style="margin-top: 40px; display: flex; justify-content: space-between; align-items: flex-end;">
+            <div id="qrcode" style="width: 100px; height: 100px;"></div>
+            <div style="text-align: center; width: 200px;">
+                <div style="margin-bottom: 40px;"><strong>Signature (Cachet)</strong></div>
+                <div style="border-bottom: 1px solid #000;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@media print {
+    body * { visibility: hidden; }
+    #receiptTemplate, #receiptTemplate * { visibility: visible; }
+    #receiptTemplate { display: block !important; position: absolute; left: 0; top: 0; width: 100%; padding: 0; margin: 0; border: none !important; }
+}
+</style>
 
 <script src="/js/vendor/bootstrap.bundle.min.js"></script>
 <script src="../js/dashboard.js"></script>

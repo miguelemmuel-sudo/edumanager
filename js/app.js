@@ -999,33 +999,70 @@ async function fetchAndRenderPaiements() {
     const tbody = document.getElementById('dynamicBody') || document.getElementById('paiementsBody');
     if (!tbody) return;
 
-    // Load eleves for the select
+    const { data: eleves } = await window.supabase.from('eleves').select('id, nom, prenom, matricule, classe_id');
     const pEleveSelect = document.getElementById('paiementEleveSelect');
-    if (pEleveSelect && pEleveSelect.children.length <= 1) {
-        const { data: eleves } = await window.supabase.from('eleves').select('id, nom, prenom, matricule');
-        if (eleves) {
-            pEleveSelect.innerHTML = '<option value="">Sélectionner un élève...</option>' + eleves.map(e => `<option value="${e.id}">${_e(e.matricule || '-')} - ${_e(e.prenom)} ${_e(e.nom)}</option>`).join('');
-        }
+    if (pEleveSelect && pEleveSelect.children.length <= 1 && eleves) {
+        pEleveSelect.innerHTML = '<option value="">Sélectionner un élève...</option>' + eleves.map(e => `<option value="${e.id}">${_e(e.matricule || '-')} - ${_e(e.prenom)} ${_e(e.nom)}</option>`).join('');
     }
+    const { data: classes } = await window.supabase.from('classes').select('id, niveau, etablissement_id');
+    const { data: frais } = await window.supabase.from('frais_scolaires').select('*');
+    
+    // Map classes to niveaux
+    const classNiveau = {};
+    if(classes) classes.forEach(c => classNiveau[c.id] = c);
+    
+    // Map frais to niveaux
+    const fraisMap = {}; // { etabId_niveau: { total_frais: X } }
+    if(frais) frais.forEach(f => {
+        const key = f.etablissement_id + '_' + f.niveau;
+        if(!fraisMap[key]) fraisMap[key] = 0;
+        fraisMap[key] += parseFloat(f.montant) || 0;
+    });
+    
+    let totalAttenduGlobal = 0;
+    const eleveExpected = {};
+    if(eleves) eleves.forEach(e => {
+        const c = classNiveau[e.classe_id];
+        let expected = 0;
+        if(c) {
+            const key = c.etablissement_id + '_' + c.niveau;
+            expected = fraisMap[key] || 0;
+        }
+        eleveExpected[e.id] = expected;
+        totalAttenduGlobal += expected;
+    });
 
-    const { data: paiements, error } = await window.supabase.from('paiements').select('*, eleves(nom, prenom, matricule)');
+    const { data: paiements, error } = await window.supabase.from('paiements').select('*, eleves(nom, prenom, matricule, classes(nom))').order('created_at', { ascending: false });
     if (error) return console.error(error);
 
     let totalCollecte = 0;
-    let nbSoldes = 0;
-    let nbPartiels = 0;
-    let nbImpayes = 0;
+    const elevePaid = {};
     
     paiements.forEach(p => {
         const mt = parseFloat(p.montant) || 0;
         totalCollecte += mt;
-        const st = (p.statut || '').toLowerCase();
-        if (st.includes('payé') && !st.includes('impayé') && !st.includes('soldé')) nbSoldes++;
-        else if (st.includes('soldé')) nbSoldes++;
-        else if (st.includes('partiel')) nbPartiels++;
-        else if (st.includes('impayé')) nbImpayes++;
+        if (!elevePaid[p.eleve_id]) elevePaid[p.eleve_id] = 0;
+        elevePaid[p.eleve_id] += mt;
     });
 
+    let nbSoldes = 0;
+    let nbPartiels = 0;
+    let nbImpayes = 0;
+    
+    if (eleves) {
+        eleves.forEach(e => {
+            const exp = eleveExpected[e.id] || 0;
+            const pd = elevePaid[e.id] || 0;
+            if (exp > 0) {
+                if (pd >= exp) nbSoldes++;
+                else if (pd > 0) nbPartiels++;
+                else nbImpayes++;
+            }
+        });
+    }
+
+    const totalResteGlobal = Math.max(0, totalAttenduGlobal - totalCollecte);
+    
     const totalEleves = nbSoldes + nbPartiels + nbImpayes;
     const pSoldes = totalEleves ? Math.round((nbSoldes/totalEleves)*100) : 0;
     const pPartiels = totalEleves ? Math.round((nbPartiels/totalEleves)*100) : 0;
@@ -1040,13 +1077,14 @@ async function fetchAndRenderPaiements() {
     }
     const currency = etablissement && etablissement.pays ? getCurrencyByCountry(etablissement.pays) : 'FCFA';
 
+
     // Update Top KPIs
     const scValues = document.querySelectorAll('.sc-value');
     if(scValues.length >= 4) {
         scValues[0].textContent = totalCollecte.toLocaleString() + ' ' + currency;
-        scValues[1].textContent = nbSoldes;
-        scValues[2].textContent = nbPartiels;
-        scValues[3].textContent = nbImpayes;
+        scValues[1].textContent = totalResteGlobal.toLocaleString() + ' ' + currency;
+        scValues[2].textContent = nbSoldes;
+        scValues[3].textContent = nbImpayes + nbPartiels;
     }
     
     // Update trends
@@ -1099,20 +1137,24 @@ async function fetchAndRenderPaiements() {
     tbody.innerHTML = '';
     paiements.forEach(p => {
         const el = p.eleves || {};
-        const stColor = (p.statut || '').toLowerCase().includes('soldé') || (p.statut || '').toLowerCase().includes('payé') ? 'success' : 
+        const stColor = (p.statut || '').toLowerCase().includes('payé') || (p.statut || '').toLowerCase().includes('soldé') ? 'success' : 
                         (p.statut || '').toLowerCase().includes('partiel') ? 'warning' : 'danger';
         
         tbody.innerHTML += `
             <tr>
-                <td><strong>${_e(el.matricule || '-')}</strong></td>
-                <td><div class="fw-semibold">${_e(el.prenom)} ${_e(el.nom)}</div></td>
-                <td>${_e(p.motif || 'Scolarité')}</td>
+                <td>
+                    <div class="fw-semibold">${_e(el.prenom)} ${_e(el.nom)}</div>
+                    <div style="font-size:.75rem;color:var(--muted)">${_e(el.matricule || '-')}</div>
+                </td>
+                <td>${_e(el.classes ? el.classes.nom : '-')}</td>
+                <td>${p.montant_attendu ? p.montant_attendu + ' ' + currency : '-'}</td>
                 <td><span class="text-success fw-bold">${p.montant} ${currency}</span></td>
+                <td>${p.reste_a_payer ? p.reste_a_payer + ' ' + currency : '-'}</td>
                 <td>${new Date(p.date_paiement).toLocaleDateString('fr-FR')}</td>
                 <td><span class="status-badge ${stColor}">${_e(p.statut || 'Enregistré')}</span></td>
                 <td>
-                    <button class="btn btn-sm btn-icon text-primary" title="Reçu"><i class="fas fa-file-invoice"></i></button>
-                    <button class="btn btn-sm btn-icon text-danger" onclick="deletePaiement('${p.id}')"><i class="fas fa-trash"></i></button>
+                    <button class="btn btn-sm btn-icon text-primary" title="Imprimer Reçu" onclick="printReceipt('${p.id}')"><i class="fas fa-print"></i></button>
+                    <button class="btn btn-sm btn-icon text-danger" title="Supprimer" onclick="deletePaiement('${p.id}')"><i class="fas fa-trash"></i></button>
                 </td>
             </tr>
         `;
@@ -1121,8 +1163,84 @@ async function fetchAndRenderPaiements() {
 
 function setupPaiementsModal() {
     const btnSavePaiement = document.getElementById('btnSavePaiement');
-    if (!btnSavePaiement) return;
+    const eleveSelect = document.getElementById('paiementEleveSelect');
+    const typeSelect = document.getElementById('paiementTypeSelect');
+    const inputAttendu = document.getElementById('paiementAttendu');
+    const inputResteAvant = document.getElementById('paiementResteAvant');
+    const inputMontant = document.getElementById('paiementMontant');
+    const inputResteApres = document.getElementById('paiementResteApres');
     
+    if (!btnSavePaiement || !eleveSelect) return;
+
+    let currentMontantAttendu = 0;
+    let currentResteAvant = 0;
+
+    async function updateCalculations() {
+        const eleve_id = eleveSelect.value;
+        const type_frais = typeSelect ? typeSelect.value : 'Scolarité';
+        
+        if (!eleve_id) {
+            if(inputAttendu) inputAttendu.value = '';
+            if(inputResteAvant) inputResteAvant.value = '';
+            if(inputResteApres) inputResteApres.value = '';
+            return;
+        }
+
+        // 1. Get the student's class
+        const { data: eleve } = await window.supabase.from('eleves').select('classe_id').eq('id', eleve_id).single();
+        if (!eleve || !eleve.classe_id) return;
+        
+        // 2. Get the class's niveau
+        const { data: classe } = await window.supabase.from('classes').select('niveau, etablissement_id').eq('id', eleve.classe_id).single();
+        if (!classe) return;
+        
+        // 3. Get the expected fee from frais_scolaires
+        const { data: frais } = await window.supabase.from('frais_scolaires')
+            .select('montant')
+            .eq('etablissement_id', classe.etablissement_id)
+            .eq('niveau', classe.niveau)
+            .eq('type_frais', type_frais)
+            .maybeSingle();
+            
+        currentMontantAttendu = frais ? parseFloat(frais.montant) : 0;
+        if(inputAttendu) inputAttendu.value = currentMontantAttendu;
+
+        // 4. Calculate past payments for this student and this fee type
+        const { data: pastPaiements } = await window.supabase.from('paiements')
+            .select('montant')
+            .eq('eleve_id', eleve_id)
+            .eq('type_frais', type_frais);
+            
+        let totalPaye = 0;
+        if (pastPaiements) {
+            pastPaiements.forEach(p => { totalPaye += parseFloat(p.montant || 0); });
+        }
+        
+        currentResteAvant = Math.max(0, currentMontantAttendu - totalPaye);
+        if(inputResteAvant) inputResteAvant.value = currentResteAvant;
+        
+        calculateResteApres();
+    }
+
+    function calculateResteApres() {
+        const verse = parseFloat(inputMontant.value) || 0;
+        const resteApres = currentResteAvant - verse;
+        if(inputResteApres) inputResteApres.value = resteApres;
+        
+        if (resteApres < 0) {
+            inputResteApres.classList.add('text-danger');
+            inputResteApres.value = "Surplus non autorisé: " + Math.abs(resteApres);
+            btnSavePaiement.disabled = true;
+        } else {
+            inputResteApres.classList.remove('text-danger');
+            btnSavePaiement.disabled = false;
+        }
+    }
+
+    eleveSelect.addEventListener('change', updateCalculations);
+    if(typeSelect) typeSelect.addEventListener('change', updateCalculations);
+    if(inputMontant) inputMontant.addEventListener('input', calculateResteApres);
+
     btnSavePaiement.addEventListener('click', async () => {
         const data = getFormData('addPaiementModal');
         if (!data.eleve_id || !data.montant) {
@@ -1130,23 +1248,117 @@ function setupPaiementsModal() {
             return;
         }
         
-        // Ensure statut is set automatically or retrieved
-        data.statut = 'Soldé'; 
+        const verse = parseFloat(data.montant);
+        const resteApres = currentResteAvant - verse;
+        
+        if (resteApres < 0) {
+            if(window.showToast) window.showToast('Le montant versé dépasse le reste à payer.', 'danger');
+            return;
+        }
+        
+        // Ensure statut is set automatically
+        if (resteApres === 0) data.statut = 'Payé';
+        else if (verse > 0) data.statut = 'Partiel';
+        else data.statut = 'Non payé';
+        
+        data.type_frais = typeSelect ? typeSelect.value : 'Scolarité';
+        data.montant_attendu = currentMontantAttendu;
+        data.reste_a_payer = resteApres;
+        
+        // Add caissier
+        const session = await window.supabase.auth.getSession();
+        if (session.data.session) data.caissier_id = session.data.session.user.id;
         
         btnSavePaiement.disabled = true; btnSavePaiement.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
         const { error } = await window.supabase.from('paiements').insert([data]);
+        
+        if (!error) {
+            // Update financial status in eleves
+            let finalStatut = 'À jour';
+            if (resteApres > 0) finalStatut = 'Paiement partiel';
+            // Technically this only checks one fee type, but it's a good approximation
+            await window.supabase.from('eleves').update({ statut_financier: finalStatut }).eq('id', data.eleve_id);
+        }
+
         btnSavePaiement.disabled = false; btnSavePaiement.innerHTML = 'Enregistrer & Générer reçu';
         
         if (error) {
             if(window.showToast) window.showToast(error.message, 'danger');
         } else {
             if(window.showToast) window.showToast('Paiement enregistré', 'success');
+            
+            // Re-fetch the paiement to get all related data (eleve, classe, etc) before printing
+            const { data: newP } = await window.supabase.from('paiements').select('id').eq('eleve_id', data.eleve_id).eq('type_frais', data.type_frais).order('created_at', { ascending: false }).limit(1).single();
+            if (newP) {
+                printReceipt(newP.id);
+            }
+            
             closeModal('addPaiementModal');
             clearFormData('addPaiementModal');
             fetchAndRenderPaiements();
         }
     });
 }
+
+window.printReceipt = async function(id) {
+    const { data: p } = await window.supabase.from('paiements')
+        .select('*, eleves(nom, prenom, matricule, classes(nom)), auth_users:caissier_id(email)')
+        .eq('id', id).single();
+        
+    if (!p) return;
+    
+    const { data: etab } = await window.supabase.from('etablissements').select('*').limit(1).single();
+    
+    // Fill receipt template
+    document.getElementById('receiptEtabNom').textContent = etab?.nom || 'EduManager';
+    document.getElementById('receiptEtabInfos').innerHTML = `
+        ${etab?.adresse || ''}<br>
+        Tél: ${etab?.tel || ''} | Email: ${etab?.email || ''}
+    `;
+    
+    if (etab?.logo_url) {
+        document.getElementById('receiptLogo').src = etab.logo_url;
+        document.getElementById('receiptLogo').style.display = 'block';
+    }
+    
+    const d = new Date(p.created_at || p.date_paiement);
+    const recNumber = 'REC-' + d.getFullYear() + (d.getMonth()+1).toString().padStart(2, '0') + d.getDate().toString().padStart(2, '0') + '-' + p.id.substring(0, 5).toUpperCase();
+    
+    document.getElementById('receiptNumber').textContent = recNumber;
+    document.getElementById('receiptDate').textContent = d.toLocaleString('fr-FR');
+    
+    const el = p.eleves || {};
+    document.getElementById('receiptStudentName').textContent = `${el.prenom || ''} ${el.nom || ''}`;
+    document.getElementById('receiptStudentMatricule').textContent = el.matricule || '-';
+    document.getElementById('receiptStudentClass').textContent = el.classes?.nom || '-';
+    
+    document.getElementById('receiptType').textContent = p.type_frais || p.motif || 'Scolarité';
+    document.getElementById('receiptMethod').textContent = p.methode || 'Espèces';
+    document.getElementById('receiptCaissier').textContent = p.auth_users?.email || '-';
+    
+    document.getElementById('receiptItemDesc').textContent = `Versement - ${p.type_frais || p.motif || 'Scolarité'} (${p.statut || 'Payé'})`;
+    
+    const ccy = window.EduSettings?.currency || 'FCFA';
+    document.getElementById('receiptExpectedAmount').textContent = p.montant_attendu ? `${p.montant_attendu} ${ccy}` : '-';
+    document.getElementById('receiptPaidAmount').textContent = `${p.montant} ${ccy}`;
+    document.getElementById('receiptRemainingAmount').textContent = p.reste_a_payer ? `${p.reste_a_payer} ${ccy}` : `0 ${ccy}`;
+    
+    // QR Code
+    const qrContainer = document.getElementById('qrcode');
+    qrContainer.innerHTML = '';
+    if (typeof QRCode !== 'undefined') {
+        new QRCode(qrContainer, {
+            text: `Reçu: ${recNumber}\nÉlève: ${el.prenom} ${el.nom}\nMatricule: ${el.matricule}\nMontant: ${p.montant} ${ccy}\nStatut: ${p.statut}`,
+            width: 100,
+            height: 100
+        });
+    }
+    
+    // Print
+    setTimeout(() => {
+        window.print();
+    }, 500);
+};
 
 window.deletePaiement = async function(id) {
     if(!confirm('Supprimer ce paiement ?')) return;
@@ -1951,8 +2163,87 @@ async function fetchAndRenderParametres() {
     }
 }
 
+async function setupFraisScolaires() {
+    const tbody = document.getElementById('fraisTableBody');
+    const btnSaveFrais = document.getElementById('btnSaveFrais');
+    if (!tbody || !btnSaveFrais) return;
+
+    const { data: etab } = await window.supabase.from('etablissements').select('id, type, systeme_educatif').limit(1).single();
+    if (!etab) return;
+
+    // Temporarily ensure EduSettings is set to get correct niveaux
+    if (!window.EduSettings) window.EduSettings = {};
+    window.EduSettings.type = etab.type;
+    window.EduSettings.systeme = etab.systeme_educatif;
+    const niveaux = getNiveauxList();
+
+    // Fetch existing fees
+    const { data: existingFrais } = await window.supabase.from('frais_scolaires').select('*').eq('etablissement_id', etab.id);
+    const fraisMap = {};
+    if (existingFrais) {
+        existingFrais.forEach(f => {
+            if (!fraisMap[f.niveau]) fraisMap[f.niveau] = {};
+            fraisMap[f.niveau][f.type_frais] = f.montant;
+        });
+    }
+
+    // Render rows
+    tbody.innerHTML = '';
+    niveaux.forEach(niveau => {
+        const insc = (fraisMap[niveau] && fraisMap[niveau]['Inscription']) || 0;
+        const scol = (fraisMap[niveau] && fraisMap[niveau]['Scolarité']) || 0;
+        
+        tbody.innerHTML += `
+            <tr data-niveau="${_e(niveau)}">
+                <td class="fw-semibold">${_e(niveau)}</td>
+                <td><input type="number" class="form-control form-control-sm input-insc" value="${insc}"></td>
+                <td><input type="number" class="form-control form-control-sm input-scol" value="${scol}"></td>
+            </tr>
+        `;
+    });
+
+    // Handle Save
+    btnSaveFrais.addEventListener('click', async (e) => {
+        e.preventDefault();
+        btnSaveFrais.disabled = true;
+        btnSaveFrais.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+        const rows = tbody.querySelectorAll('tr');
+        const newFrais = [];
+        
+        rows.forEach(tr => {
+            const niveau = tr.getAttribute('data-niveau');
+            const insc = parseFloat(tr.querySelector('.input-insc').value) || 0;
+            const scol = parseFloat(tr.querySelector('.input-scol').value) || 0;
+            
+            if (insc >= 0) newFrais.push({ etablissement_id: etab.id, niveau, type_frais: 'Inscription', montant: insc });
+            if (scol >= 0) newFrais.push({ etablissement_id: etab.id, niveau, type_frais: 'Scolarité', montant: scol });
+        });
+
+        // 1. Delete old fees
+        await window.supabase.from('frais_scolaires').delete().eq('etablissement_id', etab.id);
+        
+        // 2. Insert new fees
+        if (newFrais.length > 0) {
+            const { error } = await window.supabase.from('frais_scolaires').insert(newFrais);
+            if (error) {
+                if(window.showToast) window.showToast('Erreur: ' + error.message, 'danger');
+            } else {
+                if(window.showToast) window.showToast('Frais scolaires mis à jour !', 'success');
+            }
+        } else {
+            if(window.showToast) window.showToast('Frais scolaires vidés !', 'success');
+        }
+
+        btnSaveFrais.disabled = false;
+        btnSaveFrais.innerHTML = '<i class="fas fa-save me-2"></i>Enregistrer les frais';
+    });
+}
+
 function setupProfilParametres() {
     // PROFIL SAVE
+    setupFraisScolaires();
+    
     const btnSaveProfil = document.getElementById('btnSaveProfil');
     if (btnSaveProfil) {
         btnSaveProfil.addEventListener('click', async (e) => {

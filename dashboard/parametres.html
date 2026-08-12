@@ -109,14 +109,28 @@
       <!-- Frais scolaires -->
       <div id="tab-frais" class="settings-tab d-none">
         <div class="form-section">
-          <div class="form-section-title"><i class="fas fa-euro-sign text-info me-2"></i>Configuration des frais</div>
-          <div class="row g-3">
-            <div class="col-md-6"><label class="form-label">Frais d'inscription (FCFA)</label><input type="number" id="frais_inscription" class="form-control" value="50000"/></div>
-            <div class="col-md-6"><label class="form-label">Scolarité annuelle de base (FCFA)</label><input type="number" id="frais_scolarite" class="form-control" value="250000"/></div>
+          <div class="form-section-title d-flex justify-content-between align-items-center">
+            <span><i class="fas fa-euro-sign text-info me-2"></i>Configuration des frais par niveau</span>
+            <button class="btn btn-sm btn-outline-primary" id="btnAddFrais"><i class="fas fa-plus me-1"></i>Nouveau type de frais</button>
+          </div>
+          <div class="table-responsive mt-3">
+            <table class="table table-hover align-middle">
+              <thead>
+                <tr id="fraisTableHead">
+                  <th>Niveau</th>
+                  <th>Inscription (FCFA)</th>
+                  <th>Scolarité (FCFA)</th>
+                  <!-- Additional fee types will be injected here -->
+                </tr>
+              </thead>
+              <tbody id="fraisTableBody">
+                <!-- Dynamically populated rows based on getNiveauxList() -->
+              </tbody>
+            </table>
           </div>
         </div>
         <div class="d-flex gap-2">
-          <button class="btn btn-primary rounded-pill px-4 fw-semibold btn-save"><i class="fas fa-save me-2"></i>Enregistrer</button>
+          <button class="btn btn-primary rounded-pill px-4 fw-semibold" id="btnSaveFrais"><i class="fas fa-save me-2"></i>Enregistrer les frais</button>
         </div>
       </div>
 
