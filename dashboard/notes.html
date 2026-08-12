@@ -34,10 +34,10 @@
   <!-- Sélecteur Classe / Matière / Trimestre -->
   <div class="dash-card mb-4 p-3">
     <div class="row g-3 align-items-end">
-      <div class="col-md-3"><label class="form-label">Classe</label><select class="form-select" id="selClasse" onchange="updateTable()"><option value="">Sélectionner une classe</option></select></div>
+      <div class="col-md-3"><label class="form-label">Classe</label><select class="form-select" id="selClasse"><option value="">Sélectionner une classe</option></select></div>
       <div class="col-md-3"><label class="form-label">Matière</label><select class="form-select" id="selMatiere"><option value="">Sélectionner une matière</option></select></div>
-      <div class="col-md-3"><label class="form-label">Trimestre</label><select class="form-select"><option>1er Trimestre</option><option>2ème Trimestre</option><option>3ème Trimestre</option></select></div>
-      <div class="col-md-3"><button class="btn btn-primary w-100 rounded-pill">Charger les notes</button></div>
+      <div class="col-md-3"><label class="form-label">Trimestre</label><select class="form-select" id="selTrimestre"><option value="T1">1er Trimestre</option><option value="T2">2ème Trimestre</option><option value="T3">3ème Trimestre</option></select></div>
+      <div class="col-md-3"><button class="btn btn-primary w-100 rounded-pill" onclick="fetchAndRenderNotes()">Charger les notes</button></div>
     </div>
   </div>
 

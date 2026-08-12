@@ -732,7 +732,7 @@ async function fetchAndRenderNotes() {
         }
         if (selClasse) {
             const currentVal = selClasse.value;
-            selClasse.innerHTML = '<option value="">Toutes les classes</option>' + classes.map(c => `<option value="${c.nom}">${_e(c.nom)}</option>`).join('');
+            selClasse.innerHTML = '<option value="">Toutes les classes</option>' + classes.map(c => `<option value="${c.id}">${_e(c.nom)}</option>`).join('');
             selClasse.value = currentVal;
         }
     }
@@ -751,7 +751,32 @@ async function fetchAndRenderNotes() {
         }
     }
 
-    const { data: notes, error } = await window.supabase.from('notes').select('*, eleves(nom, prenom)');
+    let query = window.supabase.from('notes').select('*, eleves!inner(nom, prenom, classe_id)');
+    
+    let titleText = 'Notes';
+    const selTrimestre = document.getElementById('selTrimestre');
+
+    if (selClasse && selClasse.value) {
+        const clOption = selClasse.options[selClasse.selectedIndex];
+        if (clOption && clOption.value !== "") {
+            query = query.eq('eleves.classe_id', selClasse.value);
+            titleText += ' – ' + clOption.text;
+        }
+    }
+    if (selMatiere && selMatiere.value) {
+        query = query.eq('matiere', selMatiere.value);
+        titleText += ' · ' + selMatiere.value;
+    }
+    if (selTrimestre && selTrimestre.value) {
+        titleText += ' · ' + selTrimestre.options[selTrimestre.selectedIndex].text;
+    }
+
+    const dashCardTitle = document.querySelector('.dash-card-title');
+    if (dashCardTitle) {
+        dashCardTitle.innerHTML = `<i class="fas fa-clipboard-list text-primary me-2"></i>${_e(titleText)}`;
+    }
+
+    const { data: notes, error } = await query;
     if (error) return console.error(error);
     
     // Update KPIs for Notes page
@@ -957,6 +982,19 @@ async function fetchAndRenderEmploi() {
 
     const currentClasseId = classeSelectFiltre.value;
     if (!currentClasseId) return;
+    
+    const dashCardTitle = document.querySelector('.dash-card-title');
+    if (dashCardTitle) {
+        const clOption = classeSelectFiltre.options[classeSelectFiltre.selectedIndex];
+        let titleText = 'Emploi du temps';
+        if (clOption && clOption.value !== "") titleText += ' – ' + clOption.text;
+        
+        const semaineInput = document.getElementById('emploi_semaine');
+        if (semaineInput && semaineInput.value) {
+            titleText += ' · Semaine ' + semaineInput.value.replace('-W', ', semaine ');
+        }
+        dashCardTitle.innerHTML = `<i class="fas fa-calendar-week text-primary me-2"></i>${_e(titleText)}`;
+    }
     
     const tbody = document.getElementById('dynamicBody');
     if (!tbody) return;
