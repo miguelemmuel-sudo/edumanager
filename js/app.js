@@ -112,19 +112,19 @@ function getNiveauxList() {
         return []; // Free text
     }
 
-    if (type.includes('Primaire')) {
+    if (type.toLowerCase().includes('primaire')) {
         if (sys === 'Anglophone') return ['Nursery 1', 'Nursery 2', 'Nursery 3', 'Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5', 'Class 6'];
         if (sys === 'Bilingue') return ['Petite Section (Nursery 1)', 'Moyenne Section (Nursery 2)', 'Grande Section (Nursery 3)', 'SIL (Class 1)', 'CP (Class 2)', 'CE1 (Class 3)', 'CE2 (Class 4)', 'CM1 (Class 5)', 'CM2 (Class 6)'];
         return ['Petite Section (PS)', 'Moyenne Section (MS)', 'Grande Section (GS)', 'SIL', 'CP', 'CE1', 'CE2', 'CM1', 'CM2'];
     }
     
-    if (type.includes('Collège') || type.includes('Secondaire')) {
+    if (type.toLowerCase().includes('collège') || type.toLowerCase().includes('secondaire') || type.toLowerCase().includes('college')) {
         if (sys === 'Anglophone') return ['Form 1', 'Form 2', 'Form 3', 'Form 4', 'Form 5', 'Lower Sixth', 'Upper Sixth'];
         if (sys === 'Bilingue') return ['6ème (Form 1)', '5ème (Form 2)', '4ème (Form 3)', '3ème (Form 4)', 'Seconde (Form 5)', 'Première (Lower Sixth)', 'Terminale (Upper Sixth)'];
         return ['6ème', '5ème', '4ème', '3ème', 'Seconde (2nde)', 'Première (1ère)', 'Terminale'];
     }
     
-    if (type === 'Lycée') {
+    if (type.toLowerCase().includes('lycée') || type.toLowerCase().includes('lycee')) {
         if (sys === 'Anglophone') return ['Form 5', 'Lower Sixth', 'Upper Sixth'];
         if (sys === 'Bilingue') return ['Seconde (Form 5)', 'Première (Lower Sixth)', 'Terminale (Upper Sixth)'];
         return ['Seconde (2nde)', 'Première (1ère)', 'Terminale'];
