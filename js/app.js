@@ -2273,6 +2273,13 @@ async function fetchAndRenderParametres() {
             logoPreview.style.background = 'transparent';
         }
     }
+    
+    // Automate Matieres liste
+    const matieresListe = document.getElementById('matieres_liste');
+    if (matieresListe) {
+        const matieres = await fetchEtablissementMatieres();
+        matieresListe.value = matieres.join(', ') || 'Aucune matière définie pour le moment.';
+    }
 }
 
 async function setupFraisScolaires() {
@@ -2384,35 +2391,63 @@ function setupProfilParametres() {
     btnsSaveParam.forEach(btn => {
         btn.addEventListener('click', async (e) => {
             e.preventDefault();
-            const etabNom = document.getElementById('etab_nom');
-            if(etabNom) {
-                const nom = etabNom.value;
-                const type = document.getElementById('etab_type').value;
-                const systeme_educatif = document.getElementById('etab_systeme') ? document.getElementById('etab_systeme').value : 'Francophone';
-                const pays = document.getElementById('etab_pays').value;
-                const ville = document.getElementById('etab_ville').value;
-                const tel = document.getElementById('etab_tel').value;
-                const email = document.getElementById('etab_email') ? document.getElementById('etab_email').value : null;
-                const adresse = document.getElementById('etab_adresse') ? document.getElementById('etab_adresse').value : null;
-                const site_web = document.getElementById('etab_site') ? document.getElementById('etab_site').value : null;
+            const tab = btn.closest('.settings-tab');
+            
+            if (tab.id === 'tab-etablissement') {
+                const etabNom = document.getElementById('etab_nom');
+                if(etabNom) {
+                    const nom = etabNom.value;
+                    const type = document.getElementById('etab_type').value;
+                    const systeme_educatif = document.getElementById('etab_systeme') ? document.getElementById('etab_systeme').value : 'Francophone';
+                    const pays = document.getElementById('etab_pays').value;
+                    const ville = document.getElementById('etab_ville').value;
+                    const tel = document.getElementById('etab_tel').value;
+                    const email = document.getElementById('etab_email') ? document.getElementById('etab_email').value : null;
+                    const adresse = document.getElementById('etab_adresse') ? document.getElementById('etab_adresse').value : null;
+                    const site_web = document.getElementById('etab_site') ? document.getElementById('etab_site').value : null;
+                    
+                    btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                    
+                    const { data: etab } = await window.supabase.from('etablissements').select('id').limit(1).single();
+                    if (etab) {
+                        const { error } = await window.supabase.from('etablissements').update({
+                            nom, type, systeme_educatif, pays, ville, tel, email, adresse, site_web
+                        }).eq('id', etab.id);
+                        
+                        if (error) {
+                            if(window.showToast) window.showToast(error.message, 'danger');
+                        } else {
+                            if(window.showToast) window.showToast('Paramètres mis à jour', 'success');
+                        }
+                    }
+                    
+                    btn.disabled = false; btn.innerHTML = '<i class="fas fa-save me-2"></i>Enregistrer';
+                }
+            } else if (tab.id === 'tab-securite') {
+                const newMdp = document.getElementById('sec_nouveau_mdp').value;
+                const confMdp = document.getElementById('sec_conf_mdp').value;
+                
+                if (newMdp.length < 6) {
+                    return window.showToast ? window.showToast('Le mot de passe doit contenir au moins 6 caractères', 'danger') : alert('Mot de passe trop court');
+                }
+                if (newMdp !== confMdp) {
+                    return window.showToast ? window.showToast('Les mots de passe ne correspondent pas', 'danger') : alert('Les mots de passe ne correspondent pas');
+                }
                 
                 btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
                 
-                // Get etab ID
-                const { data: etab } = await window.supabase.from('etablissements').select('id').limit(1).single();
-                if (etab) {
-                    const { error } = await window.supabase.from('etablissements').update({
-                        nom, type, systeme_educatif, pays, ville, tel, email, adresse, site_web
-                    }).eq('id', etab.id);
-                    
-                    if (error) {
-                        if(window.showToast) window.showToast(error.message, 'danger');
-                    } else {
-                        if(window.showToast) window.showToast('Paramètres mis à jour', 'success');
-                    }
+                const { error } = await window.supabase.auth.updateUser({ password: newMdp });
+                
+                if (error) {
+                    if(window.showToast) window.showToast(error.message, 'danger');
+                } else {
+                    if(window.showToast) window.showToast('Mot de passe mis à jour avec succès', 'success');
+                    document.getElementById('sec_ancien_mdp').value = '';
+                    document.getElementById('sec_nouveau_mdp').value = '';
+                    document.getElementById('sec_conf_mdp').value = '';
                 }
                 
-                btn.disabled = false; btn.innerHTML = '<i class="fas fa-save me-2"></i>Enregistrer';
+                btn.disabled = false; btn.innerHTML = '<i class="fas fa-save me-2"></i>Mettre à jour';
             }
         });
     });
