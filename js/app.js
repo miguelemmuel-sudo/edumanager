@@ -11,6 +11,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     const path = window.location.pathname;
+    
+    // ----- INITIALISATION ETABLISSEMENT -----
+    await initEtablissementSettings();
+    adaptAppTaxonomy();
 
     // ----- ÉLÈVES -----
     if (path.includes('eleves.html') && !path.includes('eleves_test')) {
@@ -59,6 +63,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ----- DASHBOARD (INDEX) -----
     else if (path.includes('dashboard/index.html') || path.endsWith('dashboard/')) {
         await initDashboardStats();
+        // Update welcome message dynamically
+        const subtitle = document.querySelector('.page-subtitle');
+        if (subtitle && window.EduSettings) {
+            const isEcole = window.EduSettings.type.toLowerCase().includes('école');
+            subtitle.textContent = `Bienvenue à votre ${isEcole ? 'école' : 'établissement'}, ${window.EduSettings.nom} 👋`;
+        }
     }
 });
 
@@ -72,7 +82,87 @@ function setupRealtime(table, callback) {
         .subscribe();
 }
 
+// --- HELPER: SaaS Dynamique ---
+async function initEtablissementSettings() {
+    const { data: etabData } = await window.supabase.from('etablissements').select('*').limit(1).single();
+    if (etabData) {
+        window.EduSettings = {
+            nom: etabData.nom || 'Votre établissement',
+            type: etabData.type || 'Collège / Secondaire',
+            systeme: etabData.systeme_educatif || 'Francophone'
+        };
+    } else {
+        window.EduSettings = { nom: 'Votre établissement', type: 'Collège / Secondaire', systeme: 'Francophone' };
+    }
+}
 
+function getNiveauxList() {
+    const type = window.EduSettings.type;
+    const sys = window.EduSettings.systeme;
+    
+    if (type === 'Université') {
+        return ['Licence 1', 'Licence 2', 'Licence 3', 'Master 1', 'Master 2', 'Doctorat'];
+    }
+    
+    if (type === 'Centre de formation') {
+        return []; // Free text
+    }
+
+    if (type.includes('Primaire')) {
+        if (sys === 'Anglophone') return ['Nursery 1', 'Nursery 2', 'Nursery 3', 'Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5', 'Class 6'];
+        if (sys === 'Bilingue') return ['Petite Section (Nursery 1)', 'Moyenne Section (Nursery 2)', 'Grande Section (Nursery 3)', 'SIL (Class 1)', 'CP (Class 2)', 'CE1 (Class 3)', 'CE2 (Class 4)', 'CM1 (Class 5)', 'CM2 (Class 6)'];
+        return ['Petite Section (PS)', 'Moyenne Section (MS)', 'Grande Section (GS)', 'SIL', 'CP', 'CE1', 'CE2', 'CM1', 'CM2'];
+    }
+    
+    if (type.includes('Collège') || type.includes('Secondaire')) {
+        if (sys === 'Anglophone') return ['Form 1', 'Form 2', 'Form 3', 'Form 4', 'Form 5', 'Lower Sixth', 'Upper Sixth'];
+        if (sys === 'Bilingue') return ['6ème (Form 1)', '5ème (Form 2)', '4ème (Form 3)', '3ème (Form 4)', 'Seconde (Form 5)', 'Première (Lower Sixth)', 'Terminale (Upper Sixth)'];
+        return ['6ème', '5ème', '4ème', '3ème', 'Seconde (2nde)', 'Première (1ère)', 'Terminale'];
+    }
+    
+    if (type === 'Lycée') {
+        if (sys === 'Anglophone') return ['Form 5', 'Lower Sixth', 'Upper Sixth'];
+        if (sys === 'Bilingue') return ['Seconde (Form 5)', 'Première (Lower Sixth)', 'Terminale (Upper Sixth)'];
+        return ['Seconde (2nde)', 'Première (1ère)', 'Terminale'];
+    }
+    
+    return ['Niveau 1', 'Niveau 2', 'Niveau 3'];
+}
+
+function adaptAppTaxonomy() {
+    if (!window.EduSettings) return;
+    const type = window.EduSettings.type;
+    const niveaux = getNiveauxList();
+    const isUniv = type === 'Université';
+    const isCenter = type === 'Centre de formation';
+    
+    // Remplacer les labels "Classes" par "Promotions / Filières" pour l'université
+    if (isUniv) {
+        document.querySelectorAll('.sc-label, .page-title, th, label, .nav-item-label').forEach(el => {
+            if (el.textContent.trim() === 'Classes') el.textContent = 'Promotions / Filières';
+            if (el.textContent.trim() === 'Classe') el.textContent = 'Promotion';
+            if (el.textContent.trim() === 'Classe *') el.textContent = 'Promotion *';
+        });
+        document.querySelectorAll('.univ-field').forEach(el => el.classList.remove('d-none'));
+    }
+
+    // Gérer les menus déroulants de niveau
+    document.querySelectorAll('select[name="niveau"]').forEach(select => {
+        if (isCenter) {
+            // Remplacer select par input text pour centre de formation
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.name = 'niveau';
+            input.className = select.className;
+            input.placeholder = 'Entrer le niveau (ex: Débutant, Avancé...)';
+            select.replaceWith(input);
+        } else {
+            // Repeupler dynamiquement
+            select.innerHTML = '<option value="">Sélectionner un niveau</option>' + 
+                               niveaux.map(n => `<option value="${n}">${n}</option>`).join('');
+        }
+    });
+}
 // --- GENERIC HELPERS ---
 function getFormData(modalId) {
     const modal = document.getElementById(modalId);
@@ -517,9 +607,13 @@ async function fetchAndRenderClasses() {
                         <div class="dash-card p-4 h-100" style="border-top:3px solid ${color}">
                             <div class="d-flex align-items-center justify-content-between mb-3">
                                 <div class="fw-bold fs-6">${_e(c.nom)}</div>
-                                <span class="status-badge primary">${nbEleves} élèves</span>
+                                <span class="status-badge primary">${nbEleves} inscrits</span>
                             </div>
                             <div class="row g-2 mb-3">
+                                ${window.EduSettings && window.EduSettings.type === 'Université' ? `
+                                <div class="col-12"><div class="text-muted" style="font-size:.72rem">Faculté / Dép.</div><div style="font-size:.82rem;font-weight:600">${_e(c.faculte || '-')} / ${_e(c.departement || '-')}</div></div>
+                                <div class="col-12"><div class="text-muted" style="font-size:.72rem">Filière</div><div style="font-size:.82rem;font-weight:600">${_e(c.filiere || '-')}</div></div>
+                                ` : ''}
                                 <div class="col-12"><div class="text-muted" style="font-size:.72rem">Prof. principal</div><div style="font-size:.82rem;font-weight:600">${_e(prof)}</div></div>
                                 <div class="col-12"><div class="text-muted" style="font-size:.72rem">Salle</div><div style="font-size:.82rem;font-weight:600">${_e(c.salle || '-')}</div></div>
                             </div>
@@ -1823,6 +1917,7 @@ async function fetchAndRenderParametres() {
     if (etab) {
         if(document.getElementById('etab_nom')) document.getElementById('etab_nom').value = etab.nom || '';
         if(document.getElementById('etab_type')) document.getElementById('etab_type').value = etab.type || '';
+        if(document.getElementById('etab_systeme')) document.getElementById('etab_systeme').value = etab.systeme_educatif || 'Francophone';
         if(document.getElementById('etab_pays')) document.getElementById('etab_pays').value = etab.pays || '';
         if(document.getElementById('etab_ville')) document.getElementById('etab_ville').value = etab.ville || '';
         if(document.getElementById('etab_tel')) document.getElementById('etab_tel').value = etab.tel || '';
@@ -1863,6 +1958,7 @@ function setupProfilParametres() {
             if(etabNom) {
                 const nom = etabNom.value;
                 const type = document.getElementById('etab_type').value;
+                const systeme_educatif = document.getElementById('etab_systeme') ? document.getElementById('etab_systeme').value : 'Francophone';
                 const pays = document.getElementById('etab_pays').value;
                 const ville = document.getElementById('etab_ville').value;
                 const tel = document.getElementById('etab_tel').value;
@@ -1873,7 +1969,7 @@ function setupProfilParametres() {
                 const { data: etab } = await window.supabase.from('etablissements').select('id').limit(1).single();
                 if (etab) {
                     const { error } = await window.supabase.from('etablissements').update({
-                        nom, type, pays, ville, tel
+                        nom, type, systeme_educatif, pays, ville, tel
                     }).eq('id', etab.id);
                     
                     if (error) {
