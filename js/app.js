@@ -77,6 +77,9 @@ function setupRealtime(table, callback) {
     window.supabase.channel('public:' + table)
         .on('postgres_changes', { event: '*', schema: 'public', table: table }, payload => {
             console.log('Changement détécté sur', table, payload);
+            if (table === 'eleves' || table === 'paiements') {
+                localStorage.removeItem('edu_recent_activity');
+            }
             callback();
         })
         .subscribe();
@@ -2260,29 +2263,81 @@ async function initDashboardStats() {
         }
     }
 
-    // Activité récente (fetch latest notifications)
+    // Activité récente (Inscriptions et Paiements)
     const recentList = document.getElementById('recentActivityFeed');
     if (recentList) {
-        const { data: recentNotifs } = await window.supabase
-            .from('notifications')
-            .select('*')
-            .order('created_at', { ascending: false })
-            .limit(5);
+        let activities = [];
+        const cacheKey = 'edu_recent_activity';
+        const cachedStr = localStorage.getItem(cacheKey);
+        let useCache = false;
+        
+        if (cachedStr) {
+            try {
+                const cacheData = JSON.parse(cachedStr);
+                const cacheAge = Date.now() - cacheData.timestamp;
+                if (cacheAge < 2 * 60 * 60 * 1000) { // 2 hours
+                    activities = cacheData.data;
+                    useCache = true;
+                }
+            } catch (e) {
+                console.error("Cache error", e);
+            }
+        }
+        
+        if (!useCache) {
+            // Fetch from DB
+            const { data: recentEleves } = await window.supabase
+                .from('eleves')
+                .select('nom, prenom, created_at')
+                .order('created_at', { ascending: false })
+                .limit(5);
+                
+            const { data: recentPaiements } = await window.supabase
+                .from('paiements')
+                .select('montant, eleve_id, created_at, eleves(nom, prenom)')
+                .order('created_at', { ascending: false })
+                .limit(5);
+                
+            let combined = [];
+            if (recentEleves) {
+                recentEleves.forEach(e => combined.push({
+                    type: 'inscription',
+                    titre: 'Nouvelle inscription',
+                    message: `L'élève ${e.prenom || ''} ${e.nom || ''} a été inscrit.`,
+                    created_at: e.created_at
+                }));
+            }
+            if (recentPaiements) {
+                recentPaiements.forEach(p => combined.push({
+                    type: 'paiement',
+                    titre: 'Nouveau paiement',
+                    message: `Paiement de ${p.montant} FCFA effectué pour l'élève ${p.eleves?.prenom || ''} ${p.eleves?.nom || ''}.`,
+                    created_at: p.created_at
+                }));
+            }
+            
+            combined.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            activities = combined.slice(0, 5);
+            
+            localStorage.setItem(cacheKey, JSON.stringify({
+                timestamp: Date.now(),
+                data: activities
+            }));
+        }
 
-        if (recentNotifs && recentNotifs.length > 0) {
+        if (activities && activities.length > 0) {
             recentList.innerHTML = '';
-            recentNotifs.forEach(n => {
-                const iconClass = n.type_notif === 'Erreur' || n.type_notif === 'Alerte' ? 'fa-exclamation-triangle' :
-                                  n.type_notif === 'Succès' ? 'fa-check-circle' : 'fa-bell';
-                const bgClass = n.type_notif === 'Erreur' || n.type_notif === 'Alerte' ? 'bg-danger-soft text-danger' :
-                                n.type_notif === 'Succès' ? 'bg-success-soft text-success' : 'bg-primary-soft text-primary';
+            activities.forEach(n => {
+                const isPaiement = n.type === 'paiement';
+                const iconClass = isPaiement ? 'fa-money-bill-wave' : 'fa-user-plus';
+                const bgClass = isPaiement ? 'bg-success-soft text-success' : 'bg-primary-soft text-primary';
                 recentList.innerHTML += `
                     <div class="act-item d-flex gap-3 mb-3">
                         <div class="act-icon ${bgClass}"><i class="fas ${iconClass}"></i></div>
                         <div>
                             <div style="font-size:.85rem;font-weight:600">${_e(n.titre)}</div>
                             <div style="font-size:.78rem;color:var(--muted)">${_e(n.message)}</div>
-                            <div style="font-size:.72rem;color:var(--muted)">${new Date(n.created_at).toLocaleDateString('fr-FR')}</div>
+                            <div style="font-size:.72rem;color:var(--muted)">${new Date(n.created_at).toLocaleString('fr-FR')}</div>
                         </div>
                     </div>
                 `;
