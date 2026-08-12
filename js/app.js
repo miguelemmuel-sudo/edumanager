@@ -1056,23 +1056,32 @@ async function fetchAndRenderPaiements() {
     const classNiveau = {};
     if(classes) classes.forEach(c => classNiveau[c.id] = c);
     
-    // Map frais to niveaux
-    const fraisMap = {}; // { etabId_niveau: { total_frais: X } }
-    if(frais) frais.forEach(f => {
-        const key = f.etablissement_id + '_' + f.niveau;
-        if(!fraisMap[key]) fraisMap[key] = 0;
-        fraisMap[key] += parseFloat(f.montant) || 0;
-    });
+    function getExpectedFraisForClass(c) {
+        if (!c || !frais) return 0;
+        let total = 0;
+        const matchingFrais = frais.filter(f => f.etablissement_id === c.etablissement_id);
+        
+        // Add up all fees (Inscription, Scolarité, etc.) that match the class level
+        const uniqueFraisTypes = [...new Set(matchingFrais.map(f => f.type_frais))];
+        
+        uniqueFraisTypes.forEach(type => {
+            const typeFraisList = matchingFrais.filter(f => f.type_frais === type);
+            let f = typeFraisList.find(f => f.niveau === c.niveau);
+            if (!f) f = typeFraisList.find(f => (f.niveau && c.niveau && (f.niveau.includes(c.niveau) || c.niveau.includes(f.niveau))));
+            if (!f) {
+                const classNiveauWord = (c.niveau || '').split(' ')[0].toLowerCase();
+                f = typeFraisList.find(f => (f.niveau || '').toLowerCase().startsWith(classNiveauWord));
+            }
+            if (f) total += parseFloat(f.montant) || 0;
+        });
+        return total;
+    }
     
     let totalAttenduGlobal = 0;
     const eleveExpected = {};
     if(eleves) eleves.forEach(e => {
         const c = classNiveau[e.classe_id];
-        let expected = 0;
-        if(c) {
-            const key = c.etablissement_id + '_' + c.niveau;
-            expected = fraisMap[key] || 0;
-        }
+        const expected = getExpectedFraisForClass(c);
         eleveExpected[e.id] = expected;
         totalAttenduGlobal += expected;
     });
@@ -1240,12 +1249,27 @@ function setupPaiementsModal() {
         if (!classe) return;
         
         // 3. Get the expected fee from frais_scolaires
-        const { data: frais } = await window.supabase.from('frais_scolaires')
-            .select('montant')
+        const { data: allFrais } = await window.supabase.from('frais_scolaires')
+            .select('niveau, montant')
             .eq('etablissement_id', classe.etablissement_id)
-            .eq('niveau', classe.niveau)
-            .eq('type_frais', type_frais)
-            .maybeSingle();
+            .eq('type_frais', type_frais);
+            
+        let frais = null;
+        if (allFrais && allFrais.length > 0) {
+            // Find exact match first
+            frais = allFrais.find(f => f.niveau === classe.niveau);
+            // If no exact match, try partial match (e.g., "6ème" in "6ème (Form 1)")
+            if (!frais) {
+                frais = allFrais.find(f => 
+                    (f.niveau && classe.niveau && (f.niveau.includes(classe.niveau) || classe.niveau.includes(f.niveau)))
+                );
+            }
+            // If still no match, fallback to the first one that starts with the same word, or just default to 0
+            if (!frais) {
+                const classNiveauWord = (classe.niveau || '').split(' ')[0].toLowerCase();
+                frais = allFrais.find(f => (f.niveau || '').toLowerCase().startsWith(classNiveauWord));
+            }
+        }
             
         currentMontantAttendu = frais ? parseFloat(frais.montant) : 0;
         if(inputAttendu) inputAttendu.value = currentMontantAttendu;
