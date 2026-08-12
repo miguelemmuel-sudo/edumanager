@@ -2048,20 +2048,31 @@ function setupProfilParametres() {
                     return;
                 }
                 
-                const { data: { publicUrl } } = window.supabase.storage.from('logos').getPublicUrl(fileName);
-                
-                // Update DB
-                const { data: etab } = await window.supabase.from('etablissements').select('id').limit(1).single();
-                if (etab) {
-                    await window.supabase.from('etablissements').update({ logo_url: publicUrl }).eq('id', etab.id);
-                    if (window.showToast) window.showToast('Logo mis à jour avec succès', 'success');
+                try {
+                    const { data: { publicUrl } } = window.supabase.storage.from('logos').getPublicUrl(fileName);
                     
-                    // Update UI preview
-                    const logoPreview = document.querySelector('.table-av');
-                    if(logoPreview) {
-                        logoPreview.innerHTML = `<img src="${publicUrl}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;" />`;
-                        logoPreview.style.background = 'transparent';
+                    // Update DB
+                    const { data: etab, error: etabError } = await window.supabase.from('etablissements').select('id').limit(1).single();
+                    if (etabError) throw etabError;
+                    
+                    if (etab) {
+                        const { error: updateError } = await window.supabase.from('etablissements').update({ logo_url: publicUrl }).eq('id', etab.id);
+                        if (updateError) throw updateError;
+                        
+                        if (window.showToast) window.showToast('Logo mis à jour avec succès', 'success');
+                        
+                        // Update UI preview
+                        const logoPreview = document.querySelector('.table-av');
+                        if(logoPreview) {
+                            logoPreview.innerHTML = `<img src="${publicUrl}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;" />`;
+                            logoPreview.style.background = 'transparent';
+                        }
+                    } else {
+                        throw new Error("Aucun établissement trouvé pour ce compte. Veuillez créer votre établissement d'abord.");
                     }
+                } catch (err) {
+                    console.error("Erreur mise à jour logo:", err);
+                    if (window.showToast) window.showToast('Erreur: ' + (err.message || "Impossible de mettre à jour le logo"), 'danger');
                 }
                 
                 btnChangerLogo.disabled = false;
