@@ -1056,6 +1056,10 @@ async function fetchAndRenderPaiements() {
     const classNiveau = {};
     if(classes) classes.forEach(c => classNiveau[c.id] = c);
     
+    function normalizeString(str) {
+        return (str || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+    }
+
     function getExpectedFraisForClass(c) {
         if (!c || !frais) return 0;
         let total = 0;
@@ -1066,12 +1070,16 @@ async function fetchAndRenderPaiements() {
         
         uniqueFraisTypes.forEach(type => {
             const typeFraisList = matchingFrais.filter(f => f.type_frais === type);
-            let f = typeFraisList.find(f => f.niveau === c.niveau);
-            if (!f) f = typeFraisList.find(f => (f.niveau && c.niveau && (f.niveau.includes(c.niveau) || c.niveau.includes(f.niveau))));
-            if (!f) {
-                const classNiveauWord = (c.niveau || '').split(' ')[0].toLowerCase();
-                f = typeFraisList.find(f => (f.niveau || '').toLowerCase().startsWith(classNiveauWord));
-            }
+            const normClass = normalizeString(c.niveau);
+            const classWord = normClass.split(' ')[0];
+            
+            let f = typeFraisList.find(f => {
+                const normFrais = normalizeString(f.niveau);
+                return normFrais === normClass || 
+                       normFrais.includes(normClass) || 
+                       normClass.includes(normFrais) ||
+                       (normFrais.split(' ')[0] === classWord && classWord !== '');
+            });
             if (f) total += parseFloat(f.montant) || 0;
         });
         return total;
@@ -1254,21 +1262,21 @@ function setupPaiementsModal() {
             .eq('etablissement_id', classe.etablissement_id)
             .eq('type_frais', type_frais);
             
+        function normalizeString(str) {
+            return (str || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+        }
+            
         let frais = null;
         if (allFrais && allFrais.length > 0) {
-            // Find exact match first
-            frais = allFrais.find(f => f.niveau === classe.niveau);
-            // If no exact match, try partial match (e.g., "6ème" in "6ème (Form 1)")
-            if (!frais) {
-                frais = allFrais.find(f => 
-                    (f.niveau && classe.niveau && (f.niveau.includes(classe.niveau) || classe.niveau.includes(f.niveau)))
-                );
-            }
-            // If still no match, fallback to the first one that starts with the same word, or just default to 0
-            if (!frais) {
-                const classNiveauWord = (classe.niveau || '').split(' ')[0].toLowerCase();
-                frais = allFrais.find(f => (f.niveau || '').toLowerCase().startsWith(classNiveauWord));
-            }
+            const normClass = normalizeString(classe.niveau);
+            const classWord = normClass.split(' ')[0];
+            frais = allFrais.find(f => {
+                const normFrais = normalizeString(f.niveau);
+                return normFrais === normClass || 
+                       normFrais.includes(normClass) || 
+                       normClass.includes(normFrais) ||
+                       (normFrais.split(' ')[0] === classWord && classWord !== '');
+            });
         }
             
         currentMontantAttendu = frais ? parseFloat(frais.montant) : 0;
