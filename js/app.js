@@ -1389,11 +1389,15 @@ function setupPaiementsModal() {
 }
 
 window.printReceipt = async function(id) {
-    const { data: p } = await window.supabase.from('paiements')
-        .select('*, eleves(nom, prenom, matricule, classes(nom)), auth_users:caissier_id(email)')
+    const { data: p, error } = await window.supabase.from('paiements')
+        .select('*, eleves(nom, prenom, matricule, classes(nom))')
         .eq('id', id).single();
         
-    if (!p) return;
+    if (error || !p) {
+        console.error("Error fetching receipt:", error);
+        if(window.showToast) window.showToast("Impossible de générer le reçu.", "danger");
+        return;
+    }
     
     const { data: etab } = await window.supabase.from('etablissements').select('*').limit(1).single();
     
