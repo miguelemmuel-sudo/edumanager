@@ -203,6 +203,201 @@
 <script src="../js/vendor/supabase.js"></script>
 <script src="../js/config.js"></script>
 <script src="../js/vendor/dexie.min.js"></script>
+  <link rel="manifest" href="../manifest.json" />
+</head>
+<body>
+
+<!-- ===== SIDEBAR ===== -->
+<aside class="sidebar" id="sidebar"></aside>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<!-- ===== TOPBAR ===== -->
+<header class="topbar" id="topbar">
+  <button class="topbar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+  <div class="topbar-search">
+    <i class="fas fa-search"></i>
+    <input type="text" placeholder="Rechercher un élève, enseignant…"/>
+  </div>
+  <div class="topbar-actions">
+    <div id="syncStatusIndicator" class="me-3 d-flex align-items-center"></div>
+    <button class="topbar-btn" title="Notifications">
+      <i class="fas fa-bell"></i><span class="notif-dot"></span>
+    </button>
+    <button class="topbar-btn" title="Messages"><i class="fas fa-envelope"></i></button>    <div class="topbar-divider"></div>
+    <div class="user-av" style="cursor:pointer" title="Mon profil" >D</div>
+  </div>
+</header>
+
+<!-- ===== MAIN ===== -->
+<main class="main-content" id="mainContent">
+
+  <!-- Page header -->
+  <div class="page-header d-flex flex-wrap align-items-center justify-content-between gap-3">
+    <div>
+      <h1 class="page-title">Tableau de bord</h1>
+      <p class="page-subtitle mb-0">Bonjour, Directeur 👋 — Voici un aperçu de votre établissement aujourd'hui.</p>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-secondary btn-sm rounded-pill px-3"><i class="fas fa-download me-1"></i>Exporter</button>
+      <a href="eleves.html" class="btn btn-primary btn-sm rounded-pill px-3"><i class="fas fa-plus me-1"></i>Nouvel élève</a>
+    </div>
+  </div>
+
+  <!-- KPI row -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+      <div class="stat-card">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <div class="sc-icon bg-primary-soft"><i class="fas fa-user-graduate text-primary"></i></div>
+          <span class="sc-trend up" id="dashElevesTrend"><i class="fas fa-arrow-up me-1"></i>+0%</span>
+        </div>
+        <div class="sc-value">0</div>
+        <div class="sc-label mt-1">Élèves inscrits</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="stat-card">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <div class="sc-icon bg-success-soft"><i class="fas fa-euro-sign text-success"></i></div>
+          <span class="sc-trend up" id="dashRevenusTrend"><i class="fas fa-arrow-up me-1"></i>+0%</span>
+        </div>
+        <div class="sc-value">0</div>
+        <div class="sc-label mt-1">Frais collectés</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="stat-card">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <div class="sc-icon bg-info-soft"><i class="fas fa-chalkboard-teacher text-info"></i></div>
+          <span class="sc-trend up" id="dashEnseignantsTrend"><i class="fas fa-arrow-up me-1"></i>+0</span>
+        </div>
+        <div class="sc-value">0</div>
+        <div class="sc-label mt-1">Enseignants actifs</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="stat-card">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <div class="sc-icon bg-warning-soft"><i class="fas fa-book text-warning"></i></div>
+          <span class="sc-trend" style="color:var(--muted)" id="dashClassesTrend"><i class="fas fa-minus me-1"></i>stable</span>
+        </div>
+        <div class="sc-value">0</div>
+        <div class="sc-label mt-1">Classes actives</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts row -->
+  <div class="row g-3 mb-4">
+    <div class="col-lg-8">
+      <div class="dash-card h-100">
+        <div class="dash-card-header">
+          <span class="dash-card-title"><i class="fas fa-chart-bar text-primary me-2"></i>Inscriptions mensuelles</span>
+          <select id="academicYearSelect" class="form-select form-select-sm" style="width:auto;font-size:.8rem">
+            <option>2026-2027</option>
+          </select>
+        </div>
+        <div class="dash-card-body">
+          <div class="bar-chart mb-2" id="enrollmentsChart">
+            <!-- Dynamically populated by JS -->
+          </div>
+          <div class="d-flex justify-content-between" style="font-size:.72rem;color:var(--muted)" id="enrollmentsLabels">
+            <!-- Dynamically populated by JS -->
+          </div>
+          <div class="d-flex gap-3 mt-3" style="font-size:.78rem">
+            <span><span style="width:10px;height:10px;border-radius:2px;background:#2563EB;display:inline-block;margin-right:4px"></span>Inscriptions</span>
+            <span><span style="width:10px;height:10px;border-radius:2px;background:#10B981;display:inline-block;margin-right:4px"></span>Objectif atteint</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="dash-card h-100">
+        <div class="dash-card-header">
+          <span class="dash-card-title"><i class="fas fa-chart-pie text-success me-2"></i>Paiements</span>
+        </div>
+        <div class="dash-card-body text-center">
+          <div class="donut mx-auto mb-3" id="paymentsDonut"></div>
+          <div class="d-flex flex-column gap-2 text-start mt-2">
+            <div class="d-flex align-items-center justify-content-between">
+              <div class="d-flex align-items-center gap-2">
+                <div style="width:10px;height:10px;border-radius:2px;background:var(--primary)"></div>
+                <span style="font-size:.8rem">Payés</span>
+              </div>
+              <span class="fw-semibold" style="font-size:.8rem" id="paymentsPaidText">0% · 0 élèves</span>
+            </div>
+            <div class="d-flex align-items-center justify-content-between">
+              <div class="d-flex align-items-center gap-2">
+                <div style="width:10px;height:10px;border-radius:2px;background:var(--warning)"></div>
+                <span style="font-size:.8rem">Partiels</span>
+              </div>
+              <span class="fw-semibold" style="font-size:.8rem" id="paymentsPartialText">0% · 0 élèves</span>
+            </div>
+            <div class="d-flex align-items-center justify-content-between">
+              <div class="d-flex align-items-center gap-2">
+                <div style="width:10px;height:10px;border-radius:2px;background:var(--danger)"></div>
+                <span style="font-size:.8rem">Impayés</span>
+              </div>
+              <span class="fw-semibold" style="font-size:.8rem" id="paymentsUnpaidText">0% · 0 élèves</span>
+            </div>
+          </div>
+          <a href="paiements.html" class="btn btn-outline-primary btn-sm rounded-pill w-100 mt-3" style="font-size:.8rem">Voir les paiements</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom row -->
+  <div class="row g-3">
+    <!-- Dernières inscriptions -->
+    <div class="col-lg-7">
+      <div class="dash-card">
+        <div class="dash-card-header">
+          <span class="dash-card-title"><i class="fas fa-user-plus text-primary me-2"></i>Dernières inscriptions</span>
+          <a href="eleves.html" class="btn btn-sm btn-outline-primary rounded-pill px-3" style="font-size:.78rem">Voir tout</a>
+        </div>
+        <div class="dash-card-body p-0">
+          <table class="dash-table">
+            <thead><tr>
+              <th>Élève</th><th>Classe</th><th>Date</th><th>Statut</th><th></th>
+            </tr></thead>
+            <tbody id="dynamicBody">
+          <!-- Données dynamiques insérées ici -->
+        </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Activité récente -->
+    <div class="col-lg-5">
+      <div class="dash-card h-100">
+        <div class="dash-card-header">
+          <span class="dash-card-title"><i class="fas fa-clock text-warning me-2"></i>Activité récente</span>
+        </div>
+        <div class="dash-card-body">
+          <div class="activity-feed" id="recentActivityFeed">
+            <!-- Dynamically populated by JS -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script src="/js/vendor/bootstrap.bundle.min.js"></script>
+<script src="../js/dashboard.js"></script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('../sw.js');
+  }
+</script>
+
+<script src="../js/vendor/supabase.js"></script>
+<script src="../js/config.js"></script>
+<script src="../js/vendor/dexie.min.js"></script>
 <script src="../js/sync.js"></script>
 <script src="../js/supabase.js"></script>
 <script src="../js/app.js"></script>
@@ -210,29 +405,3 @@
   <script src="../js/sidebar.js"></script>
 </body>
 </html>
-
-
-<script>
-  setTimeout(async () => {
-    try {
-      const db = window.edumanagerDB;
-      const eleves = await db.eleves.toArray();
-      alert('Debug Dexie: eleves count = ' + eleves.length);
-    } catch(e) {
-      alert('Debug Dexie Exception: ' + e.message);
-    }
-  }, 5000);
-</script>
-
-
-<script>
-  setTimeout(async () => {
-    try {
-      const res = await window.supabase.from('eleves').select('*');
-      alert('Debug Supabase: eleves count = ' + (res.data ? res.data.length : 'null') + ', error = ' + JSON.stringify(res.error));
-    } catch(e) {
-      alert('Debug Supabase Exception: ' + e.message);
-    }
-  }, 6000);
-</script>
-
