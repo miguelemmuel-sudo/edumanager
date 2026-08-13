@@ -14,26 +14,31 @@ window.formatDateLocal = function(dateStr) {
    ======================================================================= */
 'use strict';
 
+window.normalizeText = function(str) {
+    if (!str) return '';
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+};
+
 window.filterTable = function() {
     // Find the active search input
     const searchInputs = document.querySelectorAll('.topbar-search input, input[placeholder^="Rechercher"]');
     let term = '';
     searchInputs.forEach(input => {
-        if (input.value) term = input.value.toLowerCase();
+        if (input.value) term = window.normalizeText(input.value);
     });
     
     const filterClasse = document.getElementById('filterClasse');
-    const classeTerm = filterClasse && filterClasse.value ? filterClasse.value.toLowerCase() : '';
+    const classeTerm = filterClasse && filterClasse.value ? window.normalizeText(filterClasse.value) : '';
     
     const filterStatut = document.getElementById('filterStatut');
-    const statutTerm = filterStatut && filterStatut.value ? filterStatut.value.toLowerCase() : '';
+    const statutTerm = filterStatut && filterStatut.value ? window.normalizeText(filterStatut.value) : '';
 
     // Select all table rows in the main body
     const rows = document.querySelectorAll('table tbody tr');
     rows.forEach(tr => {
         // Ignore empty state rows
         if (tr.querySelector('td') && tr.querySelector('td').colSpan > 2 && tr.textContent.includes('Aucun')) return;
-        const text = tr.textContent.toLowerCase();
+        const text = window.normalizeText(tr.textContent);
         const show = text.includes(term) && (!classeTerm || text.includes(classeTerm)) && (!statutTerm || text.includes(statutTerm));
         tr.style.display = show ? '' : 'none';
     });
@@ -45,7 +50,7 @@ window.filterTable = function() {
         if (!card.classList.contains('p-3') && !card.classList.contains('mb-4')) {
             const container = card.closest('[class*="col-"]');
             if (container && container.parentElement && container.parentElement.classList.contains('row')) {
-                const text = card.textContent.toLowerCase();
+                const text = window.normalizeText(card.textContent);
                 const show = text.includes(term) && (!classeTerm || text.includes(classeTerm)) && (!statutTerm || text.includes(statutTerm));
                 container.style.display = show ? '' : 'none';
             }
@@ -56,6 +61,19 @@ window.filterTable = function() {
 window.setupGlobalSearch = function() {
     const searchContainers = document.querySelectorAll('.topbar-search');
     
+    const dashModules = [
+        { title: 'Tableau de bord', subtitle: 'Accueil', icon: 'fa-chart-line', color: '#6366f1', link: 'index.html', keywords: 'tableau de bord accueil dashboard' },
+        { title: 'Élèves', subtitle: 'Gestion des élèves', icon: 'fa-user-graduate', color: '#2563EB', link: 'eleves.html', keywords: 'eleves etudiants inscriptions' },
+        { title: 'Enseignants', subtitle: 'Corps professoral', icon: 'fa-chalkboard-teacher', color: '#06B6D4', link: 'enseignants.html', keywords: 'enseignants professeurs profs' },
+        { title: 'Classes', subtitle: 'Gestion des classes', icon: 'fa-chalkboard', color: '#F59E0B', link: 'classes.html', keywords: 'classes salles niveaux' },
+        { title: 'Emplois du temps', subtitle: 'Planning', icon: 'fa-calendar-alt', color: '#8B5CF6', link: 'emploi-du-temps.html', keywords: 'emplois du temps planning calendrier horaires' },
+        { title: 'Paiements', subtitle: 'Scolarité et finances', icon: 'fa-euro-sign', color: '#10B981', link: 'paiements.html', keywords: 'paiements scolarite finances caisse argent' },
+        { title: 'Notes & Bulletins', subtitle: 'Évaluations', icon: 'fa-star', color: '#EC4899', link: 'notes.html', keywords: 'notes bulletins evaluations examens compositions' },
+        { title: 'Messages', subtitle: 'Communications', icon: 'fa-envelope', color: '#64748B', link: 'messages.html', keywords: 'messages communications sms email' },
+        { title: 'Utilisateurs', subtitle: 'Accès système', icon: 'fa-users-cog', color: '#334155', link: 'utilisateurs.html', keywords: 'utilisateurs acces admin' },
+        { title: 'Paramètres', subtitle: 'Configuration', icon: 'fa-cog', color: '#475569', link: 'parametres.html', keywords: 'parametres configuration reglages securite' }
+    ];
+
     searchContainers.forEach(container => {
         container.style.position = 'relative'; // Ensure relative positioning for dropdown
         const input = container.querySelector('input');
@@ -72,24 +90,28 @@ window.setupGlobalSearch = function() {
         let debounceTimer;
 
         input.addEventListener('input', (e) => {
-            const term = e.target.value.trim().toLowerCase();
+            const rawTerm = e.target.value.trim();
+            const termNorm = window.normalizeText(rawTerm);
             
             clearTimeout(debounceTimer);
             
-            if (term.length < 2) {
+            if (rawTerm.length < 2) {
                 dropdown.classList.remove('active');
                 return;
             }
 
             debounceTimer = setTimeout(async () => {
-                dropdown.innerHTML = '<div class="p-3 text-center text-muted small"><i class="fas fa-spinner fa-spin me-2"></i>Recherche dans la base de données...</div>';
+                dropdown.innerHTML = '<div class="p-3 text-center text-muted small"><i class="fas fa-spinner fa-spin me-2"></i>Recherche...</div>';
                 dropdown.classList.add('active');
 
                 try {
-                    // Execute queries concurrently
+                    // 1. Search Dashboard Modules
+                    const matchedModules = dashModules.filter(m => window.normalizeText(m.title + ' ' + m.keywords).includes(termNorm)).slice(0, 3);
+                    
+                    // 2. Search Database
                     const [resEleves, resProfs] = await Promise.all([
-                        window.supabase.from('eleves').select('id, nom, prenom, statut_paiement, classes(nom)').or(`nom.ilike.%${term}%,prenom.ilike.%${term}%`).limit(5),
-                        window.supabase.from('enseignants').select('id, nom, prenom, specialite').or(`nom.ilike.%${term}%,prenom.ilike.%${term}%`).limit(3)
+                        window.supabase.from('eleves').select('id, nom, prenom, statut_paiement, classes(nom)').or(`nom.ilike.%${rawTerm}%,prenom.ilike.%${rawTerm}%`).limit(4),
+                        window.supabase.from('enseignants').select('id, nom, prenom, specialite').or(`nom.ilike.%${rawTerm}%,prenom.ilike.%${rawTerm}%`).limit(3)
                     ]);
                     
                     const eleves = resEleves.data || [];
@@ -97,6 +119,23 @@ window.setupGlobalSearch = function() {
 
                     dropdown.innerHTML = '';
                     let hasResults = false;
+                    
+                    if (matchedModules.length > 0) {
+                        hasResults = true;
+                        matchedModules.forEach(m => {
+                            const div = document.createElement('div');
+                            div.className = 'search-item';
+                            div.innerHTML = `
+                                <div class="search-item-icon" style="background:${m.color}15;color:${m.color}"><i class="fas ${m.icon}"></i></div>
+                                <div class="search-item-info">
+                                    <div class="search-item-title">${m.title}</div>
+                                    <div class="search-item-subtitle">Module · ${m.subtitle}</div>
+                                </div>
+                            `;
+                            div.onclick = () => window.location.href = m.link;
+                            dropdown.appendChild(div);
+                        });
+                    }
 
                     if (eleves.length > 0) {
                         hasResults = true;
@@ -134,14 +173,14 @@ window.setupGlobalSearch = function() {
                     }
 
                     if (!hasResults) {
-                        dropdown.innerHTML = '<div class="p-3 text-center text-muted small">Aucun résultat trouvé dans la base de données.</div>';
+                        dropdown.innerHTML = '<div class="p-3 text-center text-muted small">Aucun résultat trouvé.</div>';
                     }
 
                 } catch (err) {
                     console.error('Erreur recherche globale:', err);
                     dropdown.innerHTML = '<div class="p-3 text-center text-danger small">Erreur de recherche.</div>';
                 }
-            }, 350);
+            }, 300);
         });
 
         // Close dropdown when clicking outside
