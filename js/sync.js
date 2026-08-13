@@ -52,6 +52,11 @@ async function pullDataFromSupabase() {
         const syncStatusEl = document.getElementById('syncStatusIndicator');
         if (syncStatusEl && isOnline) syncStatusEl.innerHTML = '<span class="badge bg-warning text-dark rounded-pill"><i class="fas fa-sync fa-spin me-1"></i>Synchro...</span>';
 
+        // Obtenir l'etablissement_id
+        const { data: prof } = await window.supabase.from('profiles').select('etablissement_id').single();
+        if (!prof || !prof.etablissement_id) return;
+        const etabId = prof.etablissement_id;
+
         // 1. Classes
         const { data: classes } = await window.supabase.from('classes').select('*').eq('etablissement_id', etabId);
         if (classes) {

@@ -89,7 +89,7 @@ BEGIN
     
     -- Optionnel: Si c'est un enseignant, insérer dans la table enseignants
     IF p_role = 'enseignant' THEN
-        INSERT INTO public.enseignants (id, etablissement_id, nom, prenom, email, telephone, sexe, matieres)
+        INSERT INTO public.enseignants (user_id, etablissement_id, nom, prenom, email, tel, matiere)
         VALUES (
             v_new_user_id,
             v_admin_etab_id,
@@ -97,22 +97,19 @@ BEGIN
             p_metadata->>'prenom',
             p_email,
             p_metadata->>'tel',
-            p_metadata->>'sexe',
             p_metadata->>'matieres'
         );
     END IF;
     
     -- Optionnel: Si c'est un élève, insérer dans la table eleves
     IF p_role = 'eleve' THEN
-        INSERT INTO public.eleves (id, etablissement_id, nom, prenom, sexe, date_naissance, classe_id)
+        INSERT INTO public.eleves (id, etablissement_id, nom, prenom, sexe)
         VALUES (
             v_new_user_id,
             v_admin_etab_id,
             p_metadata->>'nom',
             p_metadata->>'prenom',
-            p_metadata->>'sexe',
-            (p_metadata->>'date_naissance')::DATE,
-            (p_metadata->>'classe_id')::UUID
+            p_metadata->>'sexe'
         );
     END IF;
 
