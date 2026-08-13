@@ -260,6 +260,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ----- NOTES -----
     else if (path.includes('notes.html')) {
         setupRealtime('notes', () => { if(window.fetchAndRenderNotes) window.fetchAndRenderNotes(); });
+    }
     // ----- MESSAGES -----
     else if (path.includes('messages.html')) {
         await fetchAndRenderMessages();
