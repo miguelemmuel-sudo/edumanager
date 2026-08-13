@@ -3119,3 +3119,10 @@ function setupUtilisateursModal() {
 window.closeCurrentModal = function(modalId) {
     closeModal(modalId);
 };
+
+// Listen for sync completion to refresh dashboard
+window.addEventListener('edumanager:sync-complete', async () => {
+    console.log('Sync complete, refreshing dashboard...');
+    if (typeof initDashboardStats === 'function') await initDashboardStats();
+});
+

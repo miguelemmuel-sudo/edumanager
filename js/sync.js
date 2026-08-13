@@ -52,31 +52,34 @@ async function pullDataFromSupabase() {
         const syncStatusEl = document.getElementById('syncStatusIndicator');
         if (syncStatusEl && isOnline) syncStatusEl.innerHTML = '<span class="badge bg-warning text-dark rounded-pill"><i class="fas fa-sync fa-spin me-1"></i>Synchro...</span>';
 
-        const etabId = await getCurrentEtablissementId();
-        if (!etabId) return;
-
         // 1. Classes
-        const { data: classes } = await window.supabase.from('classes').select('*').eq('etablissement_id', etabId);
-        if (classes) await db.classes.bulkPut(classes);
+        const { data: classes } = await window.supabase.from('classes').select('*');
+        if (classes && classes.length > 0) await db.classes.bulkPut(classes);
 
         // 2. Eleves
-        const { data: eleves } = await window.supabase.from('eleves').select('*').eq('etablissement_id', etabId);
-        if (eleves) await db.eleves.bulkPut(eleves);
+        const { data: eleves } = await window.supabase.from('eleves').select('*');
+        if (eleves && eleves.length > 0) await db.eleves.bulkPut(eleves);
 
         // 3. Enseignants
-        const { data: enseignants } = await window.supabase.from('enseignants').select('*').eq('etablissement_id', etabId);
-        if (enseignants) await db.enseignants.bulkPut(enseignants);
+        const { data: enseignants } = await window.supabase.from('enseignants').select('*');
+        if (enseignants && enseignants.length > 0) await db.enseignants.bulkPut(enseignants);
         
         // 4. Périodes
         const { data: periodes } = await window.supabase.from('periodes_evaluation').select('*');
-        if (periodes) await db.periodes_evaluation.bulkPut(periodes);
+        if (periodes && periodes.length > 0) await db.periodes_evaluation.bulkPut(periodes);
         
-        // 5. Notes (récupérer les 3 derniers mois par exemple, ou tout)
-        // Pour l'instant on pull tout (idéalement à paginer pour de très grands volumes)
+        // 5. Notes
         const { data: notes } = await window.supabase.from('notes').select('*');
-        if (notes) await db.notes.bulkPut(notes);
+        if (notes && notes.length > 0) await db.notes.bulkPut(notes);
+
+        // 6. Paiements
+        const { data: paiements } = await window.supabase.from('paiements').select('*');
+        if (paiements && paiements.length > 0) await db.paiements.bulkPut(paiements);
 
         if (syncStatusEl && isOnline) syncStatusEl.innerHTML = '<span class="badge bg-success rounded-pill"><i class="fas fa-wifi me-1"></i>En ligne</span>';
+        
+        // Dispatch un event pour que l'UI se mette à jour
+        window.dispatchEvent(new CustomEvent('edumanager:sync-complete'));
         
     } catch (error) {
         console.error("Erreur lors du pull Supabase:", error);
