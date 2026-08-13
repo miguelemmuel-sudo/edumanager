@@ -1,4 +1,4 @@
-const CACHE_NAME = 'edumanager-v5';
+const CACHE_NAME = 'edumanager-v6';
 const STATIC_ASSETS = [
   '/',
   '/index.html',

@@ -2101,62 +2101,6 @@ fetchAndRenderRapports();
 
     
 // --- UTILISATEURS ---
-async function fetchAndRenderUtilisateurs() {
-    const tbody = document.getElementById('usersBody');
-    if (!tbody) return;
-
-    // Fetch the current admin profile
-    const { data: { user } } = await window.supabase.auth.getUser();
-    if (!user) return;
-    
-    // We only show the admin for now since other users require Edge Functions to be created
-    let html = `
-      <tr>
-        <td>
-            <div class="d-flex align-items-center gap-2">
-                <div class="table-av" style="background:var(--primary)">A</div>
-                <div>
-                    <div style="font-weight:600;font-size:.85rem">${_e(user.user_metadata?.prenom || 'Admin')} ${_e(user.user_metadata?.nom || '')}</div>
-                    <div style="font-size:.75rem;color:var(--muted)">${_e(user.email)}</div>
-                </div>
-            </div>
-        </td>
-        <td><span class="status-badge danger">Administrateur</span></td>
-        <td style="font-size:.82rem">En ligne</td>
-        <td><span class="status-badge success">Actif</span></td>
-        <td></td>
-      </tr>
-    `;
-
-    // Add local invites
-    const invites = JSON.parse(localStorage.getItem('edu_users_invites') || '[]');
-    invites.forEach(inv => {
-        let roleText = 'Enseignant';
-        let roleClass = 'success';
-        if (inv.role === 'admin') { roleText = 'Administrateur'; roleClass = 'danger'; }
-        else if (inv.role === 'gestionnaire') { roleText = 'Gestionnaire'; roleClass = 'primary'; }
-        
-        html += `
-          <tr>
-            <td>
-                <div class="d-flex align-items-center gap-2">
-                    <div class="table-av" style="background:var(--muted)">${inv.email.charAt(0).toUpperCase()}</div>
-                    <div>
-                        <div style="font-weight:600;font-size:.85rem">En attente...</div>
-                        <div style="font-size:.75rem;color:var(--muted)">${_e(inv.email)}</div>
-                    </div>
-                </div>
-            </td>
-            <td><span class="status-badge ${roleClass}">${roleText}</span></td>
-            <td style="font-size:.82rem">Jamais</td>
-            <td><span class="status-badge text-dark border bg-light"><i class="fas fa-clock me-1 text-warning"></i>Invitation envoyée</span></td>
-            <td><button class="btn btn-sm text-danger" onclick="deleteInvite('${inv.email}')"><i class="fas fa-times"></i></button></td>
-          </tr>
-        `;
-    });
-    
-    tbody.innerHTML = html;
-}
 
 
 window.showRoleInfo = function() {
@@ -3001,23 +2945,24 @@ async function fetchAndRenderUtilisateurs() {
     if (!tbody) return;
     
     // Fetch users from profiles
-    const { data: users, error } = await window.supabase.from('profiles').select('*');
-    if (error) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-danger text-center">Erreur de chargement</td></tr>';
-        return;
-    }
+    let users = [];
+    const { data, error } = await window.supabase.from('profiles').select('*');
+    if (!error && data) users = data;
+    
+    // Fetch local mocks (fallback if RPC failed)
+    const localMocks = JSON.parse(localStorage.getItem('edu_users_invites') || '[]');
     
     tbody.innerHTML = '';
-    if (!users || users.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">Aucun utilisateur trouvé</td></tr>';
+    if (users.length === 0 && localMocks.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">Aucun utilisateur trouvé. (Avez-vous exécuté rbac_functions.sql sur Supabase ?)</td></tr>';
         return;
     }
     
+    // Render Supabase users
     users.forEach(u => {
         const nom = (u.prenom || '') + ' ' + (u.nom || '');
         const initial = nom.trim() ? nom.charAt(0).toUpperCase() : 'U';
         const role = u.role || 'Utilisateur';
-        const isCurrent = false; // We can check with auth if we want
         
         tbody.innerHTML += `
             <tr>
@@ -3028,15 +2973,37 @@ async function fetchAndRenderUtilisateurs() {
                   </div>
                 </td>
                 <td><span class="badge bg-secondary">${_e(role)}</span></td>
-                <td><span class="text-muted" style="font-size:.85rem">Aujourd'hui</span></td>
-                <td><span class="status-badge success">Actif</span></td>
+                <td><span class="text-muted" style="font-size:.85rem">Enregistré</span></td>
+                <td><span class="status-badge success">Actif (DB)</span></td>
                 <td>
                   <div class="d-flex gap-2">
-                    <button class="btn btn-sm btn-outline-secondary" onclick="alert('Modifier')"><i class="fas fa-edit"></i></button>
-                    ${!isCurrent ? `<button class="btn btn-sm text-danger" style="background:rgba(239,68,68,.1)" onclick="deleteUser('${u.id}')"><i class="fas fa-trash"></i></button>` : ''}
+                    <button class="btn btn-sm text-danger" style="background:rgba(239,68,68,.1)" onclick="deleteUser('${u.id}')"><i class="fas fa-trash"></i></button>
                   </div>
                 </td>
             </tr>
+        `;
+    });
+    
+    // Render local mocks
+    localMocks.forEach(inv => {
+        const nom = (inv.prenom || '') + ' ' + (inv.nom || '');
+        const initial = nom.trim() ? nom.charAt(0).toUpperCase() : 'U';
+        tbody.innerHTML += `
+          <tr>
+            <td>
+                <div class="d-flex align-items-center gap-2">
+                    <div class="table-av" style="background:var(--muted)">${initial}</div>
+                    <div>
+                        <div style="font-weight:600;font-size:.85rem">${_e(nom || inv.email)}</div>
+                        <div style="font-size:.75rem;color:var(--muted)">${_e(inv.email)}</div>
+                    </div>
+                </div>
+            </td>
+            <td><span class="badge bg-secondary">${_e(inv.role)}</span></td>
+            <td style="font-size:.82rem">Non synchronisé</td>
+            <td><span class="status-badge warning">Créé Localement</span></td>
+            <td><button class="btn btn-sm text-danger" onclick="deleteInvite('${inv.email}')"><i class="fas fa-times"></i></button></td>
+          </tr>
         `;
     });
 }
