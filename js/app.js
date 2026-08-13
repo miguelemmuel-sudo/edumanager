@@ -2587,8 +2587,7 @@ async function initDashboardStats() {
         db.paiements.toArray()
     ]);
     
-    // On suppose que le devis est FCFA par défaut hors ligne
-    const currency = window.EduSettings ? window.EduSettings.currency : 'FCFA';
+    const currency = window.EduSettings?.currency || 'FCFA';
     
     let revenus = 0;
     let impayes = 0;
