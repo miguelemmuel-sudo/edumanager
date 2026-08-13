@@ -53,11 +53,135 @@ window.filterTable = function() {
     });
 };
 
+window.setupGlobalSearch = function() {
+    const searchContainers = document.querySelectorAll('.topbar-search');
+    
+    searchContainers.forEach(container => {
+        container.style.position = 'relative'; // Ensure relative positioning for dropdown
+        const input = container.querySelector('input');
+        if (!input) return;
+
+        // Create dropdown element
+        let dropdown = container.querySelector('.global-search-dropdown');
+        if (!dropdown) {
+            dropdown = document.createElement('div');
+            dropdown.className = 'global-search-dropdown';
+            container.appendChild(dropdown);
+        }
+
+        let debounceTimer;
+
+        input.addEventListener('input', (e) => {
+            const term = e.target.value.trim().toLowerCase();
+            
+            clearTimeout(debounceTimer);
+            
+            if (term.length < 2) {
+                dropdown.classList.remove('active');
+                return;
+            }
+
+            debounceTimer = setTimeout(async () => {
+                dropdown.innerHTML = '<div class="p-3 text-center text-muted small"><i class="fas fa-spinner fa-spin me-2"></i>Recherche dans la base de données...</div>';
+                dropdown.classList.add('active');
+
+                try {
+                    // Execute queries concurrently
+                    const [resEleves, resProfs] = await Promise.all([
+                        window.supabase.from('eleves').select('id, nom, prenom, statut_paiement, classes(nom)').or(`nom.ilike.%${term}%,prenom.ilike.%${term}%`).limit(5),
+                        window.supabase.from('enseignants').select('id, nom, prenom, specialite').or(`nom.ilike.%${term}%,prenom.ilike.%${term}%`).limit(3)
+                    ]);
+                    
+                    const eleves = resEleves.data || [];
+                    const profs = resProfs.data || [];
+
+                    dropdown.innerHTML = '';
+                    let hasResults = false;
+
+                    if (eleves.length > 0) {
+                        hasResults = true;
+                        eleves.forEach(e => {
+                            const classe = e.classes ? e.classes.nom : 'Non assigné';
+                            const div = document.createElement('div');
+                            div.className = 'search-item';
+                            div.innerHTML = `
+                                <div class="search-item-icon"><i class="fas fa-user-graduate"></i></div>
+                                <div class="search-item-info">
+                                    <div class="search-item-title">${_e(e.prenom)} ${_e(e.nom)}</div>
+                                    <div class="search-item-subtitle">Élève · ${classe} · ${e.statut_paiement || 'En attente'}</div>
+                                </div>
+                            `;
+                            div.onclick = () => window.location.href = `eleves.html?search=${encodeURIComponent(e.prenom + ' ' + e.nom)}`;
+                            dropdown.appendChild(div);
+                        });
+                    }
+
+                    if (profs.length > 0) {
+                        hasResults = true;
+                        profs.forEach(p => {
+                            const div = document.createElement('div');
+                            div.className = 'search-item';
+                            div.innerHTML = `
+                                <div class="search-item-icon" style="background:rgba(6,182,212,0.1);color:#06b6d4"><i class="fas fa-chalkboard-teacher"></i></div>
+                                <div class="search-item-info">
+                                    <div class="search-item-title">${_e(p.prenom)} ${_e(p.nom)}</div>
+                                    <div class="search-item-subtitle">Enseignant · ${p.specialite || '-'}</div>
+                                </div>
+                            `;
+                            div.onclick = () => window.location.href = `enseignants.html?search=${encodeURIComponent(p.prenom + ' ' + p.nom)}`;
+                            dropdown.appendChild(div);
+                        });
+                    }
+
+                    if (!hasResults) {
+                        dropdown.innerHTML = '<div class="p-3 text-center text-muted small">Aucun résultat trouvé dans la base de données.</div>';
+                    }
+
+                } catch (err) {
+                    console.error('Erreur recherche globale:', err);
+                    dropdown.innerHTML = '<div class="p-3 text-center text-danger small">Erreur de recherche.</div>';
+                }
+            }, 350);
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!container.contains(e.target)) {
+                dropdown.classList.remove('active');
+            }
+        });
+        
+        // Focus input when clicking icon
+        const icon = container.querySelector('.fa-search');
+        if(icon) {
+            icon.style.cursor = 'pointer';
+            icon.addEventListener('click', () => {
+                input.focus();
+            });
+        }
+    });
+};
+
+window.applyUrlSearch = function() {
+    const params = new URLSearchParams(window.location.search);
+    const q = params.get('search');
+    if(q) {
+        const sInput = document.querySelector('.topbar-search input');
+        if(sInput) {
+            sInput.value = q;
+            if(window.filterTable) window.filterTable();
+        }
+    }
+};
+
 document.addEventListener('DOMContentLoaded', async () => {
     // Attach filterTable to all search inputs automatically
     document.querySelectorAll('.topbar-search input, input[placeholder^="Rechercher"]').forEach(input => {
         input.addEventListener('input', window.filterTable);
     });
+    
+    // Setup global database search dropdown
+    window.setupGlobalSearch();
 
     if (!window.supabase) {
         console.error('Supabase non chargé');
@@ -409,6 +533,8 @@ async function fetchAndRenderEleves() {
         `;
         tbody.appendChild(tr);
     });
+    
+    if (window.applyUrlSearch) window.applyUrlSearch();
 }
 function setupElevesModal() {
     const btn = document.querySelector('#addEleveModal .btn-primary');
@@ -587,6 +713,8 @@ async function fetchAndRenderEnseignants() {
             gridBody.appendChild(card);
         }
     });
+    
+    if (window.applyUrlSearch) window.applyUrlSearch();
 }
 function setupEnseignantsModal() {
     const btn = document.querySelector('#addEnsModal .btn-primary');
