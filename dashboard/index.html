@@ -211,3 +211,28 @@
 </body>
 </html>
 
+
+<script>
+  setTimeout(async () => {
+    try {
+      const db = window.edumanagerDB;
+      const eleves = await db.eleves.toArray();
+      alert('Debug Dexie: eleves count = ' + eleves.length);
+    } catch(e) {
+      alert('Debug Dexie Exception: ' + e.message);
+    }
+  }, 5000);
+</script>
+
+
+<script>
+  setTimeout(async () => {
+    try {
+      const res = await window.supabase.from('eleves').select('*');
+      alert('Debug Supabase: eleves count = ' + (res.data ? res.data.length : 'null') + ', error = ' + JSON.stringify(res.error));
+    } catch(e) {
+      alert('Debug Supabase Exception: ' + e.message);
+    }
+  }, 6000);
+</script>
+
