@@ -2183,7 +2183,7 @@ function setupUtilisateursModal() {
     
     btnInvite.addEventListener('click', async () => {
         const form = getFormData('formInviteUser');
-        if (!form.email || !form.role || !form.prenom || !form.nom || !form.password) {
+        if (!form.email || !form.role || !form.password) {
             if(window.showToast) window.showToast("Veuillez remplir les champs obligatoires (*)", "warning");
             return;
         }
@@ -2191,19 +2191,13 @@ function setupUtilisateursModal() {
         btnInvite.disabled = true;
         btnInvite.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Création...';
         
-        // Build metadata JSON
+        // Build metadata JSON with generic names based on the role
         const metadata = {
-            prenom: form.prenom,
-            nom: form.nom,
-            tel: form.tel || '',
-            sexe: form.sexe || 'M'
+            prenom: 'Espace',
+            nom: form.role.charAt(0).toUpperCase() + form.role.slice(1),
+            tel: '',
+            sexe: 'M'
         };
-        if (form.role === 'eleve') {
-            metadata.classe_id = form.classe_id;
-            metadata.date_naissance = form.date_naissance;
-        } else if (form.role === 'enseignant') {
-            metadata.matieres = form.matieres;
-        }
         
         // Use password from form
         const userPassword = form.password;

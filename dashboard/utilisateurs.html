@@ -91,6 +91,80 @@
     </div>
   </div>
 </main>
+    <div id="syncStatusIndicator" class="me-3 d-flex align-items-center"></div><button class="topbar-btn"><i class="fas fa-bell"></i><span class="notif-dot"></span></button><div class="topbar-divider"></div><div class="user-av" style="cursor:pointer">D</div></div>
+</header>
+
+<main class="main-content" id="mainContent">
+  <div class="page-header d-flex flex-wrap align-items-center justify-content-between gap-3">
+    <div>
+      <h1 class="page-title">Gestion des utilisateurs</h1>
+      <nav aria-label="breadcrumb"><ol class="breadcrumb mb-0"><li class="breadcrumb-item"><a href="">Accueil</a></li><li class="breadcrumb-item active">Utilisateurs</li></ol></nav>
+    </div>
+    <button class="btn btn-primary btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#addUserModal"><i class="fas fa-plus me-1"></i>Ajouter un utilisateur</button>
+  </div>
+
+  <!-- KPIs -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3"><div class="stat-card"><div class="sc-icon bg-primary-soft mb-2"><i class="fas fa-users text-primary"></i></div><div class="sc-value">0</div><div class="sc-label">Total utilisateurs</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-card"><div class="sc-icon bg-danger-soft mb-2"><i class="fas fa-user-shield text-danger"></i></div><div class="sc-value">0</div><div class="sc-label">Administrateurs</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-card"><div class="sc-icon bg-success-soft mb-2"><i class="fas fa-chalkboard-teacher text-success"></i></div><div class="sc-value">0</div><div class="sc-label">Enseignants</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-card"><div class="sc-icon bg-warning-soft mb-2"><i class="fas fa-user-clock text-warning"></i></div><div class="sc-value">0</div><div class="sc-label">Nouveaux comptes</div></div></div>
+  </div>
+
+  <!-- Rôles expliqués -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <div class="dash-card p-3 h-100" style="border-left:3px solid var(--danger)">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <div class="sc-icon bg-danger-soft" style="width:36px;height:36px"><i class="fas fa-user-shield text-danger" style="font-size:.85rem"></i></div>
+          <div class="fw-bold">Administrateur</div>
+        </div>
+        <div class="text-muted" style="font-size:.8rem">Accès complet : gestion de l'établissement, utilisateurs, finances, paramètres.</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="dash-card p-3 h-100" style="border-left:3px solid var(--success)">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <div class="sc-icon bg-success-soft" style="width:36px;height:36px"><i class="fas fa-chalkboard-teacher text-success" style="font-size:.85rem"></i></div>
+          <div class="fw-bold">Enseignant</div>
+        </div>
+        <div class="text-muted" style="font-size:.8rem">Saisie des notes, gestion de ses classes, emploi du temps, messagerie.</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="dash-card p-3 h-100" style="border-left:3px solid var(--primary)">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <div class="sc-icon bg-primary-soft" style="width:36px;height:36px"><i class="fas fa-user-tie text-primary" style="font-size:.85rem"></i></div>
+          <div class="fw-bold">Gestionnaire</div>
+        </div>
+        <div class="text-muted" style="font-size:.8rem">Gestion des paiements, inscriptions, rapports financiers, bulletins.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table utilisateurs -->
+  <div class="dash-card">
+    <div class="dash-card-header flex-wrap gap-2">
+      <span class="dash-card-title"><i class="fas fa-list text-primary me-2"></i>Liste des utilisateurs</span>
+      <select class="form-select form-select-sm ms-auto" style="width:150px" id="filterRole" onchange="filterTable()">
+        <option value="">Tous les rôles</option>
+        <option>Administrateur</option>
+        <option>Enseignant</option>
+        <option>Gestionnaire</option>
+      </select>
+    </div>
+    <div class="dash-card-body p-0" style="overflow-x:auto">
+      <table class="dash-table" id="usersTable">
+        <thead><tr>
+          <th>Utilisateur</th><th>Rôle</th><th>Dernière connexion</th><th>Statut</th><th>Actions</th>
+        </tr></thead>
+        <tbody id="usersBody">
+          <!-- Données dynamiques insérées ici -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
 
 <!-- Modal inviter -->
 <div class="modal fade" id="addUserModal" tabindex="-1">
@@ -98,76 +172,8 @@
     <div class="modal-header"><h5 class="modal-title fw-bold"><i class="fas fa-user-plus text-primary me-2"></i>Ajouter un utilisateur</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
       <form id="formInviteUser">
         <div class="row">
-          <div class="col-md-6 mb-3"><label class="form-label">Prénom *</label><input type="text" name="prenom" class="form-control" required/></div>
-          <div class="col-md-6 mb-3"><label class="form-label">Nom *</label><input type="text" name="nom" class="form-control" required/></div>
-        </div>
-        <div class="row">
-          <div class="col-md-6 mb-3"><label class="form-label">Sexe *</label>
-            <select class="form-select" name="sexe" required>
-              <option value="M">Masculin</option>
-              <option value="F">Féminin</option>
-            </select>
-          </div>
-          <div class="col-md-6 mb-3"><label class="form-label">Téléphone</label><input type="tel" name="tel" class="form-control"/></div>
-        </div>
-        <div class="row">
           <div class="col-md-6 mb-3"><label class="form-label">Email *</label><input type="email" name="email" class="form-control" placeholder="email@ecole.ci" required/></div>
           <div class="col-md-6 mb-3"><label class="form-label">Mot de passe *</label><input type="text" name="password" class="form-control" placeholder="Mot de passe" required/></div>
-        </div>
-        
-        <div class="mb-3">
-          <label class="form-label">Rôle *</label>
-          <select class="form-select" name="role" id="roleSelect" onchange="toggleRoleFields()" required>
-            <option value="">Choisir un rôle…</option>
-            <option value="admin">Administrateur principal</option>
-            <option value="comptable">Comptable</option>
-            <option value="enseignant">Enseignant</option>
-            <option value="parent">Parent</option>
-            <option value="eleve">Élève</option>
-            <option value="secretaire">Secrétaire</option>
-            <option value="surveillant">Surveillant</option>
-          </select>
-        </div>
-        
-        <!-- Role Specific Fields -->
-        <div id="roleFields_eleve" class="d-none mb-3 p-3 bg-light rounded border">
-            <label class="form-label">Classe de l'élève</label>
-            <select class="form-select" name="classe_id">
-              <option value="">Choisir une classe...</option>
-              <option value="uuid1">6ème A</option>
-              <option value="uuid2">3ème B</option>
-            </select>
-            <label class="form-label mt-2">Date de naissance</label>
-            <input type="date" name="date_naissance" class="form-control"/>
-        </div>
-        
-        <div id="roleFields_enseignant" class="d-none mb-3 p-3 bg-light rounded border">
-            <label class="form-label">Matières enseignées (séparées par une virgule)</label>
-            <input type="text" name="matieres" class="form-control" placeholder="Ex: Mathématiques, Physique"/>
-        </div>
-        
-        <div id="roleInfoBox" class="p-3 rounded-3 bg-primary bg-opacity-10 d-none mb-3 text-primary fw-medium" style="font-size:.85rem"></div>
-      </form>
-      <script>
-        function toggleRoleFields() {
-            const role = document.getElementById('roleSelect').value;
-            const eleveFields = document.getElementById('roleFields_eleve');
-            const ensFields = document.getElementById('roleFields_enseignant');
-            
-            eleveFields.classList.add('d-none');
-            ensFields.classList.add('d-none');
-            
-            if (role === 'eleve') eleveFields.classList.remove('d-none');
-            if (role === 'enseignant') ensFields.classList.remove('d-none');
-            
-            if (window.showRoleInfo) window.showRoleInfo();
-        }
-      </script>
-    </div>
-    <div class="modal-footer"><button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Annuler</button><button type="button" class="btn btn-primary rounded-pill px-4 fw-semibold" id="btnInviteUser"><i class="fas fa-save me-2"></i>Créer le compte</button></div>
-  </div></div>
-</div>
-
 <script src="/js/vendor/bootstrap.bundle.min.js"></script>
 <script src="../js/dashboard.js"></script>
 
