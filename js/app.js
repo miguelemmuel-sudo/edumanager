@@ -2183,7 +2183,7 @@ function setupUtilisateursModal() {
     
     btnInvite.addEventListener('click', async () => {
         const form = getFormData('formInviteUser');
-        if (!form.email || !form.role || !form.prenom || !form.nom) {
+        if (!form.email || !form.role || !form.prenom || !form.nom || !form.password) {
             if(window.showToast) window.showToast("Veuillez remplir les champs obligatoires (*)", "warning");
             return;
         }
@@ -2205,19 +2205,19 @@ function setupUtilisateursModal() {
             metadata.matieres = form.matieres;
         }
         
-        // Mock default password for the new user
-        const defaultPassword = 'Password123!';
+        // Use password from form
+        const userPassword = form.password;
         
         // Attempt to call RPC
         const { data, error } = await window.supabase.rpc('admin_create_user', {
             p_email: form.email,
-            p_password: defaultPassword,
+            p_password: userPassword,
             p_role: form.role,
             p_metadata: metadata
         });
         
         btnInvite.disabled = false;
-        btnInvite.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Envoyer l\'invitation';
+        btnInvite.innerHTML = '<i class="fas fa-save me-2"></i>Créer le compte';
         
         if (error) {
             // Fallback for local dev without RPC installed

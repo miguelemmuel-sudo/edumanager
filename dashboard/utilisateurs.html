@@ -26,7 +26,7 @@
       <h1 class="page-title">Gestion des utilisateurs</h1>
       <nav aria-label="breadcrumb"><ol class="breadcrumb mb-0"><li class="breadcrumb-item"><a href="">Accueil</a></li><li class="breadcrumb-item active">Utilisateurs</li></ol></nav>
     </div>
-    <button class="btn btn-primary btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#addUserModal"><i class="fas fa-plus me-1"></i>Inviter un utilisateur</button>
+    <button class="btn btn-primary btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#addUserModal"><i class="fas fa-plus me-1"></i>Ajouter un utilisateur</button>
   </div>
 
   <!-- KPIs -->
@@ -34,7 +34,7 @@
     <div class="col-6 col-md-3"><div class="stat-card"><div class="sc-icon bg-primary-soft mb-2"><i class="fas fa-users text-primary"></i></div><div class="sc-value">0</div><div class="sc-label">Total utilisateurs</div></div></div>
     <div class="col-6 col-md-3"><div class="stat-card"><div class="sc-icon bg-danger-soft mb-2"><i class="fas fa-user-shield text-danger"></i></div><div class="sc-value">0</div><div class="sc-label">Administrateurs</div></div></div>
     <div class="col-6 col-md-3"><div class="stat-card"><div class="sc-icon bg-success-soft mb-2"><i class="fas fa-chalkboard-teacher text-success"></i></div><div class="sc-value">0</div><div class="sc-label">Enseignants</div></div></div>
-    <div class="col-6 col-md-3"><div class="stat-card"><div class="sc-icon bg-warning-soft mb-2"><i class="fas fa-user-clock text-warning"></i></div><div class="sc-value">0</div><div class="sc-label">Invitations en attente</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-card"><div class="sc-icon bg-warning-soft mb-2"><i class="fas fa-user-clock text-warning"></i></div><div class="sc-value">0</div><div class="sc-label">Nouveaux comptes</div></div></div>
   </div>
 
   <!-- Rôles expliqués -->
@@ -95,7 +95,7 @@
 <!-- Modal inviter -->
 <div class="modal fade" id="addUserModal" tabindex="-1">
   <div class="modal-dialog"><div class="modal-content">
-    <div class="modal-header"><h5 class="modal-title fw-bold"><i class="fas fa-user-plus text-primary me-2"></i>Inviter un utilisateur</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-header"><h5 class="modal-title fw-bold"><i class="fas fa-user-plus text-primary me-2"></i>Ajouter un utilisateur</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
       <form id="formInviteUser">
         <div class="row">
           <div class="col-md-6 mb-3"><label class="form-label">Prénom *</label><input type="text" name="prenom" class="form-control" required/></div>
@@ -110,7 +110,10 @@
           </div>
           <div class="col-md-6 mb-3"><label class="form-label">Téléphone</label><input type="tel" name="tel" class="form-control"/></div>
         </div>
-        <div class="mb-3"><label class="form-label">Email *</label><input type="email" name="email" class="form-control" placeholder="email@ecole.ci" required/></div>
+        <div class="row">
+          <div class="col-md-6 mb-3"><label class="form-label">Email *</label><input type="email" name="email" class="form-control" placeholder="email@ecole.ci" required/></div>
+          <div class="col-md-6 mb-3"><label class="form-label">Mot de passe *</label><input type="text" name="password" class="form-control" placeholder="Mot de passe" required/></div>
+        </div>
         
         <div class="mb-3">
           <label class="form-label">Rôle *</label>
@@ -161,7 +164,7 @@
         }
       </script>
     </div>
-    <div class="modal-footer"><button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Annuler</button><button type="button" class="btn btn-primary rounded-pill px-4 fw-semibold" id="btnInviteUser"><i class="fas fa-paper-plane me-2"></i>Envoyer l'invitation</button></div>
+    <div class="modal-footer"><button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Annuler</button><button type="button" class="btn btn-primary rounded-pill px-4 fw-semibold" id="btnInviteUser"><i class="fas fa-save me-2"></i>Créer le compte</button></div>
   </div></div>
 </div>
 
