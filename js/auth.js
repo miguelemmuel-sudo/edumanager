@@ -150,11 +150,16 @@ async function supabaseLogin(email, password) {
   // Récupérer le profil de l'utilisateur
   const { data: profiles, error: profError } = await window.supabase
     .from('profiles')
-    .select('role, etablissement_id')
+    .select('role, etablissement_id, statut')
     .eq('id', data.user.id)
     .limit(1);
 
-  const profile = (profiles && profiles.length > 0) ? profiles[0] : { role: 'admin', etablissement_id: null };
+  const profile = (profiles && profiles.length > 0) ? profiles[0] : { role: 'admin', etablissement_id: null, statut: 'Actif' };
+
+  if (profile.statut && profile.statut !== 'Actif') {
+    await window.supabase.auth.signOut();
+    return { success: false, message: `Votre compte est actuellement: ${profile.statut}. Veuillez contacter l'administration.` };
+  }
 
   let plan = 'starter';
   if (profile.etablissement_id) {
@@ -177,12 +182,47 @@ async function supabaseLogin(email, password) {
      }
   }
 
+  // Fetch user groups and permissions
+  let permissions = [];
+  let groups = [];
+  
+  if (profile.role === 'admin') {
+    permissions.push('*'); // Admin has full rights
+  } else if (profile.etablissement_id) {
+    const { data: memberData } = await window.supabase
+      .from('user_group_members')
+      .select(`
+        group_id,
+        user_groups ( name, group_permissions ( permissions ( name ) ) )
+      `)
+      .eq('user_id', data.user.id);
+      
+    if (memberData) {
+      memberData.forEach(member => {
+        if (member.user_groups) {
+          groups.push(member.user_groups.name);
+          if (member.user_groups.group_permissions) {
+             member.user_groups.group_permissions.forEach(gp => {
+                if (gp.permissions && gp.permissions.name) {
+                   permissions.push(gp.permissions.name);
+                }
+             });
+          }
+        }
+      });
+    }
+    // Remove duplicate permissions
+    permissions = [...new Set(permissions)];
+  }
+
   const session = { 
     userId: data.user.id, 
     email: data.user.email, 
     plan: plan, 
     role: profile.role,
-    etablissement_id: profile.etablissement_id
+    etablissement_id: profile.etablissement_id,
+    groups: groups,
+    permissions: permissions
   };
   saveSession(session);
   localStorage.setItem('edu_abonnement', plan);

@@ -2100,919 +2100,151 @@ async function fetchAndRenderRapports() {
 fetchAndRenderRapports();
 
     
-// --- UTILISATEURS ---
 
 
-window.showRoleInfo = function() {
-    const roleDesc = {
-        admin: '<i class="fas fa-shield-alt me-2"></i><strong>Administrateur principal :</strong> Accès total à tous les modules de l\'établissement.',
-        comptable: '<i class="fas fa-calculator me-2"></i><strong>Comptable :</strong> Accès aux finances, factures, reçus et paiements.',
-        enseignant: '<i class="fas fa-chalkboard-teacher me-2"></i><strong>Enseignant :</strong> Accès à ses classes, élèves assignés, notes et emploi du temps.',
-        parent: '<i class="fas fa-user-friends me-2"></i><strong>Parent :</strong> Accès au suivi de ses enfants, notes, et paiements.',
-        eleve: '<i class="fas fa-user-graduate me-2"></i><strong>Élève :</strong> Accès à son propre tableau de bord, notes et emploi du temps.',
-        secretaire: '<i class="fas fa-folder-open me-2"></i><strong>Secrétaire :</strong> Accès aux inscriptions, parents et documents.',
-        surveillant: '<i class="fas fa-eye me-2"></i><strong>Surveillant :</strong> Accès aux présences et à la discipline.'
-    };
-    const v = document.getElementById('roleSelect');
-    if (!v) return;
-    const box = document.getElementById('roleInfoBox');
-    if (!box) return;
-    if (v.value && roleDesc[v.value]) { box.innerHTML = roleDesc[v.value]; box.classList.remove('d-none'); }
-    else box.classList.add('d-none');
-};
+// --- UTILISATEURS & RBAC ---
+window.currentGroupFilter = 'Tous';
 
-function setupUtilisateursModal() {
-    const btnInvite = document.getElementById('btnInviteUser');
-    if (!btnInvite) return;
-    
-    btnInvite.addEventListener('click', async () => {
-        const form = getFormData('formInviteUser');
-        if (!form.email || !form.role || !form.password) {
-            if(window.showToast) window.showToast("Veuillez remplir les champs obligatoires (*)", "warning");
-            return;
-        }
-        
-        btnInvite.disabled = true;
-        btnInvite.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Création...';
-        
-        // Build metadata JSON with generic names based on the role
-        const metadata = {
-            prenom: 'Espace',
-            nom: form.role.charAt(0).toUpperCase() + form.role.slice(1),
-            tel: '',
-            sexe: 'M'
-        };
-        
-        // Use password from form
-        const userPassword = form.password;
-        
-        // Attempt to call RPC
-        const { data, error } = await window.supabase.rpc('admin_create_user', {
-            p_email: form.email,
-            p_password: userPassword,
-            p_role: form.role,
-            p_metadata: metadata
-        });
-        
-        btnInvite.disabled = false;
-        btnInvite.innerHTML = '<i class="fas fa-save me-2"></i>Créer le compte';
-        
-        if (error) {
-            // Fallback for local dev without RPC installed
-            console.warn("RPC failed, falling back to local storage:", error.message);
-            let invites = JSON.parse(localStorage.getItem('edu_users_invites') || '[]');
-            if (invites.find(i => i.email === form.email)) {
-                if(window.showToast) window.showToast("Cet utilisateur a déjà été invité", "warning");
-                return;
-            }
-            invites.push({ email: form.email, role: form.role, prenom: form.prenom, nom: form.nom, date: new Date().toISOString() });
-            localStorage.setItem('edu_users_invites', JSON.stringify(invites));
-            if(window.showToast) window.showToast("Compte créé localement (Mock)", "success");
-        } else {
-            if(data && data.success) {
-                if(window.showToast) window.showToast("Compte utilisateur créé avec succès !", "success");
-            } else {
-                if(window.showToast) window.showToast(data?.error || "Erreur de création", "danger");
-                return;
-            }
-        }
-        
-        closeModal('addUserModal');
-        clearFormData('addUserModal');
-        
-        // If we are dynamically fetching profiles instead of using local storage:
-        // We will stick to our local display update since fetchAndRenderUtilisateurs was mixing auth.getUser() with localStorage.
-        fetchAndRenderUtilisateurs();
-    });
-}
-
-
-window.deleteInvite = function(email) {
-    if(!confirm("Annuler l'invitation ?")) return;
-    let invites = JSON.parse(localStorage.getItem('edu_users_invites') || '[]');
-    invites = invites.filter(i => i.email !== email);
-    localStorage.setItem('edu_users_invites', JSON.stringify(invites));
+window.filterTableByGroup = function(groupName) {
+    window.currentGroupFilter = groupName;
     fetchAndRenderUtilisateurs();
-}
-
-
-fetchAndRenderUtilisateurs();
-    setupUtilisateursModal();
-
-    
-// --- PROFIL ET PARAMETRES ---
-async function fetchAndRenderProfil() {
-    const formProfil = document.getElementById('formProfil');
-    if (formProfil) {
-        const { data: { user } } = await window.supabase.auth.getUser();
-        if (user) {
-            if (formProfil.elements['prenom']) formProfil.elements['prenom'].value = user.user_metadata?.prenom || '';
-            if (formProfil.elements['nom']) formProfil.elements['nom'].value = user.user_metadata?.nom || '';
-            if (formProfil.elements['tel']) formProfil.elements['tel'].value = user.user_metadata?.tel || '';
-            
-            const emailInp = document.getElementById('profilEmail');
-            if (emailInp) emailInp.value = user.email || '';
-            
-            const depuis = document.getElementById('profilDepuis');
-            if (depuis) depuis.value = new Date(user.created_at).toLocaleDateString('fr-FR');
-        }
-    }
-}
-
-async function fetchAndRenderParametres() {
-    const etabNom = document.getElementById('etab_nom');
-    if (!etabNom) return; // not on parameters page
-    
-    // We get the current establishment
-    const { data: etab } = await window.supabase.from('etablissements').select('*').limit(1).single();
-    if (etab) {
-        if(document.getElementById('etab_nom')) document.getElementById('etab_nom').value = etab.nom || '';
-        if(document.getElementById('etab_type')) document.getElementById('etab_type').value = etab.type || '';
-        if(document.getElementById('etab_systeme')) document.getElementById('etab_systeme').value = etab.systeme_educatif || 'Francophone';
-        if(document.getElementById('etab_pays')) document.getElementById('etab_pays').value = etab.pays || '';
-        if(document.getElementById('etab_ville')) document.getElementById('etab_ville').value = etab.ville || '';
-        if(document.getElementById('etab_tel')) document.getElementById('etab_tel').value = etab.tel || '';
-        if(document.getElementById('etab_email')) document.getElementById('etab_email').value = etab.email || '';
-        if(document.getElementById('etab_adresse')) document.getElementById('etab_adresse').value = etab.adresse || '';
-        if(document.getElementById('etab_site')) document.getElementById('etab_site').value = etab.site_web || '';
-        
-        // Update logo preview in parametres if exists
-        const logoPreview = document.querySelector('.table-av');
-        if (logoPreview && etab.logo_url) {
-            logoPreview.innerHTML = `<img src="${etab.logo_url}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;" />`;
-            logoPreview.style.background = 'transparent';
-        }
-    }
-    
-    // Automate Matieres liste
-    const matieresListe = document.getElementById('matieres_liste');
-    if (matieresListe) {
-        const matieres = await fetchEtablissementMatieres();
-        matieresListe.value = matieres.join(', ') || 'Aucune matière définie pour le moment.';
-    }
-}
-
-async function setupFraisScolaires() {
-    const tbody = document.getElementById('fraisTableBody');
-    const btnSaveFrais = document.getElementById('btnSaveFrais');
-    if (!tbody || !btnSaveFrais) return;
-
-    const { data: etab } = await window.supabase.from('etablissements').select('id, type, systeme_educatif').limit(1).single();
-    if (!etab) return;
-
-    // Temporarily ensure EduSettings is set to get correct niveaux
-    if (!window.EduSettings) window.EduSettings = {};
-    window.EduSettings.type = etab.type;
-    window.EduSettings.systeme = etab.systeme_educatif;
-    const niveaux = getNiveauxList();
-
-    // Fetch existing fees
-    const { data: existingFrais } = await window.supabase.from('frais_scolaires').select('*').eq('etablissement_id', etab.id);
-    const fraisMap = {};
-    if (existingFrais) {
-        existingFrais.forEach(f => {
-            if (!fraisMap[f.niveau]) fraisMap[f.niveau] = {};
-            fraisMap[f.niveau][f.type_frais] = f.montant;
-        });
-    }
-
-    // Render rows
-    tbody.innerHTML = '';
-    niveaux.forEach(niveau => {
-        const insc = (fraisMap[niveau] && fraisMap[niveau]['Inscription']) || 0;
-        const scol = (fraisMap[niveau] && fraisMap[niveau]['Scolarité']) || 0;
-        
-        tbody.innerHTML += `
-            <tr data-niveau="${_e(niveau)}">
-                <td class="fw-semibold">${_e(niveau)}</td>
-                <td><input type="number" class="form-control form-control-sm input-insc" value="${insc}"></td>
-                <td><input type="number" class="form-control form-control-sm input-scol" value="${scol}"></td>
-            </tr>
-        `;
-    });
-
-    // Handle Save
-    btnSaveFrais.addEventListener('click', async (e) => {
-        e.preventDefault();
-        btnSaveFrais.disabled = true;
-        btnSaveFrais.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-
-        const rows = tbody.querySelectorAll('tr');
-        const newFrais = [];
-        
-        rows.forEach(tr => {
-            const niveau = tr.getAttribute('data-niveau');
-            const insc = parseFloat(tr.querySelector('.input-insc').value) || 0;
-            const scol = parseFloat(tr.querySelector('.input-scol').value) || 0;
-            
-            if (insc >= 0) newFrais.push({ etablissement_id: etab.id, niveau, type_frais: 'Inscription', montant: insc });
-            if (scol >= 0) newFrais.push({ etablissement_id: etab.id, niveau, type_frais: 'Scolarité', montant: scol });
-        });
-
-        // 1. Delete old fees
-        await window.supabase.from('frais_scolaires').delete().eq('etablissement_id', etab.id);
-        
-        // 2. Insert new fees
-        if (newFrais.length > 0) {
-            const { error } = await window.supabase.from('frais_scolaires').insert(newFrais);
-            if (error) {
-                if(window.showToast) window.showToast('Erreur: ' + error.message, 'danger');
-            } else {
-                if(window.showToast) window.showToast('Frais scolaires mis à jour !', 'success');
-            }
-        } else {
-            if(window.showToast) window.showToast('Frais scolaires vidés !', 'success');
-        }
-
-        btnSaveFrais.disabled = false;
-        btnSaveFrais.innerHTML = '<i class="fas fa-save me-2"></i>Enregistrer les frais';
-    });
-}
-
-function setupProfilParametres() {
-    // PROFIL SAVE
-    setupFraisScolaires();
-    
-    const btnSaveProfil = document.getElementById('btnSaveProfil');
-    if (btnSaveProfil) {
-        btnSaveProfil.addEventListener('click', async (e) => {
-            e.preventDefault();
-            const form = document.getElementById('formProfil');
-            const prenom = form.elements['prenom'].value;
-            const nom = form.elements['nom'].value;
-            const tel = form.elements['tel'].value;
-            
-            btnSaveProfil.disabled = true; btnSaveProfil.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            const { error } = await window.supabase.auth.updateUser({
-                data: { prenom, nom, tel }
-            });
-            btnSaveProfil.disabled = false; btnSaveProfil.innerHTML = '<i class="fas fa-save me-2"></i>Enregistrer les modifications';
-            
-            if (error) {
-                if(window.showToast) window.showToast(error.message, 'danger');
-            } else {
-                if(window.showToast) window.showToast('Profil mis à jour', 'success');
-            }
-        });
-    }
-    
-    // PARAMETRES SAVE
-    const btnsSaveParam = document.querySelectorAll('.settings-tab .btn-save');
-    btnsSaveParam.forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-            e.preventDefault();
-            const tab = btn.closest('.settings-tab');
-            
-            if (tab.id === 'tab-etablissement') {
-                const etabNom = document.getElementById('etab_nom');
-                if(etabNom) {
-                    const nom = etabNom.value;
-                    const type = document.getElementById('etab_type').value;
-                    const systeme_educatif = document.getElementById('etab_systeme') ? document.getElementById('etab_systeme').value : 'Francophone';
-                    const pays = document.getElementById('etab_pays').value;
-                    const ville = document.getElementById('etab_ville').value;
-                    const tel = document.getElementById('etab_tel').value;
-                    const email = document.getElementById('etab_email') ? document.getElementById('etab_email').value : null;
-                    const adresse = document.getElementById('etab_adresse') ? document.getElementById('etab_adresse').value : null;
-                    const site_web = document.getElementById('etab_site') ? document.getElementById('etab_site').value : null;
-                    
-                    btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-                    
-                    const { data: etab } = await window.supabase.from('etablissements').select('id').limit(1).single();
-                    if (etab) {
-                        const { error } = await window.supabase.from('etablissements').update({
-                            nom, type, systeme_educatif, pays, ville, tel, email, adresse, site_web
-                        }).eq('id', etab.id);
-                        
-                        if (error) {
-                            if(window.showToast) window.showToast(error.message, 'danger');
-                        } else {
-                            if(window.showToast) window.showToast('Paramètres mis à jour', 'success');
-                        }
-                    }
-                    
-                    btn.disabled = false; btn.innerHTML = '<i class="fas fa-save me-2"></i>Enregistrer';
-                }
-            } else if (tab.id === 'tab-securite') {
-                const newMdp = document.getElementById('sec_nouveau_mdp').value;
-                const confMdp = document.getElementById('sec_conf_mdp').value;
-                
-                if (newMdp.length < 6) {
-                    return window.showToast ? window.showToast('Le mot de passe doit contenir au moins 6 caractères', 'danger') : alert('Mot de passe trop court');
-                }
-                if (newMdp !== confMdp) {
-                    return window.showToast ? window.showToast('Les mots de passe ne correspondent pas', 'danger') : alert('Les mots de passe ne correspondent pas');
-                }
-                
-                btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-                
-                const { error } = await window.supabase.auth.updateUser({ password: newMdp });
-                
-                if (error) {
-                    if(window.showToast) window.showToast(error.message, 'danger');
-                } else {
-                    if(window.showToast) window.showToast('Mot de passe mis à jour avec succès', 'success');
-                    document.getElementById('sec_ancien_mdp').value = '';
-                    document.getElementById('sec_nouveau_mdp').value = '';
-                    document.getElementById('sec_conf_mdp').value = '';
-                }
-                
-                btn.disabled = false; btn.innerHTML = '<i class="fas fa-save me-2"></i>Mettre à jour';
-            }
-        });
-    });
-
-    // LOGO UPLOAD LOGIC
-    const btnChangerLogo = document.getElementById('btnChangerLogo');
-    const logoUploadInput = document.getElementById('logoUploadInput');
-    if (btnChangerLogo && logoUploadInput) {
-        btnChangerLogo.addEventListener('click', function(e) {
-            e.preventDefault();
-            logoUploadInput.click();
-        });
-        
-        logoUploadInput.addEventListener('change', async function(e) {
-            if (e.target.files.length > 0) {
-                const file = e.target.files[0];
-                if(window.showToast) window.showToast('Téléchargement du logo en cours...', 'info');
-                
-                btnChangerLogo.disabled = true;
-                btnChangerLogo.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-                
-                const fileExt = file.name.split('.').pop();
-                const fileName = `logo_${Date.now()}.${fileExt}`;
-                
-                const { data, error } = await window.supabase.storage
-                    .from('logos')
-                    .upload(fileName, file, { cacheControl: '3600', upsert: false });
-                    
-                if (error) {
-                    if (window.showToast) window.showToast('Erreur: ' + error.message, 'danger');
-                    btnChangerLogo.disabled = false;
-                    btnChangerLogo.innerHTML = '<i class="fas fa-upload me-1"></i>Changer le logo';
-                    return;
-                }
-                
-                try {
-                    const { data: { publicUrl } } = window.supabase.storage.from('logos').getPublicUrl(fileName);
-                    
-                    // Update DB
-                    const { data: etab, error: etabError } = await window.supabase.from('etablissements').select('id').limit(1).single();
-                    if (etabError) throw etabError;
-                    
-                    if (etab) {
-                        const { error: updateError } = await window.supabase.from('etablissements').update({ logo_url: publicUrl }).eq('id', etab.id);
-                        if (updateError) throw updateError;
-                        
-                        if (window.showToast) window.showToast('Logo mis à jour avec succès', 'success');
-                        
-                        // Update UI preview
-                        const logoPreview = document.querySelector('.table-av');
-                        if(logoPreview) {
-                            logoPreview.innerHTML = `<img src="${publicUrl}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;" />`;
-                            logoPreview.style.background = 'transparent';
-                        }
-                    } else {
-                        throw new Error("Aucun établissement trouvé pour ce compte. Veuillez créer votre établissement d'abord.");
-                    }
-                } catch (err) {
-                    console.error("Erreur mise à jour logo:", err);
-                    if (window.showToast) window.showToast('Erreur: ' + (err.message || "Impossible de mettre à jour le logo"), 'danger');
-                }
-                
-                btnChangerLogo.disabled = false;
-                btnChangerLogo.innerHTML = '<i class="fas fa-upload me-1"></i>Changer le logo';
-            }
-        });
-    }
-}
-
-
-fetchAndRenderProfil();
-    fetchAndRenderParametres();
-    setupProfilParametres();
-
-// --- DASHBOARD (STATS GLOBALES) ---
-async function initDashboardStats() {
-    try {
-    // Si nous ne sommes pas sur la page dashboard on skip
-    const isDashboard = document.querySelector('.sc-value');
-    if (!isDashboard) return;
-
-    const elevesCountEl = document.querySelectorAll('.sc-value')[0];
-    const revenusCountEl = document.querySelectorAll('.sc-value')[1];
-    const enseignantsCountEl = document.querySelectorAll('.sc-value')[2];
-    const classesCountEl = document.querySelectorAll('.sc-value')[3];
-
-    // Currency mapping
-    function getCurrencyByCountry(country) {
-        if (!country) return 'FCFA';
-        const map = { 'France': '€', 'Canada': '$', 'Maroc': 'MAD', 'Algérie': 'DZD', 'Tunisie': 'TND', 'RDC': 'FC' };
-        return map[country] || 'FCFA';
-    }
-
-    // Parallel fetching from Dexie (Instant Load)
-    const db = window.edumanagerDB;
-    if (!db) {
-        console.warn("EduManagerDB not found");
-        return;
-    }
-
-    const [elevesData, enseignantsData, classesData, paiementsData] = await Promise.all([
-        db.eleves.toArray(),
-        db.enseignants.toArray(),
-        db.classes.toArray(),
-        db.paiements.toArray()
-    ]);
-    
-    const currency = window.EduSettings?.currency || 'FCFA';
-    
-    let revenus = 0;
-    let impayes = 0;
-    if (paiementsData) {
-        paiementsData.forEach(p => {
-            revenus += parseFloat(p.montant || 0);
-            const st = (p.statut || '').toLowerCase();
-            if (st.includes('impayé') || st.includes('retard')) impayes++;
-        });
-    }
-
-    const nbEleves = elevesData.length;
-    const nbEnseignants = enseignantsData.length;
-    const nbClasses = classesData.length;
-
-    if (elevesCountEl) elevesCountEl.textContent = nbEleves;
-    if (revenusCountEl) revenusCountEl.textContent = revenus.toLocaleString() + ' ' + currency;
-    if (enseignantsCountEl) enseignantsCountEl.textContent = nbEnseignants;
-    if (classesCountEl) classesCountEl.textContent = nbClasses;
-    
-    // Update dashboard trends
-    const elevesTrend = document.getElementById('dashElevesTrend');
-    if (elevesTrend) {
-        let pct = nbEleves > 0 ? '+' + ((nbEleves % 10) + 2) + '%' : '+0%';
-        elevesTrend.innerHTML = `<i class="fas fa-arrow-up me-1"></i>${pct}`;
-        elevesTrend.className = 'sc-trend up';
-    }
-    
-    const revenusTrend = document.getElementById('dashRevenusTrend');
-    if (revenusTrend) {
-        let pct = revenus > 0 ? '+' + (Math.round((revenus / 1000000) % 5) + 1) + '%' : '+0%';
-        revenusTrend.innerHTML = `<i class="fas fa-arrow-up me-1"></i>${pct}`;
-        revenusTrend.className = 'sc-trend up';
-    }
-    
-    const enseignantsTrend = document.getElementById('dashEnseignantsTrend');
-    if (enseignantsTrend) {
-        let val = nbEnseignants > 0 ? '+' + (nbEnseignants % 3 + 1) : '+0';
-        enseignantsTrend.innerHTML = `<i class="fas fa-arrow-up me-1"></i>${val}`;
-        enseignantsTrend.className = 'sc-trend up';
-    }
-    
-    const classesTrend = document.getElementById('dashClassesTrend');
-    if (classesTrend) {
-        if (nbClasses > 0) {
-            classesTrend.innerHTML = `<i class="fas fa-arrow-up me-1"></i>+1`;
-            classesTrend.className = 'sc-trend up';
-            classesTrend.style.color = '';
-        } else {
-            classesTrend.innerHTML = `<i class="fas fa-minus me-1"></i>stable`;
-            classesTrend.className = 'sc-trend';
-            classesTrend.style.color = 'var(--muted)';
-        }
-    }
-
-    // Sidebar Badges Update
-    const badgePaiements = document.getElementById('sidebarBadgePaiements');
-    if (badgePaiements) {
-        if (impayes > 0) {
-            badgePaiements.textContent = impayes;
-            badgePaiements.style.display = 'inline-flex';
-        } else {
-            badgePaiements.style.display = 'none';
-        }
-    }
-    
-    // For messages, we simulate based on eleves to be realistic for offline demo
-    const badgeMessages = document.getElementById('sidebarBadgeMessages');
-    if (badgeMessages) {
-        let nbMsgs = (nbEleves % 4) + 1;
-        
-        if (nbMsgs > 0) {
-            badgeMessages.textContent = nbMsgs;
-            badgeMessages.style.display = 'inline-flex';
-        } else {
-            badgeMessages.style.display = 'none';
-        }
-    }
-
-    // Update main dashboard charts if present
-    const enrollmentsChart = document.getElementById('enrollmentsChart');
-    const enrollmentsLabels = document.getElementById('enrollmentsLabels');
-    if (enrollmentsChart && enrollmentsLabels) {
-        let inscCounts = new Array(8).fill(0);
-        elevesData.forEach(e => {
-            if (e.created_at) {
-                const date = new Date(e.created_at);
-                let m = date.getMonth(); // 0-11
-                let idx = m >= 8 ? m - 8 : m + 4; // roughly Sep=0
-                if (idx >= 0 && idx < 8) inscCounts[idx]++;
-            }
-        });
-        const maxInsc = Math.max(...inscCounts, 10);
-        const monthsInsc = ['Sep', 'Oct', 'Nov', 'Déc', 'Jan', 'Fév', 'Mar', 'Avr'];
-        
-        enrollmentsChart.innerHTML = inscCounts.map((val, i) => {
-            let height = Math.max((val / maxInsc) * 100, 5); 
-            return `<div class="bar-item" style="height:${height}%;background:linear-gradient(180deg,#2563EB,#60A5FA)" title="${monthsInsc[i]}: ${val}"></div>`;
-        }).join('');
-        enrollmentsLabels.innerHTML = monthsInsc.map(m => `<span>${m}</span>`).join('');
-    }
-
-    const paymentsDonut = document.getElementById('paymentsDonut');
-    if (paymentsDonut && paiementsData) {
-        let payesCount = 0; let partielsCount = 0; let impayesCount = 0;
-        paiementsData.forEach(p => {
-            let s = (p.statut || '').toLowerCase();
-            if (s === 'payé' || s === 'paye') payesCount++;
-            else if (s === 'partiel') partielsCount++;
-            else impayesCount++;
-        });
-        const totalP = payesCount + partielsCount + impayesCount;
-        let pctPaye = totalP ? Math.round((payesCount/totalP)*100) : 0;
-        let pctPartiel = totalP ? Math.round((partielsCount/totalP)*100) : 0;
-        let pctImpaye = totalP ? Math.round((impayesCount/totalP)*100) : 0;
-        
-        paymentsDonut.style.background = `conic-gradient(var(--primary) 0% ${pctPaye}%, var(--warning) ${pctPaye}% ${pctPaye + pctPartiel}%, var(--danger) ${pctPaye + pctPartiel}% 100%)`;
-        
-        const pt = document.getElementById('paymentsPaidText'); if(pt) pt.textContent = `${pctPaye}% · ${payesCount} paiements`;
-        const ppart = document.getElementById('paymentsPartialText'); if(ppart) ppart.textContent = `${pctPartiel}% · ${partielsCount} paiements`;
-        const punp = document.getElementById('paymentsUnpaidText'); if(punp) punp.textContent = `${pctImpaye}% · ${impayesCount} paiements`;
-    }
-
-    const dynamicBody = document.getElementById('dynamicBody');
-    if (dynamicBody) {
-        // Sort by created_at desc, we don't have created_at mostly offline except if set, 
-        // but let's reverse the array for a pseudo-recent
-        elevesData.reverse();
-        const recents = elevesData.slice(0, 5);
-        if (recents.length === 0) {
-            dynamicBody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Aucune inscription récente</td></tr>';
-        } else {
-            dynamicBody.innerHTML = recents.map(e => {
-                let badgeClass = e.statut === 'Actif' ? 'success' : (e.statut === 'En attente' ? 'warning' : 'danger');
-                
-                // Get class name from ID (sync approach)
-                const c = classesData.find(cl => cl.id === e.classe_id);
-                const className = c ? c.nom : 'Non assigné';
-
-                return `
-                <tr>
-                    <td>
-                        <div class="d-flex align-items-center gap-2">
-                            <div class="table-av">${e.prenom ? e.prenom.charAt(0).toUpperCase() : '?'}</div>
-                            <div class="fw-semibold" style="font-size:.85rem">${_e(e.prenom)} ${_e(e.nom)}</div>
-                        </div>
-                    </td>
-                    <td><span class="status-badge" style="background:rgba(37,99,235,0.1);color:#2563eb">${_e(className)}</span></td>
-                    <td class="text-muted" style="font-size:.8rem">${e.created_at ? new Date(e.created_at).toLocaleDateString('fr-FR') : '-'}</td>
-                    <td><span class="status-badge ${badgeClass}">${_e(e.statut || 'En attente')}</span></td>
-                    <td><button class="btn btn-sm btn-icon"><i class="fas fa-ellipsis-v"></i></button></td>
-                </tr>`;
-            }).join('');
-        }
-    }
-
-    // Activité récente (Inscriptions et Paiements)
-    const recentList = document.getElementById('recentActivityFeed');
-    if (recentList) {
-        let activities = [];
-        const cacheKey = 'edu_recent_activity';
-        const cachedStr = localStorage.getItem(cacheKey);
-        let useCache = false;
-        
-        if (cachedStr) {
-            try {
-                const cacheData = JSON.parse(cachedStr);
-                const cacheAge = Date.now() - cacheData.timestamp;
-                if (cacheAge < 2 * 60 * 60 * 1000) { // 2 hours
-                    activities = cacheData.data;
-                    useCache = true;
-                }
-            } catch (e) {
-                console.error("Cache error", e);
-            }
-        }
-        
-        if (!useCache) {
-            // Fetch from DB
-            const { data: recentEleves } = await window.supabase
-                .from('eleves')
-                .select('nom, prenom, created_at')
-                .order('created_at', { ascending: false })
-                .limit(5);
-                
-            const { data: recentPaiements } = await window.supabase
-                .from('paiements')
-                .select('montant, eleve_id, created_at, eleves(nom, prenom)')
-                .order('created_at', { ascending: false })
-                .limit(5);
-                
-            let combined = [];
-            if (recentEleves) {
-                recentEleves.forEach(e => combined.push({
-                    type: 'inscription',
-                    titre: 'Nouvelle inscription',
-                    message: `L'élève ${e.prenom || ''} ${e.nom || ''} a été inscrit.`,
-                    created_at: e.created_at
-                }));
-            }
-            if (recentPaiements) {
-                recentPaiements.forEach(p => combined.push({
-                    type: 'paiement',
-                    titre: 'Nouveau paiement',
-                    message: `Paiement de ${p.montant} FCFA effectué pour l'élève ${p.eleves?.prenom || ''} ${p.eleves?.nom || ''}.`,
-                    created_at: p.created_at
-                }));
-            }
-            
-            combined.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-            activities = combined.slice(0, 5);
-            
-            localStorage.setItem(cacheKey, JSON.stringify({
-                timestamp: Date.now(),
-                data: activities
-            }));
-        }
-
-        if (activities && activities.length > 0) {
-            recentList.innerHTML = '';
-            activities.forEach(n => {
-                const isPaiement = n.type === 'paiement';
-                const iconClass = isPaiement ? 'fa-money-bill-wave' : 'fa-user-plus';
-                const bgClass = isPaiement ? 'bg-success-soft text-success' : 'bg-primary-soft text-primary';
-                recentList.innerHTML += `
-                    <div class="act-item d-flex gap-3 mb-3">
-                        <div class="act-icon ${bgClass}"><i class="fas ${iconClass}"></i></div>
-                        <div>
-                            <div style="font-size:.85rem;font-weight:600">${_e(n.titre)}</div>
-                            <div style="font-size:.78rem;color:var(--muted)">${_e(n.message)}</div>
-                            <div style="font-size:.72rem;color:var(--muted)">${window.formatDateLocal(n.created_at)}</div>
-                        </div>
-                    </div>
-                `;
-            });
-        } else {
-            recentList.innerHTML = '<div class="text-muted" style="font-size:0.85rem">Aucune activité récente</div>';
-        }
-    }
-    } catch (err) {
-        console.error("Error in initDashboardStats:", err);
-    }
-}
-
-// --- NOTIFICATIONS ---
-async function fetchAndRenderNotifications() {
-    const list = document.getElementById('notifList');
-    if (!list) return;
-
-    const { data: notifs, error } = await window.supabase
-        .from('notifications')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-    if (error) {
-        console.error(error);
-        return;
-    }
-
-    if (notifs.length === 0) {
-        list.innerHTML = `<div class="text-center py-5 text-muted">Aucune notification disponible</div>`;
-        
-        // Update stats
-        if (document.getElementById('notifReçuesVal')) document.getElementById('notifReçuesVal').textContent = '0';
-        if (document.getElementById('notifLuesVal')) document.getElementById('notifLuesVal').textContent = '0';
-        if (document.getElementById('notifTauxVal')) document.getElementById('notifTauxVal').textContent = '0%';
-        if (document.getElementById('notifTauxBar')) document.getElementById('notifTauxBar').style.width = '0%';
-
-        return;
-    }
-
-    let nbLues = 0;
-    list.innerHTML = '';
-    notifs.forEach(n => {
-        const isUnread = !n.lu;
-        if (n.lu) nbLues++;
-        
-        const iconClass = n.type_notif === 'Erreur' || n.type_notif === 'Alerte' ? 'fa-exclamation-triangle text-danger' :
-                          n.type_notif === 'Succès' ? 'fa-check-circle text-success' : 'fa-bell text-primary';
-        const bgClass = n.type_notif === 'Erreur' || n.type_notif === 'Alerte' ? 'bg-danger-soft' :
-                        n.type_notif === 'Succès' ? 'bg-success-soft' : 'bg-primary-soft';
-        
-        list.innerHTML += `
-            <div class="notif-item d-flex align-items-start gap-3 p-3 border-bottom ${isUnread ? 'notif-unread' : ''}" data-read="${!isUnread}">
-                <div class="sc-icon ${bgClass} flex-shrink-0"><i class="fas ${iconClass}"></i></div>
-                <div class="flex-grow-1">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div class="fw-semibold" style="font-size:.875rem">${_e(n.titre)}</div>
-                        <span style="font-size:.72rem;color:var(--muted)">${new Date(n.created_at).toLocaleDateString('fr-FR')}</span>
-                    </div>
-                    <div class="text-muted" style="font-size:.82rem">${_e(n.message)}</div>
-                </div>
-                ${isUnread ? '<div style="width:9px;height:9px;border-radius:50%;background:var(--primary);flex-shrink:0;margin-top:5px"></div>' : ''}
-            </div>
-        `;
-    });
-
-    // Update stats
-    const taux = Math.round((nbLues / notifs.length) * 100);
-    if (document.getElementById('notifReçuesVal')) document.getElementById('notifReçuesVal').textContent = notifs.length;
-    if (document.getElementById('notifLuesVal')) document.getElementById('notifLuesVal').textContent = nbLues;
-    if (document.getElementById('notifTauxVal')) document.getElementById('notifTauxVal').textContent = taux + '%';
-    if (document.getElementById('notifTauxBar')) document.getElementById('notifTauxBar').style.width = taux + '%';
-}
-
-// --- MESSAGES ---
-window.openMsg = async function(el, expediteur_id, nom) {
-    document.querySelectorAll('.msg-item').forEach(i => i.classList.remove('active'));
-    if(el) {
-        el.classList.add('active');
-        el.classList.remove('unread');
-        const dot = el.querySelector('.msg-unread-dot');
-        if(dot) dot.remove();
-    }
-    
-    document.getElementById('chatHeader').style.display = 'flex';
-    document.getElementById('chatName').textContent = nom;
-    document.getElementById('chatHeaderAv').textContent = nom.charAt(0).toUpperCase();
-    document.getElementById('chatDesc').textContent = "Discussion avec " + nom;
-    
-    const body = document.getElementById('chatBody');
-    body.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin text-muted"></i></div>';
-    
-    const { data: messages, error } = await window.supabase
-        .from('messages')
-        .select('*')
-        .or(`expediteur_id.eq.${expediteur_id},destinataire_id.eq.${expediteur_id}`)
-        .order('date_envoi', { ascending: true });
-        
-    if (error) {
-        body.innerHTML = `<div class="text-danger text-center py-3">Erreur de chargement</div>`;
-        return;
-    }
-
-    if (!messages || messages.length === 0) {
-        body.innerHTML = `<div class="msg-empty">Aucun message précédent.</div>`;
-        return;
-    }
-
-    body.innerHTML = '';
-    messages.forEach(m => {
-        const isSentByMe = m.expediteur_id !== expediteur_id;
-        const time = new Date(m.date_envoi).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-        
-        body.innerHTML += `
-            <div>
-                <div class="bubble ${isSentByMe ? 'sent' : 'received'}">${_e(m.contenu)}</div>
-                <div class="bubble-meta ${isSentByMe ? 'sent-meta' : ''}">${isSentByMe ? 'Vous' : _e(nom)} · ${time}</div>
-            </div>
-        `;
-    });
-    body.scrollTop = body.scrollHeight;
 };
 
-async function fetchAndRenderMessages() {
-    const list = document.getElementById('msgList');
-    if (!list) return;
-
-    const { data: messages, error } = await window.supabase
-        .from('messages')
-        .select('*')
-        .order('date_envoi', { ascending: false });
-
-    if (error) return console.error(error);
-
-    if (!messages || messages.length === 0) {
-        list.innerHTML = `<div class="text-center py-5 text-muted" style="font-size:0.85rem">Aucune conversation</div>`;
-        return;
-    }
-
-    list.innerHTML = '';
-    const seen = new Set();
-    messages.forEach(m => {
-        if (!seen.has(m.expediteur_id)) {
-            seen.add(m.expediteur_id);
-            const isUnread = !m.lu;
-            const pseudoName = m.sujet || 'Utilisateur ' + m.expediteur_id.substring(0,5);
-            const initial = pseudoName.charAt(0).toUpperCase();
-            const time = new Date(m.date_envoi).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-            
-            list.innerHTML += `
-                <div class="msg-item ${isUnread ? 'unread' : ''}" onclick="openMsg(this, '${m.expediteur_id}', '${pseudoName.replace(/'/g, "\\'")}')">
-                    <div class="msg-item-av" style="background:#2563EB">${initial}</div>
-                    <div style="flex:1;min-width:0">
-                        <div class="d-flex justify-content-between"><span class="msg-item-subject">${_e(pseudoName)}</span><span class="msg-item-time">${time}</span></div>
-                        <div class="msg-item-preview">${_e(m.contenu)}</div>
-                    </div>
-                    ${isUnread ? '<div class="msg-unread-dot"></div>' : ''}
-                </div>
-            `;
-        }
-    });
-}
-
-
-// --- UTILISATEURS ---
-window.showRoleInfo = function() {
-    const roleDesc = {
-        admin: '<i class="fas fa-shield-alt me-2"></i><strong>Administrateur principal :</strong> Accès total à tous les modules de l\'établissement.',
-        comptable: '<i class="fas fa-calculator me-2"></i><strong>Comptable :</strong> Accès aux finances, factures, reçus et paiements.',
-        enseignant: '<i class="fas fa-chalkboard-teacher me-2"></i><strong>Enseignant :</strong> Accès à ses classes, élèves assignés, notes et emploi du temps.',
-        parent: '<i class="fas fa-user-friends me-2"></i><strong>Parent :</strong> Accès au suivi de ses enfants, notes, et paiements.',
-        eleve: '<i class="fas fa-user-graduate me-2"></i><strong>Élève :</strong> Accès à son propre tableau de bord, notes et emploi du temps.',
-        secretaire: '<i class="fas fa-folder-open me-2"></i><strong>Secrétaire :</strong> Accès aux inscriptions, parents et documents.',
-        surveillant: '<i class="fas fa-eye me-2"></i><strong>Surveillant :</strong> Accès aux présences et à la discipline.'
-    };
-    const v = document.getElementById('roleSelect');
-    if (!v) return;
-    const box = document.getElementById('roleInfoBox');
+window.toggleRoleFields = function() {
+    const role = document.getElementById('roleSelect').value;
+    const box = document.getElementById('dynamicFields');
     if (!box) return;
-    if (v.value && roleDesc[v.value]) { box.innerHTML = roleDesc[v.value]; box.classList.remove('d-none'); }
-    else box.classList.add('d-none');
+    
+    if (role === 'enseignant') {
+        box.innerHTML = '<label class="form-label">Matière enseignée</label><input type="text" name="matieres" class="form-control" placeholder="Ex: Mathématiques"/>';
+        box.classList.remove('d-none');
+    } else if (role === 'eleve') {
+        box.innerHTML = '<label class="form-label">Sexe</label><select name="sexe" class="form-select"><option value="M">Masculin</option><option value="F">Féminin</option></select>' +
+                        '<label class="form-label mt-2">ID Classe</label><input type="text" name="classe_id" class="form-control" placeholder="UUID de la classe (optionnel)"/>';
+        box.classList.remove('d-none');
+    } else {
+        box.classList.add('d-none');
+        box.innerHTML = '';
+    }
 };
 
 async function fetchAndRenderUtilisateurs() {
     const tbody = document.getElementById('usersBody');
     if (!tbody) return;
     
-    // Fetch users from profiles
-    let users = [];
-    const { data, error } = await window.supabase.from('profiles').select('*');
-    if (error) {
-        console.error("Erreur de chargement des profils:", error);
+    const statusFilter = document.getElementById('filterStatus') ? document.getElementById('filterStatus').value : '';
+    
+    // Fetch users with their groups (Using Supabase joins)
+    let query = window.supabase
+        .from('profiles')
+        .select(`
+            id, email, prenom, nom, role, statut,
+            user_group_members (
+                user_groups ( name )
+            )
+        `);
+        
+    if (statusFilter) {
+        query = query.eq('statut', statusFilter);
     }
-    if (!error && data) users = data;
     
-    // Fetch local mocks (fallback if RPC failed)
-    const localMocks = JSON.parse(localStorage.getItem('edu_users_invites') || '[]');
+    const { data: users, error } = await query;
     
-    tbody.innerHTML = '';
-    if (users.length === 0 && localMocks.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">Aucun utilisateur trouvé. (Avez-vous exécuté rbac_functions.sql sur Supabase ?)</td></tr>';
+    if (error) {
+        console.error(error);
+        tbody.innerHTML = '<tr><td colspan="5" class="text-danger text-center">Erreur de chargement des utilisateurs.</td></tr>';
         return;
     }
     
-    // Render Supabase users
-    users.forEach(u => {
+    // Update KPIs
+    if (window.currentGroupFilter === 'Tous' && !statusFilter) {
+        let admins=0, profs=0, compts=0, parents=0, eleves=0;
+        users.forEach(u => {
+            if(u.role === 'admin') admins++;
+            if(u.role === 'enseignant') profs++;
+            if(u.role === 'comptable') compts++;
+            if(u.role === 'parent') parents++;
+            if(u.role === 'eleve') eleves++;
+        });
+        if(document.getElementById('kpiTotal')) document.getElementById('kpiTotal').innerText = users.length;
+        if(document.getElementById('kpiAdmins')) document.getElementById('kpiAdmins').innerText = admins;
+        if(document.getElementById('kpiProfs')) document.getElementById('kpiProfs').innerText = profs;
+        if(document.getElementById('kpiComptables')) document.getElementById('kpiComptables').innerText = compts;
+        if(document.getElementById('kpiParents')) document.getElementById('kpiParents').innerText = parents;
+        if(document.getElementById('kpiEleves')) document.getElementById('kpiEleves').innerText = eleves;
+    }
+    
+    tbody.innerHTML = '';
+    
+    const filteredUsers = users.filter(u => {
+        if (window.currentGroupFilter === 'Tous') return true;
+        // Check if user is in the selected group
+        if (!u.user_group_members) return false;
+        return u.user_group_members.some(m => m.user_groups && m.user_groups.name === window.currentGroupFilter);
+    });
+
+    if (filteredUsers.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">Aucun utilisateur trouvé pour ce filtre</td></tr>';
+        return;
+    }
+    
+    filteredUsers.forEach(u => {
         const nom = (u.prenom || '') + ' ' + (u.nom || '');
-        const initial = nom.trim() ? nom.charAt(0).toUpperCase() : 'U';
-        const role = u.role || 'Utilisateur';
+        const initial = nom.trim() ? nom.charAt(0).toUpperCase() : (u.email ? u.email.charAt(0).toUpperCase() : 'U');
         
+        let groupsHtml = '';
+        if (u.user_group_members && u.user_group_members.length > 0) {
+            groupsHtml = u.user_group_members.map(m => m.user_groups ? `<span class="badge bg-primary bg-opacity-10 text-primary me-1">${m.user_groups.name}</span>` : '').join('');
+        }
+        if (!groupsHtml) groupsHtml = `<span class="badge bg-secondary">${u.role || 'Aucun'}</span>`;
+        
+        let statusBadge = '';
+        if (u.statut === 'Actif') statusBadge = '<span class="status-badge success">Actif</span>';
+        else if (u.statut === 'Suspendu') statusBadge = '<span class="status-badge danger">Suspendu</span>';
+        else statusBadge = `<span class="status-badge warning">${u.statut}</span>`;
+        
+        const isCurrent = (getSession() && getSession().userId === u.id);
+        
+        const suspendBtn = u.statut === 'Actif' 
+            ? `<button class="btn btn-sm btn-outline-warning" onclick="toggleUserStatus('${u.id}', 'Suspendu')" title="Suspendre"><i class="fas fa-pause"></i></button>`
+            : `<button class="btn btn-sm btn-outline-success" onclick="toggleUserStatus('${u.id}', 'Actif')" title="Réactiver"><i class="fas fa-play"></i></button>`;
+
         tbody.innerHTML += `
             <tr>
                 <td>
                   <div class="d-flex align-items-center gap-3">
                     <div class="table-av" style="background:var(--primary)">${initial}</div>
-                    <div><div class="fw-semibold">${_e(nom || u.email)}</div><div class="text-muted" style="font-size:.75rem">${_e(u.email)}</div></div>
+                    <div><div class="fw-semibold">${_e(nom || '-')}</div><div class="text-muted" style="font-size:.75rem">${_e(u.email || '-')}</div></div>
                   </div>
                 </td>
-                <td><span class="badge bg-secondary">${_e(role)}</span></td>
-                <td><span class="text-muted" style="font-size:.85rem">Enregistré</span></td>
-                <td><span class="status-badge success">Actif (DB)</span></td>
+                <td>${groupsHtml}</td>
+                <td><span class="text-muted" style="font-size:.85rem">-</span></td>
+                <td>${statusBadge}</td>
                 <td>
                   <div class="d-flex gap-2">
-                    <button class="btn btn-sm text-danger" style="background:rgba(239,68,68,.1)" onclick="deleteUser('${u.id}')"><i class="fas fa-trash"></i></button>
+                    ${!isCurrent ? suspendBtn : ''}
+                    ${!isCurrent ? `<button class="btn btn-sm text-danger" style="background:rgba(239,68,68,.1)" onclick="deleteUser('${u.id}')"><i class="fas fa-trash"></i></button>` : ''}
                   </div>
                 </td>
             </tr>
         `;
     });
-    
-    // Render local mocks
-    localMocks.forEach(inv => {
-        const nom = (inv.prenom || '') + ' ' + (inv.nom || '');
-        const initial = nom.trim() ? nom.charAt(0).toUpperCase() : 'U';
-        tbody.innerHTML += `
-          <tr>
-            <td>
-                <div class="d-flex align-items-center gap-2">
-                    <div class="table-av" style="background:var(--muted)">${initial}</div>
-                    <div>
-                        <div style="font-weight:600;font-size:.85rem">${_e(nom || inv.email)}</div>
-                        <div style="font-size:.75rem;color:var(--muted)">${_e(inv.email)}</div>
-                    </div>
-                </div>
-            </td>
-            <td><span class="badge bg-secondary">${_e(inv.role)}</span></td>
-            <td style="font-size:.82rem">Non synchronisé</td>
-            <td><span class="status-badge warning">Créé Localement</span></td>
-            <td><button class="btn btn-sm text-danger" onclick="deleteInvite('${inv.email}')"><i class="fas fa-times"></i></button></td>
-          </tr>
-        `;
-    });
 }
 
+window.toggleUserStatus = async function(id, newStatus) {
+    if(confirm(`Voulez-vous passer cet utilisateur au statut : ${newStatus} ?`)) {
+        const { error } = await window.supabase.rpc('admin_toggle_user_status', { p_user_id: id, p_statut: newStatus });
+        if(error) {
+            if(window.showToast) window.showToast(error.message, 'danger');
+        } else {
+            if(window.showToast) window.showToast('Statut mis à jour', 'success');
+            fetchAndRenderUtilisateurs();
+        }
+    }
+};
+
 window.deleteUser = async function(id) {
-    if(confirm("Voulez-vous vraiment supprimer cet utilisateur ?")) {
+    if(confirm("Voulez-vous vraiment supprimer définitivement cet utilisateur ? (Action irréversible)")) {
         const { error } = await window.supabase.rpc('admin_delete_user', { p_user_id: id });
         if(error) {
             if(window.showToast) window.showToast(error.message, 'danger');
@@ -3029,7 +2261,7 @@ function setupUtilisateursModal() {
     
     btnInvite.addEventListener('click', async () => {
         const form = getFormData('formInviteUser');
-        if (!form.email || !form.role || !form.prenom || !form.nom) {
+        if (!form.email || !form.role || !form.prenom || !form.nom || !form.password) {
             if(window.showToast) window.showToast("Veuillez remplir les champs obligatoires (*)", "warning");
             return;
         }
@@ -3045,48 +2277,33 @@ function setupUtilisateursModal() {
         };
         if (form.role === 'eleve') {
             metadata.classe_id = form.classe_id;
-            metadata.date_naissance = form.date_naissance;
         } else if (form.role === 'enseignant') {
             metadata.matieres = form.matieres;
         }
         
-        const defaultPassword = 'Password123!';
-        
         const { data, error } = await window.supabase.rpc('admin_create_user', {
             p_email: form.email,
-            p_password: defaultPassword,
+            p_password: form.password,
             p_role: form.role,
+            p_group_id: null, // Resolves dynamically based on role in the SQL function
             p_metadata: metadata
         });
         
         btnInvite.disabled = false;
-        btnInvite.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Envoyer l\'invitation';
+        btnInvite.innerHTML = '<i class="fas fa-save me-2"></i>Créer le compte';
         
         if (error) {
-            if(window.showToast) window.showToast("Compte créé localement (Mock)", "success");
+            if(window.showToast) window.showToast(error.message || "Erreur de création", "danger");
         } else {
             if(data && data.success) {
                 if(window.showToast) window.showToast("Compte utilisateur créé avec succès !", "success");
+                const modalEl = document.getElementById('addUserModal');
+                if(modalEl && window.bootstrap) bootstrap.Modal.getInstance(modalEl).hide();
+                clearFormData('addUserModal');
+                fetchAndRenderUtilisateurs();
             } else {
                 if(window.showToast) window.showToast(data?.error || "Erreur de création", "danger");
-                return;
             }
         }
-        
-        closeModal('addUserModal');
-        clearFormData('addUserModal');
-        
-        fetchAndRenderUtilisateurs();
     });
 }
-
-window.closeCurrentModal = function(modalId) {
-    closeModal(modalId);
-};
-
-// Listen for sync completion to refresh dashboard
-window.addEventListener('edumanager:sync-complete', async () => {
-    console.log('Sync complete, refreshing dashboard...');
-    if (typeof initDashboardStats === 'function') await initDashboardStats();
-});
-
