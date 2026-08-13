@@ -167,6 +167,15 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 
+-- CREATE OR REPLACE FUNCTION public.get_current_role()
+CREATE OR REPLACE FUNCTION public.get_current_role()
+RETURNS VARCHAR
+LANGUAGE sql STABLE SECURITY DEFINER
+SET search_path = public
+AS $body$
+  SELECT role FROM public.profiles WHERE id = auth.uid() LIMIT 1;
+$body$;
+
 -- Update RLS for profiles
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
@@ -179,8 +188,6 @@ DROP POLICY IF EXISTS "Les admins gèrent les profils" ON public.profiles;
 CREATE POLICY "Les admins gèrent les profils" 
 ON public.profiles FOR ALL 
 USING (
-    EXISTS (
-        SELECT 1 FROM public.profiles p 
-        WHERE p.id = auth.uid() AND p.role = 'admin' AND p.etablissement_id = public.profiles.etablissement_id
-    )
+    public.get_current_role() = 'admin' AND 
+    public.get_current_etablissement_id() = etablissement_id
 );

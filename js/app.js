@@ -2947,6 +2947,9 @@ async function fetchAndRenderUtilisateurs() {
     // Fetch users from profiles
     let users = [];
     const { data, error } = await window.supabase.from('profiles').select('*');
+    if (error) {
+        console.error("Erreur de chargement des profils:", error);
+    }
     if (!error && data) users = data;
     
     // Fetch local mocks (fallback if RPC failed)
