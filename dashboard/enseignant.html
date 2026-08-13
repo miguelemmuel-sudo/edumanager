@@ -24,6 +24,7 @@
     <input type="text" placeholder="Rechercher un élève, enseignant…"/>
   </div>
   <div class="topbar-actions">
+    <div id="syncStatusIndicator" class="me-3 d-flex align-items-center"></div>
     <button class="topbar-btn" title="Notifications">
       <i class="fas fa-bell"></i><span class="notif-dot"></span>
     </button>
@@ -201,9 +202,12 @@
 
 <script src="../js/vendor/supabase.js"></script>
 <script src="../js/config.js"></script>
+<script src="../js/vendor/dexie.min.js"></script>
+<script src="../js/sync.js"></script>
 <script src="../js/supabase.js"></script>
 <script src="../js/app.js"></script>
   <script src="../js/security.js"></script>
   <script src="../js/sidebar.js"></script>
 </body>
 </html>
+

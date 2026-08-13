@@ -15,7 +15,8 @@
 <header class="topbar" id="topbar">
   <button class="topbar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
   <div class="topbar-search"><i class="fas fa-search"></i><input type="text" placeholder="Rechercher une matière…"/></div>
-  <div class="topbar-actions"><button class="topbar-btn"><i class="fas fa-bell"></i><span class="notif-dot"></span></button><div class="topbar-divider"></div><div class="user-av" style="cursor:pointer">D</div></div>
+  <div class="topbar-actions">
+    <div id="syncStatusIndicator" class="me-3 d-flex align-items-center"></div><button class="topbar-btn"><i class="fas fa-bell"></i><span class="notif-dot"></span></button><div class="topbar-divider"></div><div class="user-av" style="cursor:pointer">D</div></div>
 </header>
 <main class="main-content" id="mainContent">
   <div class="page-header d-flex flex-wrap align-items-center justify-content-between gap-3">
@@ -94,6 +95,8 @@
 <script src="/js/vendor/bootstrap.bundle.min.js"></script>
 <script src="../js/vendor/supabase.js"></script>
 <script src="../js/config.js"></script>
+<script src="../js/vendor/dexie.min.js"></script>
+<script src="../js/sync.js"></script>
 <script src="../js/supabase.js"></script>
 <script src="../js/sidebar.js"></script>
 <script src="../js/security.js"></script>
@@ -274,3 +277,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+

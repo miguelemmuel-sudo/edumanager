@@ -2556,6 +2556,10 @@ fetchAndRenderProfil();
 // --- DASHBOARD (STATS GLOBALES) ---
 async function initDashboardStats() {
     try {
+    // Si nous ne sommes pas sur la page dashboard on skip
+    const isDashboard = document.querySelector('.sc-value');
+    if (!isDashboard) return;
+
     const elevesCountEl = document.querySelectorAll('.sc-value')[0];
     const revenusCountEl = document.querySelectorAll('.sc-value')[1];
     const enseignantsCountEl = document.querySelectorAll('.sc-value')[2];
@@ -2568,35 +2572,36 @@ async function initDashboardStats() {
         return map[country] || 'FCFA';
     }
 
-    // Parallel fetching
-    const [resEl, resEn, resCl, resPaiements, resEtab] = await Promise.all([
-        window.supabase.from('eleves').select('id, nom, prenom, statut, created_at, classes(nom)').order('created_at', { ascending: false }),
-        window.supabase.from('enseignants').select('id', { count: 'exact' }),
-        window.supabase.from('classes').select('id', { count: 'exact' }),
-        window.supabase.from('paiements').select('montant, statut'),
-        window.supabase.from('etablissements').select('pays').limit(1).single()
+    // Parallel fetching from Dexie (Instant Load)
+    const db = window.edumanagerDB;
+    if (!db) {
+        console.warn("EduManagerDB not found");
+        return;
+    }
+
+    const [elevesData, enseignantsData, classesData, paiementsData] = await Promise.all([
+        db.eleves.toArray(),
+        db.enseignants.toArray(),
+        db.classes.toArray(),
+        db.paiements.toArray()
     ]);
     
-    const currency = resEtab && resEtab.data ? getCurrencyByCountry(resEtab.data.pays) : 'FCFA';
+    // On suppose que le devis est FCFA par défaut hors ligne
+    const currency = window.EduSettings ? window.EduSettings.currency : 'FCFA';
     
     let revenus = 0;
     let impayes = 0;
-    if (resPaiements && resPaiements.data) {
-        resPaiements.data.forEach(p => {
+    if (paiementsData) {
+        paiementsData.forEach(p => {
             revenus += parseFloat(p.montant || 0);
             const st = (p.statut || '').toLowerCase();
             if (st.includes('impayé') || st.includes('retard')) impayes++;
         });
     }
 
-    if (resEl.error) {
-        console.error("Erreur fetch eleves:", resEl.error);
-        if(window.showToast) window.showToast("Erreur eleves: " + resEl.error.message, 'danger');
-    }
-    const elevesData = resEl.data || [];
     const nbEleves = elevesData.length;
-    const nbEnseignants = resEn.count || 0;
-    const nbClasses = resCl.count || 0;
+    const nbEnseignants = enseignantsData.length;
+    const nbClasses = classesData.length;
 
     if (elevesCountEl) elevesCountEl.textContent = nbEleves;
     if (revenusCountEl) revenusCountEl.textContent = revenus.toLocaleString() + ' ' + currency;
@@ -2649,12 +2654,10 @@ async function initDashboardStats() {
         }
     }
     
-    // For messages, we can fetch unread messages, but for now we simulate based on eleves to be realistic
-    const { data: messages } = await window.supabase.from('messages').select('id', { count: 'exact' }).eq('statut', 'non lu');
+    // For messages, we simulate based on eleves to be realistic for offline demo
     const badgeMessages = document.getElementById('sidebarBadgeMessages');
     if (badgeMessages) {
-        let nbMsgs = messages ? messages.length : 0;
-        if (nbMsgs === 0 && nbEleves > 0) nbMsgs = (nbEleves % 4) + 1; // mock some messages if none found but system has data
+        let nbMsgs = (nbEleves % 4) + 1;
         
         if (nbMsgs > 0) {
             badgeMessages.textContent = nbMsgs;
@@ -2688,9 +2691,9 @@ async function initDashboardStats() {
     }
 
     const paymentsDonut = document.getElementById('paymentsDonut');
-    if (paymentsDonut && resPaiements && resPaiements.data) {
+    if (paymentsDonut && paiementsData) {
         let payesCount = 0; let partielsCount = 0; let impayesCount = 0;
-        resPaiements.data.forEach(p => {
+        paiementsData.forEach(p => {
             let s = (p.statut || '').toLowerCase();
             if (s === 'payé' || s === 'paye') payesCount++;
             else if (s === 'partiel') partielsCount++;
@@ -2710,12 +2713,20 @@ async function initDashboardStats() {
 
     const dynamicBody = document.getElementById('dynamicBody');
     if (dynamicBody) {
+        // Sort by created_at desc, we don't have created_at mostly offline except if set, 
+        // but let's reverse the array for a pseudo-recent
+        elevesData.reverse();
         const recents = elevesData.slice(0, 5);
         if (recents.length === 0) {
             dynamicBody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Aucune inscription récente</td></tr>';
         } else {
             dynamicBody.innerHTML = recents.map(e => {
                 let badgeClass = e.statut === 'Actif' ? 'success' : (e.statut === 'En attente' ? 'warning' : 'danger');
+                
+                // Get class name from ID (sync approach)
+                const c = classesData.find(cl => cl.id === e.classe_id);
+                const className = c ? c.nom : 'Non assigné';
+
                 return `
                 <tr>
                     <td>
@@ -2724,8 +2735,8 @@ async function initDashboardStats() {
                             <div class="fw-semibold" style="font-size:.85rem">${_e(e.prenom)} ${_e(e.nom)}</div>
                         </div>
                     </td>
-                    <td><span class="status-badge" style="background:rgba(37,99,235,0.1);color:#2563eb">${_e(e.classes?.nom || 'Non assigné')}</span></td>
-                    <td class="text-muted" style="font-size:.8rem">${new Date(e.created_at).toLocaleDateString('fr-FR')}</td>
+                    <td><span class="status-badge" style="background:rgba(37,99,235,0.1);color:#2563eb">${_e(className)}</span></td>
+                    <td class="text-muted" style="font-size:.8rem">${e.created_at ? new Date(e.created_at).toLocaleDateString('fr-FR') : '-'}</td>
                     <td><span class="status-badge ${badgeClass}">${_e(e.statut || 'En attente')}</span></td>
                     <td><button class="btn btn-sm btn-icon"><i class="fas fa-ellipsis-v"></i></button></td>
                 </tr>`;
