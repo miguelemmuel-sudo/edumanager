@@ -53,28 +53,28 @@ async function pullDataFromSupabase() {
         if (syncStatusEl && isOnline) syncStatusEl.innerHTML = '<span class="badge bg-warning text-dark rounded-pill"><i class="fas fa-sync fa-spin me-1"></i>Synchro...</span>';
 
         // 1. Classes
-        const { data: classes } = await window.supabase.from('classes').select('*');
+        const { data: classes } = await window.supabase.from('classes').select('*').eq('etablissement_id', etabId);
         if (classes) {
             await db.classes.clear();
             if (classes.length > 0) await db.classes.bulkPut(classes);
         }
 
         // 2. Eleves
-        const { data: eleves } = await window.supabase.from('eleves').select('*');
+        const { data: eleves } = await window.supabase.from('eleves').select('*').eq('etablissement_id', etabId);
         if (eleves) {
             await db.eleves.clear();
             if (eleves.length > 0) await db.eleves.bulkPut(eleves);
         }
 
         // 3. Enseignants
-        const { data: enseignants } = await window.supabase.from('enseignants').select('*');
+        const { data: enseignants } = await window.supabase.from('enseignants').select('*').eq('etablissement_id', etabId);
         if (enseignants) {
             await db.enseignants.clear();
             if (enseignants.length > 0) await db.enseignants.bulkPut(enseignants);
         }
         
         // 4. Périodes
-        const { data: periodes } = await window.supabase.from('periodes_evaluation').select('*');
+        const { data: periodes } = await window.supabase.from('periodes_evaluation').select('*').eq('etablissement_id', etabId);
         if (periodes) {
             await db.periodes_evaluation.clear();
             if (periodes.length > 0) await db.periodes_evaluation.bulkPut(periodes);
