@@ -54,27 +54,45 @@ async function pullDataFromSupabase() {
 
         // 1. Classes
         const { data: classes } = await window.supabase.from('classes').select('*');
-        if (classes && classes.length > 0) await db.classes.bulkPut(classes);
+        if (classes) {
+            await db.classes.clear();
+            if (classes.length > 0) await db.classes.bulkPut(classes);
+        }
 
         // 2. Eleves
         const { data: eleves } = await window.supabase.from('eleves').select('*');
-        if (eleves && eleves.length > 0) await db.eleves.bulkPut(eleves);
+        if (eleves) {
+            await db.eleves.clear();
+            if (eleves.length > 0) await db.eleves.bulkPut(eleves);
+        }
 
         // 3. Enseignants
         const { data: enseignants } = await window.supabase.from('enseignants').select('*');
-        if (enseignants && enseignants.length > 0) await db.enseignants.bulkPut(enseignants);
+        if (enseignants) {
+            await db.enseignants.clear();
+            if (enseignants.length > 0) await db.enseignants.bulkPut(enseignants);
+        }
         
         // 4. Périodes
         const { data: periodes } = await window.supabase.from('periodes_evaluation').select('*');
-        if (periodes && periodes.length > 0) await db.periodes_evaluation.bulkPut(periodes);
+        if (periodes) {
+            await db.periodes_evaluation.clear();
+            if (periodes.length > 0) await db.periodes_evaluation.bulkPut(periodes);
+        }
         
         // 5. Notes
         const { data: notes } = await window.supabase.from('notes').select('*');
-        if (notes && notes.length > 0) await db.notes.bulkPut(notes);
+        if (notes) {
+            await db.notes.clear();
+            if (notes.length > 0) await db.notes.bulkPut(notes);
+        }
 
         // 6. Paiements
         const { data: paiements } = await window.supabase.from('paiements').select('*');
-        if (paiements && paiements.length > 0) await db.paiements.bulkPut(paiements);
+        if (paiements) {
+            await db.paiements.clear();
+            if (paiements.length > 0) await db.paiements.bulkPut(paiements);
+        }
 
         if (syncStatusEl && isOnline) syncStatusEl.innerHTML = '<span class="badge bg-success rounded-pill"><i class="fas fa-wifi me-1"></i>En ligne</span>';
         
