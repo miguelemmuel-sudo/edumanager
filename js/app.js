@@ -259,10 +259,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     // ----- NOTES -----
     else if (path.includes('notes.html')) {
-        await fetchAndRenderNotes();
-        setupNotesModal();
-        setupRealtime('notes', fetchAndRenderNotes);
-    }
+        setupRealtime('notes', () => { if(window.fetchAndRenderNotes) window.fetchAndRenderNotes(); });
     // ----- MESSAGES -----
     else if (path.includes('messages.html')) {
         await fetchAndRenderMessages();
@@ -922,222 +919,7 @@ window.deleteClasse = async function(id) {
 
 
 // --- NOTES ---
-let currentNoteConfig = {};
-
-async function fetchAndRenderNotes() {
-    const tbody = document.getElementById('dynamicBody') || document.getElementById('notesBody');
-    if (!tbody) return;
-    
-    // Charger les classes et matières pour les filtres et selects
-    const noteClasseSelect = document.getElementById('noteClasseSelect');
-    const noteMatiereSelect = document.getElementById('noteMatiereSelect');
-    const selClasse = document.getElementById('selClasse');
-    const selMatiere = document.getElementById('selMatiere');
-    
-    if (noteClasseSelect || selClasse) {
-        const classes = await fetchEtablissementClasses();
-        if (noteClasseSelect) {
-            const currentVal = noteClasseSelect.value;
-            noteClasseSelect.innerHTML = '<option value="">Sélectionner une classe</option>' + classes.map(c => `<option value="${c.id}">${_e(c.nom)}</option>`).join('');
-            noteClasseSelect.value = currentVal;
-        }
-        if (selClasse) {
-            const currentVal = selClasse.value;
-            selClasse.innerHTML = '<option value="">Toutes les classes</option>' + classes.map(c => `<option value="${c.id}">${_e(c.nom)}</option>`).join('');
-            selClasse.value = currentVal;
-        }
-    }
-    
-    if (noteMatiereSelect || selMatiere) {
-        const matieres = await fetchEtablissementMatieres();
-        if (noteMatiereSelect) {
-            const currentVal = noteMatiereSelect.value;
-            noteMatiereSelect.innerHTML = '<option value="">Sélectionner une matière</option>' + matieres.map(m => `<option value="${_e(m)}">${_e(m)}</option>`).join('');
-            noteMatiereSelect.value = currentVal;
-        }
-        if (selMatiere) {
-            const currentVal = selMatiere.value;
-            selMatiere.innerHTML = '<option value="">Toutes les matières</option>' + matieres.map(m => `<option value="${_e(m)}">${_e(m)}</option>`).join('');
-            selMatiere.value = currentVal;
-        }
-    }
-
-    let query = window.supabase.from('notes').select('*, eleves!inner(nom, prenom, classe_id)');
-    
-    let titleText = 'Notes';
-    const selTrimestre = document.getElementById('selTrimestre');
-
-    if (selClasse && selClasse.value) {
-        const clOption = selClasse.options[selClasse.selectedIndex];
-        if (clOption && clOption.value !== "") {
-            query = query.eq('eleves.classe_id', selClasse.value);
-            titleText += ' – ' + clOption.text;
-        }
-    }
-    if (selMatiere && selMatiere.value) {
-        query = query.eq('matiere', selMatiere.value);
-        titleText += ' · ' + selMatiere.value;
-    }
-    if (selTrimestre && selTrimestre.value) {
-        titleText += ' · ' + selTrimestre.options[selTrimestre.selectedIndex].text;
-    }
-
-    const dashCardTitle = document.querySelector('.dash-card-title');
-    if (dashCardTitle) {
-        dashCardTitle.innerHTML = `<i class="fas fa-clipboard-list text-primary me-2"></i>${_e(titleText)}`;
-    }
-
-    const { data: notes, error } = await query;
-    if (error) return console.error(error);
-    
-    // Update KPIs for Notes page
-    const scValues = document.querySelectorAll('.sc-value');
-    if (scValues.length >= 4) {
-        if (!notes || notes.length === 0) {
-            scValues[0].textContent = 0;
-            scValues[1].textContent = 0;
-            scValues[2].textContent = 0;
-            scValues[3].textContent = 0;
-        } else {
-            let sum = 0, max = -1, min = 21;
-            const uniqueEleves = new Set();
-            notes.forEach(n => {
-                const v = parseFloat(n.valeur) || 0;
-                sum += v;
-                if(v > max) max = v;
-                if(v < min) min = v;
-                uniqueEleves.add(n.eleve_id || n.id);
-            });
-            const avg = (sum / notes.length).toFixed(2);
-            scValues[0].textContent = uniqueEleves.size;
-            scValues[1].textContent = avg;
-            scValues[2].textContent = max;
-            scValues[3].textContent = min;
-        }
-    }
-
-    if (notes.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">Aucune donnée disponible</td></tr>';
-        return;
-    }
-
-    tbody.innerHTML = '';
-    notes.forEach(n => {
-        const el = n.eleves || {};
-        tbody.innerHTML += `
-            <tr>
-                <td><div class="fw-semibold">${_e(el.prenom)} ${_e(el.nom)}</div></td>
-                <td>${_e(n.matiere)}</td>
-                <td>${_e(n.type_evaluation)}</td>
-                <td><strong>${n.valeur} / 20</strong></td>
-                <td>Coef: ${n.coefficient}</td>
-                <td>${new Date(n.date_saisie).toLocaleDateString('fr-FR')}</td>
-                <td>
-                    <button class="btn btn-sm btn-icon text-muted"><i class="fas fa-edit"></i></button>
-                    <button class="btn btn-sm btn-icon text-danger" onclick="deleteNote('${n.id}')"><i class="fas fa-trash"></i></button>
-                </td>
-            </tr>
-        `;
-    });
-}
-
-function setupNotesModal() {
-    const btnContinue = document.getElementById('btnContinueSaisie');
-    if (!btnContinue) return;
-    
-    btnContinue.addEventListener('click', async () => {
-        const config = getFormData('addNoteModal');
-        if (!config.classe_id || !config.matiere || !config.type_evaluation) {
-            if (window.showToast) window.showToast('Veuillez remplir tous les champs obligatoires', 'warning');
-            return;
-        }
-        
-        currentNoteConfig = config;
-        
-        btnContinue.disabled = true; btnContinue.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-        
-        // Fetch eleves for the class
-        const { data: eleves, error } = await window.supabase.from('eleves').select('id, prenom, nom').eq('classe_id', config.classe_id);
-        
-        btnContinue.disabled = false; btnContinue.innerHTML = 'Continuer vers la saisie';
-        
-        if (error) {
-            if (window.showToast) window.showToast(error.message, 'danger');
-            return;
-        }
-        
-        if (!eleves || eleves.length === 0) {
-            if (window.showToast) window.showToast('Aucun élève trouvé dans cette classe', 'warning');
-            return;
-        }
-        
-        // Build grille
-        const grilleBody = document.getElementById('grilleSaisieBody');
-        grilleBody.innerHTML = '';
-        eleves.forEach(e => {
-            grilleBody.innerHTML += `
-                <tr data-eleve-id="${e.id}">
-                    <td>${_e(e.prenom)} ${_e(e.nom)}</td>
-                    <td><input type="number" class="form-control note-val" min="0" max="${config.note_sur || 20}" placeholder="/ ${config.note_sur || 20}"></td>
-                    <td><input type="text" class="form-control note-app" placeholder="Appréciation..."></td>
-                    <td><button class="btn btn-sm btn-icon text-danger" onclick="this.closest('tr').remove()"><i class="fas fa-times"></i></button></td>
-                </tr>
-            `;
-        });
-        
-        closeModal('addNoteModal');
-        new bootstrap.Modal(document.getElementById('saisieGrilleModal')).show();
-    });
-    
-    const btnSaveGrille = document.getElementById('btnSaveGrille');
-    if (btnSaveGrille) {
-        btnSaveGrille.addEventListener('click', async () => {
-            const rows = document.querySelectorAll('#grilleSaisieBody tr');
-            const notesToInsert = [];
-            
-            rows.forEach(row => {
-                const eleve_id = row.getAttribute('data-eleve-id');
-                const val = row.querySelector('.note-val').value;
-                if (val !== '') {
-                    notesToInsert.push({
-                        eleve_id: eleve_id,
-                        matiere: currentNoteConfig.matiere,
-                        type_evaluation: currentNoteConfig.type_evaluation,
-                        valeur: parseFloat(val),
-                        coefficient: currentNoteConfig.coefficient ? parseFloat(currentNoteConfig.coefficient) : 1,
-                        date_saisie: currentNoteConfig.date_saisie || new Date().toISOString()
-                    });
-                }
-            });
-            
-            if (notesToInsert.length === 0) {
-                if (window.showToast) window.showToast('Aucune note saisie', 'warning');
-                return;
-            }
-            
-            btnSaveGrille.disabled = true; btnSaveGrille.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            const { error } = await window.supabase.from('notes').insert(notesToInsert);
-            btnSaveGrille.disabled = false; btnSaveGrille.innerHTML = '<i class="fas fa-save me-1"></i>Enregistrer les notes';
-            
-            if (error) {
-                if (window.showToast) window.showToast(error.message, 'danger');
-            } else {
-                if(window.showToast) window.showToast('Notes enregistrées', 'success');
-                setTimeout(() => {
-                    closeModal('saisieGrilleModal');
-                    fetchAndRenderNotes();
-                }, 1000);
-            }
-        });
-    }
-}
-
-window.deleteNote = async function(id) {
-    if(!confirm('Supprimer cette note ?')) return;
-    await window.supabase.from('notes').delete().eq('id', id);
-    if(window.showToast) window.showToast('Note supprimée', 'success');
-    fetchAndRenderNotes();
-}
+// La logique des notes a été migrée vers notes.html pour la refonte.
 
 
 
@@ -1729,8 +1511,8 @@ window.deletePaiement = async function(id) {
 }
 
 
-fetchAndRenderNotes();
-    setupNotesModal();
+    // if(window.fetchAndRenderNotes) fetchAndRenderNotes();
+    // if(window.setupNotesModal) setupNotesModal();
     fetchAndRenderEmploi();
     setupEmploiModal();
 

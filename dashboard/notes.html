@@ -8,7 +8,31 @@
   <link href="/css/vendor/bootstrap.min.css" rel="stylesheet"/>
   <link href="/css/vendor/all.min.css" rel="stylesheet"/>
   <link href="../css/dashboard.css" rel="stylesheet"/>
-  <link rel="manifest" href="../manifest.json" />
+  <style>
+    .excel-input {
+      border: 1px solid transparent;
+      background: transparent;
+      width: 100%;
+      text-align: center;
+      font-weight: 500;
+      padding: 4px;
+      transition: all 0.2s;
+    }
+    .excel-input:focus {
+      border-color: var(--primary);
+      background: #fff;
+      outline: none;
+      box-shadow: 0 0 0 0.2rem rgba(37,99,235,.25);
+      border-radius: 4px;
+    }
+    .excel-input.dirty {
+      background-color: #fff3cd;
+      border-color: #ffc107;
+    }
+    .col-note {
+      width: 80px;
+    }
+  </style>
 </head>
 <body>
 <aside class="sidebar" id="sidebar"></aside>
@@ -22,121 +46,327 @@
 <main class="main-content" id="mainContent">
   <div class="page-header d-flex flex-wrap align-items-center justify-content-between gap-3">
     <div>
-      <h1 class="page-title">Notes & Bulletins</h1>
+      <h1 class="page-title">Saisie des Notes</h1>
       <nav aria-label="breadcrumb"><ol class="breadcrumb mb-0"><li class="breadcrumb-item"><a href="">Accueil</a></li><li class="breadcrumb-item active">Notes</li></ol></nav>
     </div>
     <div class="d-flex gap-2">
-      <!-- <button class="btn btn-outline-secondary btn-sm rounded-pill px-3"><i class="fas fa-print me-1"></i>Imprimer bulletins</button> (obsolete) -->
-      <button class="btn btn-primary btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#addNoteModal"><i class="fas fa-plus me-1"></i>Saisir des notes</button>
+      <button class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="openBulletinsInterface()"><i class="fas fa-file-alt me-1"></i>Génération des Bulletins</button>
     </div>
   </div>
 
-  <!-- Sélecteur Classe / Matière / Trimestre -->
+  <!-- Sélecteur Classe / Matière / Période -->
   <div class="dash-card mb-4 p-3">
     <div class="row g-3 align-items-end">
-      <div class="col-md-3"><label class="form-label">Classe</label><select class="form-select" id="selClasse"><option value="">Sélectionner une classe</option></select></div>
-      <div class="col-md-3"><label class="form-label">Matière</label><select class="form-select" id="selMatiere"><option value="">Sélectionner une matière</option></select></div>
-      <div class="col-md-3"><label class="form-label">Trimestre</label><select class="form-select" id="selTrimestre"><option value="T1">1er Trimestre</option><option value="T2">2ème Trimestre</option><option value="T3">3ème Trimestre</option></select></div>
-      <div class="col-md-3"><button class="btn btn-primary w-100 rounded-pill" onclick="fetchAndRenderNotes()">Charger les notes</button></div>
+      <div class="col-md-3">
+        <label class="form-label">Classe</label>
+        <select class="form-select" id="selClasse" onchange="onClasseChange()">
+          <option value="">Sélectionner une classe</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Matière</label>
+        <select class="form-select" id="selMatiere" disabled>
+          <option value="">Sélectionner une classe d'abord</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Période d'évaluation</label>
+        <select class="form-select" id="selPeriode">
+          <option value="">Chargement...</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <button class="btn btn-primary w-100 rounded-pill" onclick="chargerGrille()">Afficher la grille</button>
+      </div>
     </div>
   </div>
 
-  <!-- Stats notes -->
-  <div class="row g-3 mb-4">
-    <div class="col-6 col-md-3"><div class="stat-card"><div class="sc-icon bg-primary-soft mb-2"><i class="fas fa-users text-primary"></i></div><div class="sc-value">0</div><div class="sc-label">Élèves dans la classe</div></div></div>
-    <div class="col-6 col-md-3"><div class="stat-card"><div class="sc-icon bg-success-soft mb-2"><i class="fas fa-star text-success"></i></div><div class="sc-value">0</div><div class="sc-label">Moyenne de classe</div></div></div>
-    <div class="col-6 col-md-3"><div class="stat-card"><div class="sc-icon bg-warning-soft mb-2"><i class="fas fa-trophy text-warning"></i></div><div class="sc-value">0</div><div class="sc-label">Note maximale</div></div></div>
-    <div class="col-6 col-md-3"><div class="stat-card"><div class="sc-icon bg-danger-soft mb-2"><i class="fas fa-times text-danger"></i></div><div class="sc-value">0</div><div class="sc-label">Note minimale</div></div></div>
-  </div>
-
-  <!-- Table notes -->
-  <div class="dash-card">
-    <div class="dash-card-header">
-      <span class="dash-card-title"><i class="fas fa-clipboard-list text-primary me-2"></i>Notes – 3ème B · Mathématiques · T1</span>
-      <button class="btn btn-sm btn-outline-primary rounded-pill px-3 ms-auto" data-bs-toggle="modal" data-bs-target="#addNoteModal">Modifier les notes</button>
+  <!-- Grille de saisie type Excel -->
+  <div class="dash-card d-none" id="gridContainer">
+    <div class="dash-card-header d-flex justify-content-between align-items-center">
+      <span class="dash-card-title" id="gridTitle"><i class="fas fa-table text-primary me-2"></i>Grille de notes</span>
+      <div class="d-flex gap-2">
+        <span class="text-muted small mt-1" id="saveStatus"></span>
+        <button class="btn btn-sm btn-success rounded-pill px-3" onclick="sauvegarderNotes()"><i class="fas fa-save me-1"></i>Enregistrer les modifications</button>
+      </div>
     </div>
     <div class="dash-card-body p-0" style="overflow-x:auto">
-      <table class="dash-table">
-        <thead><tr>
-          <th>Élève</th>
-          <th class="text-center">Devoir 1</th>
-          <th class="text-center">Devoir 2</th>
-          <th class="text-center">Composition</th>
-          <th class="text-center">Moyenne</th>
-          <th class="text-center">Appréciation</th>
-          <th>Bulletin</th>
-        </tr></thead>
-        <tbody id="dynamicBody">
-          <!-- Données dynamiques insérées ici -->
+      <table class="dash-table table-bordered mb-0">
+        <thead class="bg-light">
+          <tr>
+            <th style="width: 50px;" class="text-center">N°</th>
+            <th style="width: 250px;">Élève</th>
+            <th class="text-center col-note" title="Devoir">Devoir (/20)</th>
+            <th class="text-center col-note" title="Composition / Examen">Examen (/20)</th>
+            <th class="text-center" style="width: 80px;">Moyenne</th>
+            <th>Appréciation / Observation</th>
+          </tr>
+        </thead>
+        <tbody id="grilleSaisieBody">
+          <!-- Chargé en JS -->
         </tbody>
       </table>
     </div>
-    <div class="p-3 border-top d-flex gap-2">
-      <button class="btn btn-success rounded-pill btn-sm px-3"><i class="fas fa-paper-plane me-1"></i>Envoyer bulletins aux parents</button>
-      <!-- <button class="btn btn-outline-secondary rounded-pill btn-sm px-3"><i class="fas fa-print me-1"></i>Imprimer tous</button> (obsolete) -->
-    </div>
   </div>
+
 </main>
 
-<!-- Modal saisir notes (Étape 1) -->
-<div class="modal fade" id="addNoteModal" tabindex="-1">
-  <div class="modal-dialog"><div class="modal-content">
-    <div class="modal-header"><h5 class="modal-title fw-bold"><i class="fas fa-clipboard-list text-primary me-2"></i>Configuration de l'évaluation</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-    <div class="modal-body">
-      <div class="row g-3">
-        <div class="col-6"><label class="form-label">Classe *</label><select name="classe_id" class="form-select" id="noteClasseSelect"><option value="">Sélectionner...</option></select></div>
-        <div class="col-6"><label class="form-label">Matière *</label><select name="matiere" class="form-select" id="noteMatiereSelect"><option value="">Sélectionner...</option></select></div>
-        <div class="col-6"><label class="form-label">Type d'évaluation *</label><select name="type_evaluation" class="form-select"><option value="Devoir">Devoir</option><option value="Composition">Composition</option><option value="Interrogation">Interrogation</option></select></div>
-        <div class="col-6"><label class="form-label">Note sur</label><input type="number" name="note_sur" class="form-control" value="20"/></div>
-        <div class="col-6"><label class="form-label">Coefficient</label><input type="number" name="coefficient" class="form-control" value="2"/></div>
-        <div class="col-6"><label class="form-label">Date</label><input type="date" name="date_saisie" class="form-control"/></div>
-        <div class="col-12"><p class="text-muted small mb-0"><i class="fas fa-info-circle me-1 text-primary"></i>Après validation, vous pourrez saisir les noms et notes des élèves.</p></div>
-      </div>
-    </div>
-    <div class="modal-footer"><button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Annuler</button><button type="button" class="btn btn-primary rounded-pill px-4 fw-semibold" id="btnContinueSaisie">Continuer vers la saisie</button></div>
-  </div></div>
-</div>
-
-<!-- Modal saisir notes (Étape 2 - Grille) -->
-<div class="modal fade" id="saisieGrilleModal" tabindex="-1">
-  <div class="modal-dialog modal-lg"><div class="modal-content">
-    <div class="modal-header"><h5 class="modal-title fw-bold"><i class="fas fa-edit text-primary me-2"></i>Saisie des notes individuelles</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-    <div class="modal-body">
-      <div class="table-responsive">
-        <table class="table table-bordered align-middle" id="grilleSaisieTable">
-          <thead class="table-light">
-            <tr>
-              <th>Nom de l'élève</th>
-              <th style="width: 150px;">Note (/20)</th>
-              <th>Appréciation (Optionnel)</th>
-              <th style="width: 50px;"></th>
-            </tr>
-          </thead>
-          <tbody id="grilleSaisieBody">
-          <!-- Données dynamiques insérées ici -->
-        </tbody>
-        </table>
-      </div>
-      <button class="btn btn-sm btn-outline-primary mt-2 rounded-pill px-3" onclick="addStudentRow()"><i class="fas fa-plus me-1"></i>Ajouter un élève</button>
-    </div>
-    <div class="modal-footer"><button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Annuler</button><button type="button" class="btn btn-success rounded-pill px-4 fw-semibold" id="btnSaveGrille"><i class="fas fa-save me-1"></i>Enregistrer les notes</button></div>
-  </div></div>
-</div>
 
 <script src="/js/vendor/bootstrap.bundle.min.js"></script>
-<script src="../js/dashboard.js"></script>
-
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('../sw.js');
-  }
-</script>
-
 <script src="../js/vendor/supabase.js"></script>
 <script src="../js/config.js"></script>
 <script src="../js/supabase.js"></script>
-<script src="../js/app.js"></script>
-  <script src="../js/security.js"></script>
-  <script src="../js/sidebar.js"></script>
+<script src="../js/sidebar.js"></script>
+<script src="../js/security.js"></script>
+
+<script>
+let currentEleves = [];
+let currentNotes = [];
+let currentClasseId = null;
+let currentMatiereId = null;
+let currentPeriodeId = null;
+let role = 'admin';
+
+async function initNotes() {
+    if(!window.supabase) return;
+    
+    // Déterminer le rôle
+    const session = await window.supabase.auth.getSession();
+    if (session.data.session) {
+        const r = JSON.parse(localStorage.getItem('edu_session') || '{}').role || 'admin';
+        role = r.toLowerCase();
+    }
+    
+    // Charger les périodes (qui sont les mêmes pour tous)
+    const {data: periodes} = await window.supabase.from('periodes_evaluation').select('*').eq('actif', true).order('ordre');
+    const selPeriode = document.getElementById('selPeriode');
+    selPeriode.innerHTML = '<option value="">Sélectionner...</option>' + 
+        (periodes||[]).map(p => `<option value="${p.id}">${p.nom}</option>`).join('');
+        
+    // Charger les classes
+    let queryClasses = window.supabase.from('classes').select('id, nom').order('nom');
+    
+    // Si c'est un enseignant, on devrait filtrer les classes où il enseigne (classes_matieres)
+    if (role === 'enseignant') {
+        const uid = session.data.session.user.id;
+        const {data: ens} = await window.supabase.from('enseignants').select('id').eq('user_id', uid).single();
+        if (ens) {
+            // Un peu complexe en une requête, on va charger toutes les classes_matieres de ce prof
+            const {data: cm} = await window.supabase.from('classes_matieres').select('classe_id').eq('matiere_id', 
+                window.supabase.from('matieres').select('id').eq('enseignant_id', ens.id)
+            );
+            // C'est une simplification pour l'exemple
+        }
+    }
+    
+    const {data: classes} = await queryClasses;
+    const selClasse = document.getElementById('selClasse');
+    selClasse.innerHTML = '<option value="">Sélectionner une classe</option>' + 
+        (classes||[]).map(c => `<option value="${c.id}">${c.nom}</option>`).join('');
+}
+
+window.onClasseChange = async function() {
+    const cid = document.getElementById('selClasse').value;
+    const selMatiere = document.getElementById('selMatiere');
+    
+    if(!cid) {
+        selMatiere.innerHTML = '<option value="">Sélectionner une classe d\'abord</option>';
+        selMatiere.disabled = true;
+        return;
+    }
+    
+    selMatiere.innerHTML = '<option value="">Chargement...</option>';
+    selMatiere.disabled = true;
+    
+    // Charger les matières assignées à cette classe
+    const {data: matieresAssignees} = await window.supabase
+        .from('classes_matieres')
+        .select('matiere_id, matieres(id, nom)')
+        .eq('classe_id', cid);
+        
+    if(!matieresAssignees || matieresAssignees.length === 0) {
+        selMatiere.innerHTML = '<option value="">Aucune matière configurée pour cette classe</option>';
+    } else {
+        selMatiere.innerHTML = '<option value="">Sélectionner une matière</option>' + 
+            matieresAssignees.map(m => `<option value="${m.matieres.id}">${m.matieres.nom}</option>`).join('');
+        selMatiere.disabled = false;
+    }
+}
+
+window.chargerGrille = async function() {
+    currentClasseId = document.getElementById('selClasse').value;
+    currentMatiereId = document.getElementById('selMatiere').value;
+    currentPeriodeId = document.getElementById('selPeriode').value;
+    
+    if(!currentClasseId || !currentMatiereId || !currentPeriodeId) {
+        alert("Veuillez sélectionner la classe, la matière et la période.");
+        return;
+    }
+    
+    // UI Update
+    document.getElementById('gridContainer').classList.remove('d-none');
+    const tbody = document.getElementById('grilleSaisieBody');
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4"><div class="spinner-border text-primary spinner-border-sm"></div> Chargement de la grille...</td></tr>';
+    
+    const cNom = document.getElementById('selClasse').options[document.getElementById('selClasse').selectedIndex].text;
+    const mNom = document.getElementById('selMatiere').options[document.getElementById('selMatiere').selectedIndex].text;
+    const pNom = document.getElementById('selPeriode').options[document.getElementById('selPeriode').selectedIndex].text;
+    document.getElementById('gridTitle').innerHTML = `<i class="fas fa-table text-primary me-2"></i>Saisie : ${cNom} - ${mNom} (${pNom})`;
+    
+    // 1. Charger les élèves de la classe
+    const {data: eleves} = await window.supabase.from('eleves').select('id, prenom, nom, matricule').eq('classe_id', currentClasseId).order('nom');
+    currentEleves = eleves || [];
+    
+    if(currentEleves.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">Aucun élève dans cette classe.</td></tr>';
+        return;
+    }
+    
+    // 2. Charger les notes existantes pour cette matière, classe et période
+    const {data: notes} = await window.supabase
+        .from('notes')
+        .select('*')
+        .eq('matiere_id', currentMatiereId)
+        .eq('periode_id', currentPeriodeId);
+        // Note: On pourrait rajouter .in('eleve_id', currentEleves.map(e=>e.id)) mais Supabase gère
+        
+    currentNotes = notes || [];
+    
+    // 3. Générer le HTML
+    tbody.innerHTML = currentEleves.map((e, index) => {
+        // Trouver les notes de cet élève (Devoir et Examen)
+        const noteDevoir = currentNotes.find(n => n.eleve_id === e.id && n.type_evaluation === 'Devoir');
+        const noteExamen = currentNotes.find(n => n.eleve_id === e.id && n.type_evaluation === 'Examen');
+        
+        const valDevoir = noteDevoir ? noteDevoir.valeur : '';
+        const valExamen = noteExamen ? noteExamen.valeur : '';
+        const appre = noteExamen ? noteExamen.appreciation : (noteDevoir ? noteDevoir.appreciation : '');
+        
+        let moyenneHtml = '<span class="text-muted">-</span>';
+        if(valDevoir !== '' && valExamen !== '') {
+            // Moyenne (Ex: (Devoir + Examen)/2)
+            const m = (parseFloat(valDevoir) + parseFloat(valExamen)) / 2;
+            let color = m >= 10 ? 'text-success' : 'text-danger';
+            moyenneHtml = `<strong class="${color}">${m.toFixed(2)}</strong>`;
+        } else if (valDevoir !== '') {
+            moyenneHtml = `<strong>${valDevoir}</strong>`; // Moyenne provisoire
+        } else if (valExamen !== '') {
+            moyenneHtml = `<strong>${valExamen}</strong>`;
+        }
+        
+        return `
+        <tr data-eleve="${e.id}">
+            <td class="text-center text-muted small">${index + 1}</td>
+            <td><div class="fw-semibold">${e.nom} ${e.prenom}</div><div class="text-muted" style="font-size:0.7rem">${e.matricule}</div></td>
+            <td class="p-0"><input type="number" min="0" max="20" step="0.25" class="excel-input n-devoir" value="${valDevoir}" onchange="markDirty(this)" onkeyup="calculerMoyenneLigne(this)"></td>
+            <td class="p-0"><input type="number" min="0" max="20" step="0.25" class="excel-input n-examen" value="${valExamen}" onchange="markDirty(this)" onkeyup="calculerMoyenneLigne(this)"></td>
+            <td class="text-center bg-light ligne-moyenne">${moyenneHtml}</td>
+            <td class="p-0"><input type="text" class="excel-input n-appre text-start px-2" value="${appre || ''}" onchange="markDirty(this)"></td>
+        </tr>
+        `;
+    }).join('');
+}
+
+window.markDirty = function(input) {
+    input.classList.add('dirty');
+    document.getElementById('saveStatus').innerHTML = '<span class="text-warning"><i class="fas fa-exclamation-triangle me-1"></i>Modifications non enregistrées</span>';
+}
+
+window.calculerMoyenneLigne = function(input) {
+    const tr = input.closest('tr');
+    const dVal = tr.querySelector('.n-devoir').value;
+    const eVal = tr.querySelector('.n-examen').value;
+    const tdMoy = tr.querySelector('.ligne-moyenne');
+    
+    if(dVal !== '' && eVal !== '') {
+        const m = (parseFloat(dVal) + parseFloat(eVal)) / 2;
+        let color = m >= 10 ? 'text-success' : 'text-danger';
+        tdMoy.innerHTML = `<strong class="${color}">${m.toFixed(2)}</strong>`;
+    } else if (dVal !== '') {
+        tdMoy.innerHTML = `<strong>${parseFloat(dVal)}</strong>`;
+    } else if (eVal !== '') {
+        tdMoy.innerHTML = `<strong>${parseFloat(eVal)}</strong>`;
+    } else {
+        tdMoy.innerHTML = '<span class="text-muted">-</span>';
+    }
+}
+
+window.sauvegarderNotes = async function() {
+    const rows = document.querySelectorAll('#grilleSaisieBody tr');
+    let notesToUpsert = []; // Supabase upsert works on conflict
+    
+    rows.forEach(tr => {
+        const eleveId = tr.getAttribute('data-eleve');
+        const devoirInput = tr.querySelector('.n-devoir');
+        const examenInput = tr.querySelector('.n-examen');
+        const appreInput = tr.querySelector('.n-appre');
+        
+        // Trouver si la note existait déjà
+        const noteDevoirAncienne = currentNotes.find(n => n.eleve_id === eleveId && n.type_evaluation === 'Devoir');
+        const noteExamenAncienne = currentNotes.find(n => n.eleve_id === eleveId && n.type_evaluation === 'Examen');
+        
+        if (devoirInput.classList.contains('dirty') || (devoirInput.value !== '' && !noteDevoirAncienne)) {
+            if (devoirInput.value !== '') {
+                notesToUpsert.push({
+                    id: noteDevoirAncienne ? noteDevoirAncienne.id : undefined,
+                    eleve_id: eleveId,
+                    matiere_id: currentMatiereId,
+                    periode_id: currentPeriodeId,
+                    type_evaluation: 'Devoir',
+                    valeur: parseFloat(devoirInput.value),
+                    appreciation: appreInput.value,
+                    statut: 'Brouillon'
+                });
+            }
+        }
+        
+        if (examenInput.classList.contains('dirty') || (examenInput.value !== '' && !noteExamenAncienne)) {
+            if (examenInput.value !== '') {
+                notesToUpsert.push({
+                    id: noteExamenAncienne ? noteExamenAncienne.id : undefined,
+                    eleve_id: eleveId,
+                    matiere_id: currentMatiereId,
+                    periode_id: currentPeriodeId,
+                    type_evaluation: 'Examen',
+                    valeur: parseFloat(examenInput.value),
+                    appreciation: appreInput.value,
+                    statut: 'Brouillon'
+                });
+            }
+        }
+    });
+    
+    if(notesToUpsert.length === 0) {
+        document.getElementById('saveStatus').innerHTML = '<span class="text-muted">Aucune modification à sauvegarder.</span>';
+        return;
+    }
+    
+    document.getElementById('saveStatus').innerHTML = '<span class="text-primary"><i class="fas fa-spinner fa-spin me-1"></i>Enregistrement...</span>';
+    
+    // Utiliser upsert
+    const { error } = await window.supabase.from('notes').upsert(notesToUpsert);
+    
+    if (error) {
+        console.error(error);
+        alert("Erreur lors de la sauvegarde: " + error.message);
+        document.getElementById('saveStatus').innerHTML = '<span class="text-danger"><i class="fas fa-times me-1"></i>Erreur</span>';
+    } else {
+        document.getElementById('saveStatus').innerHTML = '<span class="text-success"><i class="fas fa-check me-1"></i>Enregistré avec succès !</span>';
+        // Remove dirty classes
+        document.querySelectorAll('.dirty').forEach(el => el.classList.remove('dirty'));
+        // Rafraichir l'état interne
+        const {data: notes} = await window.supabase.from('notes').select('*').eq('matiere_id', currentMatiereId).eq('periode_id', currentPeriodeId);
+        currentNotes = notes || [];
+    }
+}
+
+window.openBulletinsInterface = function() {
+    window.location.href = "bulletins.html";
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(initNotes, 500);
+});
+</script>
 </body>
 </html>

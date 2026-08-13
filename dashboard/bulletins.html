@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Génération des Bulletins – EduManager</title>
+  <link rel="icon" type="image/png" href="..//img/favicon.png"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="/css/vendor/bootstrap.min.css" rel="stylesheet"/>
+  <link href="/css/vendor/all.min.css" rel="stylesheet"/>
+  <link href="../css/dashboard.css" rel="stylesheet"/>
+  <style>
+    /* Styling Premium pour le bulletin */
+    .bulletin-preview {
+        background: #fff;
+        padding: 40px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        border-radius: 8px;
+        margin: 20px auto;
+        max-width: 900px;
+        color: #333;
+        font-family: 'Inter', sans-serif;
+    }
+    .bulletin-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 3px solid var(--primary);
+        padding-bottom: 20px;
+        margin-bottom: 30px;
+    }
+    .bulletin-etab-info h2 {
+        font-weight: 800;
+        color: var(--primary);
+        margin-bottom: 5px;
+        text-transform: uppercase;
+        font-size: 1.5rem;
+    }
+    .bulletin-etab-info p { margin: 0; font-size: 0.85rem; color: #555; }
+    .bulletin-student-info {
+        display: flex;
+        gap: 40px;
+        margin-bottom: 30px;
+        background: #f8fafc;
+        padding: 20px;
+        border-radius: 8px;
+        border-left: 4px solid var(--primary);
+    }
+    .info-group span { display: block; }
+    .info-group .label { font-size: 0.75rem; text-transform: uppercase; color: #777; font-weight: 600; }
+    .info-group .val { font-size: 1.1rem; font-weight: 700; color: #111; }
+    
+    .bulletin-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+    .bulletin-table th, .bulletin-table td {
+        border: 1px solid #e2e8f0;
+        padding: 10px 12px;
+        text-align: center;
+        font-size: 0.9rem;
+    }
+    .bulletin-table th { background: var(--primary); color: #fff; font-weight: 600; text-transform: uppercase; font-size: 0.8rem; }
+    .bulletin-table .text-start { text-align: left; }
+    .bulletin-table .matiere-row { font-weight: 600; background: #f8fafc; }
+    
+    .bulletin-footer {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 40px;
+    }
+    .signature-box {
+        text-align: center;
+        width: 200px;
+    }
+    .signature-box .title { font-weight: 600; font-size: 0.9rem; margin-bottom: 60px; }
+    .signature-box .line { border-top: 1px dashed #999; }
+    
+    .bulletin-summary {
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 8px;
+        padding: 20px;
+        display: flex;
+        justify-content: space-around;
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    .summary-item .val { font-size: 1.8rem; font-weight: 800; color: var(--primary); }
+    .summary-item .label { font-size: 0.8rem; color: #555; text-transform: uppercase; font-weight: 600; }
+  </style>
+</head>
+<body>
+<aside class="sidebar" id="sidebar"></aside>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<header class="topbar" id="topbar">
+  <button class="topbar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+  <div class="topbar-search"><i class="fas fa-search"></i><input type="text" placeholder="Rechercher…"/></div>
+  <div class="topbar-actions"><button class="topbar-btn"><i class="fas fa-bell"></i><span class="notif-dot"></span></button><div class="topbar-divider"></div><div class="user-av" style="cursor:pointer">D</div></div>
+</header>
+
+<main class="main-content" id="mainContent">
+  <div class="page-header d-flex flex-wrap align-items-center justify-content-between gap-3">
+    <div>
+      <h1 class="page-title">Génération des Bulletins</h1>
+      <nav aria-label="breadcrumb"><ol class="breadcrumb mb-0"><li class="breadcrumb-item"><a href="">Accueil</a></li><li class="breadcrumb-item"><a href="notes.html">Notes</a></li><li class="breadcrumb-item active">Bulletins</li></ol></nav>
+    </div>
+  </div>
+
+  <div class="dash-card mb-4 p-3">
+    <div class="row g-3 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label">Classe</label>
+        <select class="form-select" id="selClasse" onchange="loadEleves()">
+          <option value="">Sélectionner une classe</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Période d'évaluation</label>
+        <select class="form-select" id="selPeriode" onchange="loadEleves()">
+          <option value="">Chargement...</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Élève</label>
+        <select class="form-select" id="selEleve" disabled>
+          <option value="">Sélectionner une classe d'abord</option>
+        </select>
+      </div>
+      <div class="col-md-3 d-flex gap-2">
+        <button class="btn btn-primary flex-grow-1 rounded-pill" onclick="genererBulletin()">Générer / Calculer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Aperçu du Bulletin -->
+  <div id="bulletinPreviewContainer" class="d-none">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold m-0 text-primary"><i class="fas fa-eye me-2"></i>Aperçu du bulletin professionnel</h5>
+        <div class="d-flex gap-2">
+            <button class="btn btn-warning rounded-pill px-4 text-dark fw-bold" id="btnValider" onclick="validerBulletin()"><i class="fas fa-check-circle me-1"></i>Valider le bulletin</button>
+            <button class="btn btn-outline-primary rounded-pill px-4" onclick="window.print()"><i class="fas fa-print me-1"></i>Imprimer PDF</button>
+        </div>
+    </div>
+    
+    <div class="bulletin-preview" id="printableBulletin">
+        <!-- Rempli par le JS -->
+    </div>
+  </div>
+
+</main>
+
+
+<script src="/js/vendor/bootstrap.bundle.min.js"></script>
+<script src="../js/vendor/supabase.js"></script>
+<script src="../js/config.js"></script>
+<script src="../js/supabase.js"></script>
+<script src="../js/sidebar.js"></script>
+<script src="../js/security.js"></script>
+
+<script>
+let currentEtab = null;
+let currentEleveData = null;
+let generatedData = null;
+
+async function initBulletins() {
+    if(!window.supabase) return;
+    
+    // Charger infos Etablissement
+    const {data: etab} = await window.supabase.from('etablissements').select('*').limit(1).single();
+    currentEtab = etab || { nom: "Mon Établissement", adresse: "", tel: "", email: "" };
+    
+    // Charger Périodes
+    const {data: periodes} = await window.supabase.from('periodes_evaluation').select('*').eq('actif', true).order('ordre');
+    document.getElementById('selPeriode').innerHTML = '<option value="">Sélectionner...</option>' + 
+        (periodes||[]).map(p => `<option value="${p.id}">${p.nom}</option>`).join('');
+        
+    // Charger Classes
+    const {data: classes} = await window.supabase.from('classes').select('id, nom').order('nom');
+    document.getElementById('selClasse').innerHTML = '<option value="">Sélectionner une classe</option>' + 
+        (classes||[]).map(c => `<option value="${c.id}">${c.nom}</option>`).join('');
+}
+
+async function loadEleves() {
+    const cid = document.getElementById('selClasse').value;
+    const selEleve = document.getElementById('selEleve');
+    
+    if(!cid) {
+        selEleve.innerHTML = '<option value="">Sélectionner une classe d\'abord</option>';
+        selEleve.disabled = true;
+        return;
+    }
+    
+    selEleve.innerHTML = '<option value="">Chargement...</option>';
+    selEleve.disabled = true;
+    
+    const {data: eleves} = await window.supabase.from('eleves').select('*').eq('classe_id', cid).order('nom');
+    if(!eleves || eleves.length === 0) {
+        selEleve.innerHTML = '<option value="">Aucun élève</option>';
+    } else {
+        selEleve.innerHTML = '<option value="">Sélectionner un élève</option>' + 
+            eleves.map(e => `<option value="${e.id}">${e.nom} ${e.prenom}</option>`).join('');
+        selEleve.disabled = false;
+    }
+}
+
+async function genererBulletin() {
+    const cid = document.getElementById('selClasse').value;
+    const pid = document.getElementById('selPeriode').value;
+    const eid = document.getElementById('selEleve').value;
+    
+    if(!cid || !pid || !eid) {
+        alert("Sélectionnez la classe, la période et l'élève.");
+        return;
+    }
+    
+    // Charger infos élève, classe, période
+    const {data: eleve} = await window.supabase.from('eleves').select('*, classes(nom)').eq('id', eid).single();
+    currentEleveData = eleve;
+    const pNom = document.getElementById('selPeriode').options[document.getElementById('selPeriode').selectedIndex].text;
+    
+    // Charger les notes
+    const {data: notes} = await window.supabase
+        .from('notes')
+        .select('*, matieres(nom, coefficient_defaut)')
+        .eq('eleve_id', eid)
+        .eq('periode_id', pid);
+        
+    if(!notes || notes.length === 0) {
+        alert("Aucune note trouvée pour cet élève sur cette période.");
+        return;
+    }
+    
+    // Engine de calcul
+    let totalPoints = 0;
+    let totalCoefs = 0;
+    let matieresStats = {};
+    
+    notes.forEach(n => {
+        const mId = n.matiere_id;
+        if(!matieresStats[mId]) {
+            matieresStats[mId] = {
+                nom: n.matieres.nom,
+                coef: n.matieres.coefficient_defaut || 1, // Devrait idéalement venir de classes_matieres
+                devoir: null,
+                examen: null,
+                appreciation: null
+            };
+        }
+        if(n.type_evaluation === 'Devoir') {
+            matieresStats[mId].devoir = parseFloat(n.valeur);
+            if(n.appreciation) matieresStats[mId].appreciation = n.appreciation;
+        }
+        if(n.type_evaluation === 'Examen') {
+            matieresStats[mId].examen = parseFloat(n.valeur);
+            if(n.appreciation) matieresStats[mId].appreciation = n.appreciation;
+        }
+    });
+    
+    let rowsHtml = '';
+    
+    for (let mId in matieresStats) {
+        const m = matieresStats[mId];
+        let moy = null;
+        if (m.devoir !== null && m.examen !== null) {
+            moy = (m.devoir + m.examen) / 2;
+        } else if (m.devoir !== null) {
+            moy = m.devoir;
+        } else if (m.examen !== null) {
+            moy = m.examen;
+        }
+        
+        if (moy !== null) {
+            totalPoints += (moy * m.coef);
+            totalCoefs += m.coef;
+            
+            rowsHtml += `
+                <tr>
+                    <td class="text-start fw-bold">${m.nom}</td>
+                    <td>${m.coef}</td>
+                    <td>${m.devoir !== null ? m.devoir : '-'}</td>
+                    <td>${m.examen !== null ? m.examen : '-'}</td>
+                    <td class="fw-bold ${moy >= 10 ? 'text-success' : 'text-danger'}">${moy.toFixed(2)}</td>
+                    <td class="fw-bold">${(moy * m.coef).toFixed(2)}</td>
+                    <td class="text-muted small">${m.appreciation || ''}</td>
+                </tr>
+            `;
+        }
+    }
+    
+    const moyenneGenerale = totalCoefs > 0 ? (totalPoints / totalCoefs) : 0;
+    let mention = 'Passable';
+    if(moyenneGenerale >= 16) mention = 'Très Bien';
+    else if(moyenneGenerale >= 14) mention = 'Bien';
+    else if(moyenneGenerale >= 12) mention = 'Assez Bien';
+    else if(moyenneGenerale < 10) mention = 'Insuffisant';
+    
+    let decision = moyenneGenerale >= 10 ? 'Admis' : 'Échec';
+    
+    // Garder en mémoire pour la sauvegarde
+    generatedData = {
+        eleve_id: eid,
+        periode_id: pid,
+        classe_id: cid,
+        moyenne_generale: moyenneGenerale.toFixed(2),
+        total_points: totalPoints.toFixed(2),
+        total_coefs: totalCoefs.toFixed(2),
+        mention: mention,
+        decision: decision,
+        donnees_json: matieresStats,
+        statut: 'Brouillon'
+    };
+    
+    // Affichage Premium
+    const container = document.getElementById('printableBulletin');
+    container.innerHTML = `
+        <div class="bulletin-header">
+            <div class="bulletin-etab-info">
+                <h2>${currentEtab.nom}</h2>
+                <p>${currentEtab.adresse} | Tél: ${currentEtab.tel}</p>
+                <p>${currentEtab.email}</p>
+            </div>
+            <div class="text-end">
+                <h3 class="fw-bold text-uppercase m-0">Bulletin de Notes</h3>
+                <p class="text-muted m-0">${pNom}</p>
+                <p class="text-muted m-0">Année Scolaire: 2025-2026</p>
+            </div>
+        </div>
+        
+        <div class="bulletin-student-info">
+            <div class="info-group">
+                <span class="label">Élève</span>
+                <span class="val">${eleve.nom} ${eleve.prenom}</span>
+            </div>
+            <div class="info-group">
+                <span class="label">Matricule</span>
+                <span class="val">${eleve.matricule}</span>
+            </div>
+            <div class="info-group">
+                <span class="label">Classe</span>
+                <span class="val">${eleve.classes ? eleve.classes.nom : ''}</span>
+            </div>
+        </div>
+        
+        <table class="bulletin-table">
+            <thead>
+                <tr>
+                    <th class="text-start">Matière</th>
+                    <th>Coef</th>
+                    <th>Devoir (/20)</th>
+                    <th>Examen (/20)</th>
+                    <th>Moyenne (/20)</th>
+                    <th>Total Points</th>
+                    <th>Appréciation / Observation</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${rowsHtml}
+            </tbody>
+        </table>
+        
+        <div class="bulletin-summary">
+            <div class="summary-item">
+                <div class="label">Total Points</div>
+                <div class="val text-dark">${totalPoints.toFixed(2)}</div>
+            </div>
+            <div class="summary-item">
+                <div class="label">Total Coefs</div>
+                <div class="val text-dark">${totalCoefs.toFixed(2)}</div>
+            </div>
+            <div class="summary-item">
+                <div class="label">Moyenne Générale</div>
+                <div class="val ${moyenneGenerale >= 10 ? 'text-success' : 'text-danger'}">${moyenneGenerale.toFixed(2)} <span style="font-size:1rem;color:#777">/20</span></div>
+            </div>
+            <div class="summary-item">
+                <div class="label">Mention</div>
+                <div class="val text-dark">${mention}</div>
+            </div>
+        </div>
+        
+        <div class="bulletin-footer">
+            <div class="signature-box">
+                <div class="title">Le Professeur Principal</div>
+                <div class="line"></div>
+            </div>
+            <div class="signature-box">
+                <div class="title">Le Chef d'Établissement</div>
+                <div class="line"></div>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('bulletinPreviewContainer').classList.remove('d-none');
+    
+    // Vérifier si le bulletin existe déjà et son statut
+    const {data: existingB} = await window.supabase.from('bulletins').select('id, statut').eq('eleve_id', eid).eq('periode_id', pid).maybeSingle();
+    const btnValider = document.getElementById('btnValider');
+    
+    if(existingB && existingB.statut === 'Validé') {
+        btnValider.classList.replace('btn-warning', 'btn-success');
+        btnValider.innerHTML = '<i class="fas fa-check-double me-1"></i>Bulletin déjà validé';
+        btnValider.disabled = true;
+    } else {
+        btnValider.classList.replace('btn-success', 'btn-warning');
+        btnValider.innerHTML = '<i class="fas fa-check-circle me-1"></i>Valider le bulletin';
+        btnValider.disabled = false;
+    }
+}
+
+async function validerBulletin() {
+    if(!generatedData) return;
+    
+    generatedData.statut = 'Validé';
+    const btn = document.getElementById('btnValider');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Validation...';
+    
+    const { error } = await window.supabase.from('bulletins').upsert({
+        ...generatedData,
+        updated_at: new Date().toISOString()
+    }, { onConflict: 'eleve_id, periode_id' });
+    
+    if(error) {
+        alert("Erreur lors de la validation: " + error.message);
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-check-circle me-1"></i>Valider le bulletin';
+    } else {
+        btn.classList.replace('btn-warning', 'btn-success');
+        btn.innerHTML = '<i class="fas fa-check-double me-1"></i>Bulletin Validé';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(initBulletins, 500);
+});
+</script>
+</body>
+</html>

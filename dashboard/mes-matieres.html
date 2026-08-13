@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Mes Matières – EduManager</title>
+  <link rel="icon" type="image/png" href="..//img/favicon.png"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="/css/vendor/bootstrap.min.css" rel="stylesheet"/>
+  <link href="/css/vendor/all.min.css" rel="stylesheet"/>
+  <link href="../css/dashboard.css" rel="stylesheet"/>
+</head>
+<body>
+<aside class="sidebar" id="sidebar"></aside>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<header class="topbar" id="topbar">
+  <button class="topbar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+  <div class="topbar-search"><i class="fas fa-search"></i><input type="text" placeholder="Rechercher une matière…"/></div>
+  <div class="topbar-actions"><button class="topbar-btn"><i class="fas fa-bell"></i><span class="notif-dot"></span></button><div class="topbar-divider"></div><div class="user-av" style="cursor:pointer">D</div></div>
+</header>
+<main class="main-content" id="mainContent">
+  <div class="page-header d-flex flex-wrap align-items-center justify-content-between gap-3">
+    <div>
+      <h1 class="page-title">Mes Matières</h1>
+      <nav aria-label="breadcrumb"><ol class="breadcrumb mb-0"><li class="breadcrumb-item"><a href="">Accueil</a></li><li class="breadcrumb-item active">Mes Matières</li></ol></nav>
+      <p class="page-subtitle mt-1 mb-0">Créez vos matières et assignez-les à vos classes.</p>
+    </div>
+    <button class="btn btn-primary btn-sm rounded-pill px-3" onclick="openMatiereModal()"><i class="fas fa-plus me-1"></i>Nouvelle Matière</button>
+  </div>
+
+  <div class="row">
+    <div class="col-12">
+      <div class="dash-card">
+        <div class="dash-card-header">
+          <span class="dash-card-title"><i class="fas fa-book-open text-primary me-2"></i>Matières que j'enseigne</span>
+        </div>
+        <div class="dash-card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="bg-light">
+                <tr>
+                  <th>Nom de la matière</th>
+                  <th>Coefficient Défaut</th>
+                  <th>Statut</th>
+                  <th>Classes assignées</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="matieresTableBody">
+                <tr><td colspan="5" class="text-center py-4">Chargement...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Modal Nouvelle/Edition Matière -->
+<div class="modal fade" id="matiereModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold" id="matiereModalTitle">Nouvelle Matière</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="matiereForm">
+          <input type="hidden" id="matiere_id">
+          <div class="mb-3">
+            <label class="form-label">Nom de la matière *</label>
+            <input type="text" id="matiere_nom" class="form-control" required placeholder="Ex: Mathématiques">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Coefficient par défaut *</label>
+            <input type="number" step="0.5" id="matiere_coef" class="form-control" required value="1.0">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Assigner à des classes</label>
+            <div id="classesCheckboxes" class="border p-3 rounded" style="max-height: 200px; overflow-y: auto;">
+                <div class="text-center text-muted small">Chargement des classes...</div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-primary rounded-pill px-4 fw-semibold" id="btnSaveMatiere">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/js/vendor/bootstrap.bundle.min.js"></script>
+<script src="../js/vendor/supabase.js"></script>
+<script src="../js/config.js"></script>
+<script src="../js/supabase.js"></script>
+<script src="../js/sidebar.js"></script>
+<script src="../js/security.js"></script>
+
+<script>
+let currentUserEnseignantId = null;
+let currentMatieres = [];
+let availableClasses = [];
+
+async function initMesMatieres() {
+    if(!window.supabase) return;
+    
+    // 1. Récupérer l'ID enseignant lié à l'utilisateur connecté
+    const session = await window.supabase.auth.getSession();
+    if (!session.data.session) return;
+    
+    const uid = session.data.session.user.id;
+    const {data: ens} = await window.supabase.from('enseignants').select('id').eq('user_id', uid).limit(1).single();
+    if (!ens) {
+        document.getElementById('mainContent').innerHTML = '<div class="alert alert-warning m-4">Vous n\'êtes pas reconnu comme enseignant. Veuillez contacter l\'administrateur.</div>';
+        return;
+    }
+    currentUserEnseignantId = ens.id;
+    
+    // 2. Charger les classes disponibles (pour les assignations)
+    const {data: classes} = await window.supabase.from('classes').select('id, nom').order('nom');
+    availableClasses = classes || [];
+    renderClassesCheckboxes();
+    
+    // 3. Charger les matières
+    loadMatieres();
+}
+
+function renderClassesCheckboxes() {
+    const container = document.getElementById('classesCheckboxes');
+    if(availableClasses.length === 0) {
+        container.innerHTML = '<div class="text-muted small">Aucune classe disponible.</div>';
+        return;
+    }
+    container.innerHTML = availableClasses.map(c => `
+        <div class="form-check mb-2">
+            <input class="form-check-input classe-checkbox" type="checkbox" value="${c.id}" id="classChk_${c.id}">
+            <label class="form-check-label" for="classChk_${c.id}">${c.nom}</label>
+        </div>
+    `).join('');
+}
+
+async function loadMatieres() {
+    const tbody = document.getElementById('matieresTableBody');
+    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4"><div class="spinner-border text-primary spinner-border-sm"></div> Chargement...</td></tr>';
+    
+    const { data, error } = await window.supabase
+        .from('matieres')
+        .select('*, classes_matieres(classe_id, classes(nom))')
+        .eq('enseignant_id', currentUserEnseignantId)
+        .order('nom');
+        
+    if (error) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger py-4">Erreur lors du chargement.</td></tr>';
+        return;
+    }
+    
+    currentMatieres = data || [];
+    
+    if (currentMatieres.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-muted"><i class="fas fa-folder-open mb-2" style="font-size:2rem"></i><br>Aucune matière configurée.<br><button class="btn btn-primary btn-sm mt-3 rounded-pill" onclick="openMatiereModal()">Créer ma première matière</button></td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = currentMatieres.map(m => {
+        const classesNames = m.classes_matieres.map(cm => cm.classes ? cm.classes.nom : '').filter(n=>n).join(', ');
+        let statutBadge = m.statut === 'Validé' ? 'bg-success' : 'bg-warning text-dark';
+        
+        return `
+        <tr>
+            <td class="fw-bold">${m.nom}</td>
+            <td>${m.coefficient_defaut}</td>
+            <td><span class="badge ${statutBadge} rounded-pill" style="font-size: 0.75rem">${m.statut || 'En attente'}</span></td>
+            <td class="text-muted small">${classesNames || '<i>Aucune classe assignée</i>'}</td>
+            <td>
+                <button class="btn btn-sm btn-outline-primary rounded-circle me-1" onclick="editMatiere('${m.id}')"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-sm btn-outline-danger rounded-circle" onclick="deleteMatiere('${m.id}')"><i class="fas fa-trash"></i></button>
+            </td>
+        </tr>
+    `}).join('');
+}
+
+window.openMatiereModal = function() {
+    document.getElementById('matiereForm').reset();
+    document.getElementById('matiere_id').value = '';
+    document.getElementById('matiereModalTitle').textContent = 'Nouvelle Matière';
+    document.querySelectorAll('.classe-checkbox').forEach(chk => chk.checked = false);
+    new bootstrap.Modal(document.getElementById('matiereModal')).show();
+}
+
+window.editMatiere = function(id) {
+    const m = currentMatieres.find(x => x.id === id);
+    if (!m) return;
+    
+    document.getElementById('matiereForm').reset();
+    document.getElementById('matiere_id').value = m.id;
+    document.getElementById('matiereModalTitle').textContent = 'Modifier la matière';
+    document.getElementById('matiere_nom').value = m.nom;
+    document.getElementById('matiere_coef').value = m.coefficient_defaut;
+    
+    document.querySelectorAll('.classe-checkbox').forEach(chk => chk.checked = false);
+    m.classes_matieres.forEach(cm => {
+        const chk = document.getElementById('classChk_' + cm.classe_id);
+        if (chk) chk.checked = true;
+    });
+    
+    new bootstrap.Modal(document.getElementById('matiereModal')).show();
+}
+
+window.deleteMatiere = async function(id) {
+    if(!confirm('Voulez-vous supprimer cette matière ? Toutes les notes associées seront perdues.')) return;
+    await window.supabase.from('matieres').delete().eq('id', id);
+    loadMatieres();
+}
+
+document.getElementById('btnSaveMatiere').addEventListener('click', async () => {
+    const btn = document.getElementById('btnSaveMatiere');
+    const id = document.getElementById('matiere_id').value;
+    const nom = document.getElementById('matiere_nom').value.trim();
+    const coef = parseFloat(document.getElementById('matiere_coef').value) || 1.0;
+    
+    if(!nom) {
+        alert("Le nom est obligatoire.");
+        return;
+    }
+    
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    
+    const matiereData = {
+        nom: nom,
+        coefficient_defaut: coef,
+        enseignant_id: currentUserEnseignantId
+    };
+    
+    // Si c'est une création, le statut par défaut est "En attente" via la BDD
+    let matiereIdToUse = id;
+    
+    if (id) {
+        await window.supabase.from('matieres').update(matiereData).eq('id', id);
+    } else {
+        const {data: newM, error} = await window.supabase.from('matieres').insert([matiereData]).select('id').single();
+        if(newM) matiereIdToUse = newM.id;
+    }
+    
+    if (matiereIdToUse) {
+        // Mettre à jour classes_matieres
+        // 1. Supprimer les anciennes
+        await window.supabase.from('classes_matieres').delete().eq('matiere_id', matiereIdToUse);
+        
+        // 2. Insérer les nouvelles
+        const selectedClasses = Array.from(document.querySelectorAll('.classe-checkbox:checked')).map(chk => chk.value);
+        if (selectedClasses.length > 0) {
+            const cmData = selectedClasses.map(cid => ({
+                classe_id: cid,
+                matiere_id: matiereIdToUse,
+                coefficient: coef // Par defaut on prend le coef de la matiere
+            }));
+            await window.supabase.from('classes_matieres').insert(cmData);
+        }
+    }
+    
+    btn.disabled = false;
+    btn.textContent = 'Enregistrer';
+    
+    bootstrap.Modal.getInstance(document.getElementById('matiereModal')).hide();
+    loadMatieres();
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(initMesMatieres, 500);
+});
+</script>
+</body>
+</html>
