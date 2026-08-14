@@ -2363,7 +2363,7 @@ function setupUtilisateursModal() {
             p_email: form.email,
             p_password: form.password,
             p_role: form.role,
-            p_group_id: null, // Resolves dynamically based on role in the SQL function
+            /* p_group_id omitted to use default */
             p_metadata: metadata
         });
         
@@ -2439,7 +2439,7 @@ async function initParametres() {
             if (error) {
                 if(window.showToast) window.showToast(error.message, 'danger');
             } else {
-                if(window.showToast) window.showToast('Paramètres enregistrés avec succès', 'success');
+                if(window.showToast) window.showToast('Paramï¿½tres enregistrï¿½s avec succï¿½s', 'success');
                 if (window.EduSettings) {
                     window.EduSettings.nom = updates.nom;
                     window.EduSettings.type = updates.type;
