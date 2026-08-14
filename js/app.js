@@ -305,7 +305,20 @@ async function initEtablissementSettings() {
     // S'assurer que la session est chargée pour passer la sécurité RLS
     await window.supabase.auth.getSession();
     
-    const { data: etabData } = await window.supabase.from('etablissements').select('*').limit(1).single();
+    let etabId = null;
+    const sessionStr = localStorage.getItem('edu_session');
+    if (sessionStr) {
+        try {
+            const session = JSON.parse(sessionStr);
+            etabId = session.etablissement_id;
+        } catch(e) {}
+    }
+    
+    let query = window.supabase.from('etablissements').select('*');
+    if (etabId) {
+        query = query.eq('id', etabId);
+    }
+    const { data: etabData } = await query.limit(1).single();
     if (etabData) {
         window.EduSettings = {
             nom: etabData.nom || 'Votre établissement',
@@ -1525,8 +1538,17 @@ async function fetchAndRenderMessages() {
     const msgList = document.getElementById('msgList');
     if (!msgList) return;
 
+    let etabId = null;
+    const sessionStr = localStorage.getItem('edu_session');
+    if (sessionStr) {
+        try { etabId = JSON.parse(sessionStr).etablissement_id; } catch(e) {}
+    }
+
+    let query = window.supabase.from('messages').select('*').order('date_envoi', { ascending: false });
+    if (etabId) query = query.eq('etablissement_id', etabId);
+
     // Fetch messages
-    const { data: messages, error } = await window.supabase.from('messages').select('*').order('date_envoi', { ascending: false });
+    const { data: messages, error } = await query;
     if (error) return console.error(error);
 
     // Group messages by 'sujet' (which acts as the conversation partner / group)
@@ -1611,11 +1633,18 @@ window.sendMessage = async function() {
     const txt = inp.value.trim();
     if (!txt || !currentChat) return;
     
+    let etabId = null;
+    const sessionStr = localStorage.getItem('edu_session');
+    if (sessionStr) {
+        try { etabId = JSON.parse(sessionStr).etablissement_id; } catch(e) {}
+    }
+    
     const { error } = await window.supabase.from('messages').insert([{
         sujet: 'To: ' + currentChat,
         contenu: txt,
         destinataire_id: null, // Bypass FK constraint for the mockup
-        expediteur_id: null
+        expediteur_id: null,
+        etablissement_id: etabId
     }]);
     
     if (error) {
@@ -1636,11 +1665,18 @@ window.sendNewMessage = async function() {
         return;
     }
     
+    let etabId = null;
+    const sessionStr = localStorage.getItem('edu_session');
+    if (sessionStr) {
+        try { etabId = JSON.parse(sessionStr).etablissement_id; } catch(e) {}
+    }
+    
     const { error } = await window.supabase.from('messages').insert([{
         sujet: 'To: ' + form.destinataire_grp,
         contenu: form.contenu,
         destinataire_id: null,
-        expediteur_id: null
+        expediteur_id: null,
+        etablissement_id: etabId
     }]);
     
     if (error) {

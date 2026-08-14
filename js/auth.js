@@ -117,7 +117,9 @@ async function supabaseRegister(data) {
       email: data.email, 
       plan: data.plan, 
       role: 'admin',
-      etablissement_id: rpcData ? rpcData.etablissement_id : null
+      etablissement_id: rpcData ? rpcData.etablissement_id : null,
+      permissions: ['*'],
+      groups: []
     };
     saveSession(session);
     localStorage.setItem('edu_abonnement', data.plan); // Pour la pagination dynamique
