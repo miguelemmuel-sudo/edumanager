@@ -297,7 +297,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    const path = window.location.pathname;
+    // The 'path' variable is already declared above for route protection
+    // const path = window.location.pathname;
     
     // ----- INITIALISATION ETABLISSEMENT -----
     await initEtablissementSettings();
@@ -2258,17 +2259,20 @@ async function fetchAndRenderUtilisateurs() {
         return;
     }
     
+    const usersList = users || [];
+    
     // Update KPIs
-    if (window.currentGroupFilter === 'Tous' && !statusFilter) {
+    if ((!window.currentGroupFilter || window.currentGroupFilter === 'Tous') && !statusFilter) {
         let admins=0, profs=0, compts=0, parents=0, eleves=0;
-        users.forEach(u => {
-            if(u.role === 'admin') admins++;
-            if(u.role === 'enseignant') profs++;
-            if(u.role === 'comptable') compts++;
-            if(u.role === 'parent') parents++;
-            if(u.role === 'eleve') eleves++;
+        usersList.forEach(u => {
+            const role = (u.role || '').toLowerCase();
+            if(role === 'admin' || role === 'directeur') admins++;
+            if(role === 'enseignant') profs++;
+            if(role === 'comptable') compts++;
+            if(role === 'parent') parents++;
+            if(role === 'eleve') eleves++;
         });
-        if(document.getElementById('kpiTotal')) document.getElementById('kpiTotal').innerText = users.length;
+        if(document.getElementById('kpiTotal')) document.getElementById('kpiTotal').innerText = usersList.length;
         if(document.getElementById('kpiAdmins')) document.getElementById('kpiAdmins').innerText = admins;
         if(document.getElementById('kpiProfs')) document.getElementById('kpiProfs').innerText = profs;
         if(document.getElementById('kpiComptables')) document.getElementById('kpiComptables').innerText = compts;
@@ -2278,8 +2282,8 @@ async function fetchAndRenderUtilisateurs() {
     
     tbody.innerHTML = '';
     
-    const filteredUsers = users.filter(u => {
-        if (window.currentGroupFilter === 'Tous') return true;
+    const filteredUsers = usersList.filter(u => {
+        if (!window.currentGroupFilter || window.currentGroupFilter === 'Tous') return true;
         // Check if user is in the selected group
         if (!u.user_group_members) return false;
         return u.user_group_members.some(m => m.user_groups && m.user_groups.name === window.currentGroupFilter);
