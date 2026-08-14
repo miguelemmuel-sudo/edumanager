@@ -2281,7 +2281,12 @@ async function fetchAndRenderUtilisateurs() {
         else if (u.statut === 'Suspendu') statusBadge = '<span class="status-badge danger">Suspendu</span>';
         else statusBadge = `<span class="status-badge warning">${u.statut}</span>`;
         
-        const isCurrent = (getSession() && getSession().userId === u.id);
+        let currentUserId = null;
+        try {
+            const sessionStr = localStorage.getItem('edu_session');
+            if (sessionStr) currentUserId = JSON.parse(sessionStr).userId;
+        } catch(e) {}
+        const isCurrent = (currentUserId === u.id);
         
         const suspendBtn = u.statut === 'Actif' 
             ? `<button class="btn btn-sm btn-outline-warning" onclick="toggleUserStatus('${u.id}', 'Suspendu')" title="Suspendre"><i class="fas fa-pause"></i></button>`
