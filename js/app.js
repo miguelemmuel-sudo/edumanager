@@ -2347,7 +2347,13 @@ function setupUtilisateursModal() {
     
     btnInvite.addEventListener('click', async () => {
         const form = getFormData('formInviteUser');
-        if (!form.email || !form.role || !form.prenom || !form.nom || !form.password) {
+        if (!form.email) {
+            const safePrenom = (form.prenom || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+            const safeNom = (form.nom || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+            const randomSuffix = Math.random().toString(36).substring(2, 6);
+            form.email = `${safePrenom}.${safeNom}.${randomSuffix}@edumanager.local`;
+        }
+        if (!form.role || !form.prenom || !form.nom || !form.password) {
             if(window.showToast) window.showToast("Veuillez remplir les champs obligatoires (*)", "warning");
             return;
         }
