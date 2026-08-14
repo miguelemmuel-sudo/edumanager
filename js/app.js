@@ -222,6 +222,52 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Setup global database search dropdown
     window.setupGlobalSearch();
 
+    // Override supabase.from to automatically filter by etablissement_id
+    if (window.supabase && !window.supabase._isOverridden) {
+        const originalFrom = window.supabase.from.bind(window.supabase);
+        window.supabase.from = function(table) {
+            const builder = originalFrom(table);
+            const tablesWithEtab = ['eleves', 'enseignants', 'classes', 'paiements', 'frais_scolaires', 'etablissements', 'notes', 'messages'];
+            
+            let etabId = null;
+            try {
+                const sessionStr = localStorage.getItem('edu_session');
+                if (sessionStr) {
+                    etabId = JSON.parse(sessionStr).etablissement_id;
+                }
+            } catch(e) {}
+            
+            if (tablesWithEtab.includes(table) && etabId) {
+                // Intercept .select
+                const originalSelect = builder.select.bind(builder);
+                builder.select = function(...args) {
+                    let q = originalSelect(...args);
+                    if (table !== 'etablissements') {
+                        q = q.eq('etablissement_id', etabId);
+                    }
+                    return q;
+                };
+                
+                // Intercept .insert
+                const originalInsert = builder.insert.bind(builder);
+                builder.insert = function(payload, ...args) {
+                    if (table !== 'etablissements') {
+                        if (Array.isArray(payload)) {
+                            payload.forEach(item => {
+                                if (item.etablissement_id === undefined) item.etablissement_id = etabId;
+                            });
+                        } else if (payload && typeof payload === 'object') {
+                            if (payload.etablissement_id === undefined) payload.etablissement_id = etabId;
+                        }
+                    }
+                    return originalInsert(payload, ...args);
+                };
+            }
+            return builder;
+        };
+        window.supabase._isOverridden = true;
+    }
+
     if (!window.supabase) {
         console.error('Supabase non chargé');
         return;
@@ -276,7 +322,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         setupRealtime('notifications', fetchAndRenderNotifications);
     }
     // ----- DASHBOARD (INDEX) -----
-    else if (path.includes('dashboard/index.html') || path.endsWith('dashboard/')) {
+    else if (path.includes('dashboard/index.html') || path.endsWith('dashboard/') || path.endsWith('dashboard')) {
         await initDashboardStats();
         // Update welcome message dynamically
         const subtitle = document.querySelector('.page-subtitle');
