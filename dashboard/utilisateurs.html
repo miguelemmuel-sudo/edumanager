@@ -1,8 +1,8 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>Utilisateurs â€“ EduManager</title>
+  <title>Utilisateurs – EduManager</title>
   <link rel="icon" type="image/png" href="../img/favicon.png"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
   <link href="/css/vendor/bootstrap.min.css" rel="stylesheet"/>
@@ -33,7 +33,7 @@
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 <header class="topbar" id="topbar">
   <button class="topbar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-  <div class="topbar-search"><i class="fas fa-search"></i><input type="text" placeholder="Rechercher un utilisateurâ€¦" id="searchInput" oninput="filterTable()"/></div>
+  <div class="topbar-search"><i class="fas fa-search"></i><input type="text" placeholder="Rechercher un utilisateur…" id="searchInput" oninput="filterTable()"/></div>
   <div class="topbar-actions">
     <div id="syncStatusIndicator" class="me-3 d-flex align-items-center"></div><button class="topbar-btn"><i class="fas fa-bell"></i><span class="notif-dot"></span></button><div class="topbar-divider"></div><div class="user-av" style="cursor:pointer">D</div></div>
 </header>
@@ -45,7 +45,7 @@
       <nav aria-label="breadcrumb"><ol class="breadcrumb mb-0"><li class="breadcrumb-item"><a href="">Accueil</a></li><li class="breadcrumb-item active">Utilisateurs</li></ol></nav>
     </div>
     <div class="d-flex gap-2">
-      <button class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="alert('Fonction de gestion des groupes en dÃ©veloppement')"><i class="fas fa-users-cog me-1"></i>GÃ©rer les groupes</button>
+      <button class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="alert('Fonction de gestion des groupes en développement')"><i class="fas fa-users-cog me-1"></i>Gérer les groupes</button>
       <button class="btn btn-primary btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#addUserModal"><i class="fas fa-plus me-1"></i>Ajouter un utilisateur</button>
     </div>
   </div>
@@ -57,7 +57,7 @@
     <div class="col-6 col-md-2"><div class="stat-card p-3"><div class="sc-icon bg-success-soft mb-2"><i class="fas fa-chalkboard-teacher text-success"></i></div><div class="fw-bold fs-4" id="kpiProfs">0</div><div class="text-muted" style="font-size:0.8rem">Enseignants</div></div></div>
     <div class="col-6 col-md-2"><div class="stat-card p-3"><div class="sc-icon bg-warning-soft mb-2"><i class="fas fa-user-tie text-warning"></i></div><div class="fw-bold fs-4" id="kpiComptables">0</div><div class="text-muted" style="font-size:0.8rem">Comptables</div></div></div>
     <div class="col-6 col-md-2"><div class="stat-card p-3"><div class="sc-icon bg-info-soft mb-2"><i class="fas fa-user-friends text-info"></i></div><div class="fw-bold fs-4" id="kpiParents">0</div><div class="text-muted" style="font-size:0.8rem">Parents</div></div></div>
-    <div class="col-6 col-md-2"><div class="stat-card p-3"><div class="sc-icon bg-secondary-soft mb-2"><i class="fas fa-user-graduate text-secondary"></i></div><div class="fw-bold fs-4" id="kpiEleves">0</div><div class="text-muted" style="font-size:0.8rem">Ã‰lÃ¨ves</div></div></div>
+    <div class="col-6 col-md-2"><div class="stat-card p-3"><div class="sc-icon bg-secondary-soft mb-2"><i class="fas fa-user-graduate text-secondary"></i></div><div class="fw-bold fs-4" id="kpiEleves">0</div><div class="text-muted" style="font-size:0.8rem">Élèves</div></div></div>
   </div>
 
   <!-- Onglets Groupes -->
@@ -78,7 +78,7 @@
       <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-parent" type="button" role="tab" onclick="filterTableByGroup('Parents')">Parents</button>
     </li>
     <li class="nav-item" role="presentation">
-      <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-eleve" type="button" role="tab" onclick="filterTableByGroup('Ã‰lÃ¨ves')">Ã‰lÃ¨ves</button>
+      <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-eleve" type="button" role="tab" onclick="filterTableByGroup('Élèves')">Élèves</button>
     </li>
   </ul>
 
@@ -95,10 +95,10 @@
     <div class="dash-card-body p-0" style="overflow-x:auto">
       <table class="dash-table" id="usersTable">
         <thead><tr>
-          <th>Utilisateur</th><th>Groupes/RÃ´le</th><th>DerniÃ¨re connexion</th><th>Statut</th><th>Actions</th>
+          <th>Utilisateur</th><th>Groupes/Rôle</th><th>Dernière connexion</th><th>Statut</th><th>Actions</th>
         </tr></thead>
         <tbody id="usersBody">
-          <!-- DonnÃ©es dynamiques insÃ©rÃ©es ici par update_rbac_utilisateurs.js -->
+          <!-- Données dynamiques insérées ici par update_rbac_utilisateurs.js -->
         </tbody>
       </table>
     </div>
@@ -113,34 +113,34 @@
       <form id="formInviteUser">
         <h6 class="fw-bold mb-3 text-primary">Informations personnelles</h6>
         <div class="row">
-          <div class="col-md-6 mb-3"><label class="form-label">PrÃ©nom *</label><input type="text" name="prenom" class="form-control" placeholder="Ex: Jean" required/></div>
+          <div class="col-md-6 mb-3"><label class="form-label">Prénom *</label><input type="text" name="prenom" class="form-control" placeholder="Ex: Jean" required/></div>
           <div class="col-md-6 mb-3"><label class="form-label">Nom *</label><input type="text" name="nom" class="form-control" placeholder="Ex: Dupont" required/></div>
         </div>
         <div class="row">
           <div class="col-md-6 mb-3"><label class="form-label">Email *</label><input type="email" name="email" class="form-control" placeholder="email@ecole.ci" required/></div>
-          <div class="col-md-6 mb-3"><label class="form-label">TÃ©lÃ©phone</label><input type="text" name="tel" class="form-control" placeholder="+225..."/></div>
+          <div class="col-md-6 mb-3"><label class="form-label">Téléphone</label><input type="text" name="tel" class="form-control" placeholder="+225..."/></div>
         </div>
         
         <hr class="my-4"/>
-        <h6 class="fw-bold mb-3 text-primary">Affectation et RÃ´le</h6>
+        <h6 class="fw-bold mb-3 text-primary">Affectation et Rôle</h6>
         <div class="row">
           <div class="col-md-6 mb-3">
             <label class="form-label">Groupe Principal *</label>
             <select class="form-select" name="role" id="roleSelect" onchange="toggleRoleFields()" required>
-              <option value="">SÃ©lectionner un groupeâ€¦</option>
+              <option value="">Sélectionner un groupe…</option>
               <option value="admin">Direction / Administrateur</option>
               <option value="enseignant">Enseignants</option>
               <option value="comptable">Comptables</option>
               <option value="parent">Parents</option>
-              <option value="eleve">Ã‰lÃ¨ves</option>
+              <option value="eleve">Élèves</option>
             </select>
-            <small class="text-muted mt-1 d-block">Le groupe dÃ©finit les permissions RBAC.</small>
+            <small class="text-muted mt-1 d-block">Le groupe définit les permissions RBAC.</small>
           </div>
           <div class="col-md-6 mb-3">
             <label class="form-label">Mot de passe temporaire *</label>
             <div class="input-group">
                 <input type="text" name="password" class="form-control" value="EduManager2025!" required id="tempPwd"/>
-                <button class="btn btn-outline-secondary" type="button" onclick="document.getElementById('tempPwd').value=Math.random().toString(36).slice(-8)+'A!1'">GÃ©nÃ©rer</button>
+                <button class="btn btn-outline-secondary" type="button" onclick="document.getElementById('tempPwd').value=Math.random().toString(36).slice(-8)+'A!1'">Générer</button>
             </div>
             <small class="text-muted mt-1 d-block">L'utilisateur devra le changer.</small>
           </div>
@@ -148,12 +148,12 @@
         
         <!-- Champs dynamiques -->
         <div id="dynamicFields" class="p-3 bg-light rounded border d-none mt-2">
-            <!-- InjectÃ© par JS -->
+            <!-- Injecté par JS -->
         </div>
 
       </form>
     </div>
-    <div class="modal-footer bg-light"><button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Annuler</button><button type="button" class="btn btn-primary rounded-pill px-4 fw-semibold" id="btnInviteUser"><i class="fas fa-save me-2"></i>CrÃ©er le compte</button></div>
+    <div class="modal-footer bg-light"><button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Annuler</button><button type="button" class="btn btn-primary rounded-pill px-4 fw-semibold" id="btnInviteUser"><i class="fas fa-save me-2"></i>Créer le compte</button></div>
   </div></div>
 </div>
 
@@ -177,4 +177,3 @@
 <div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1100;"></div>
 </body>
 </html>
-

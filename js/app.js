@@ -2363,7 +2363,6 @@ function setupUtilisateursModal() {
             p_email: form.email,
             p_password: form.password,
             p_role: form.role,
-            /* p_group_id omitted to use default */
             p_metadata: metadata
         });
         
