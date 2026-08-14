@@ -2306,7 +2306,6 @@ async function fetchAndRenderUtilisateurs() {
                 <td>
                   <div class="d-flex gap-2">
                     ${!isCurrent ? suspendBtn : ''}
-                    ${!isCurrent ? `<button class="btn btn-sm text-danger" style="background:rgba(239,68,68,.1)" onclick="deleteUser('${u.id}')"><i class="fas fa-trash"></i></button>` : ''}
                   </div>
                 </td>
             </tr>
