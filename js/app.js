@@ -2368,6 +2368,7 @@ function setupUtilisateursModal() {
             p_email: form.email,
             p_password: form.password,
             p_role: form.role,
+            p_group_id: null,
             p_metadata: metadata
         });
         
