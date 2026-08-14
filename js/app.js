@@ -227,7 +227,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const originalFrom = window.supabase.from.bind(window.supabase);
         window.supabase.from = function(table) {
             const builder = originalFrom(table);
-            const tablesWithEtab = ['eleves', 'enseignants', 'classes', 'paiements', 'frais_scolaires', 'etablissements', 'notes', 'messages'];
+            const tablesWithEtab = ['eleves', 'enseignants', 'classes', 'paiements', 'frais_scolaires', 'etablissements', 'notes', 'messages', 'profiles'];
             
             let etabId = null;
             try {
@@ -323,7 +323,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     // ----- DASHBOARD (INDEX) -----
     else if (path.includes('dashboard/index.html') || path.endsWith('dashboard/') || path.endsWith('dashboard')) {
-        await initDashboardStats();
         // Update welcome message dynamically
         const subtitle = document.querySelector('.page-subtitle');
         if (subtitle && window.EduSettings) {
@@ -1605,13 +1604,6 @@ async function fetchAndRenderMessages() {
         if (!conversations[chatName]) conversations[chatName] = [];
         conversations[chatName].push(m);
     });
-
-    // Dummy conversation if none exist
-    if (Object.keys(conversations).length === 0) {
-        conversations['M. Diallo Parent'] = [
-            { id: '1', contenu: 'Bonjour M. le Directeur, je voudrais avoir des informations sur les résultats.', date_envoi: new Date().toISOString(), expediteur_id: 'parent' }
-        ];
-    }
 
     msgList.innerHTML = '';
     for (const [name, msgs] of Object.entries(conversations)) {
