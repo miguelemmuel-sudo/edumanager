@@ -149,12 +149,15 @@ BEGIN
         RETURN json_build_object('success', false, 'error', 'Permission denied: Not in your establishment');
     END IF;
 
-    -- Delete from auth.users (will cascade to profiles if configured, else manual delete)
-    DELETE FROM auth.users WHERE id = p_user_id;
-    
-    -- Note: deletion from profiles, enseignants, eleves is handled by ON DELETE CASCADE
-    -- provided the foreign keys were setup with CASCADE. If not, we do it manually:
+    -- Delete from related tables manually to avoid foreign key constraint violations
+    -- if ON DELETE CASCADE is not configured on the tables.
+    DELETE FROM public.user_group_members WHERE user_id = p_user_id;
+    DELETE FROM public.enseignants WHERE user_id = p_user_id;
+    DELETE FROM public.eleves WHERE id = p_user_id;
     DELETE FROM public.profiles WHERE id = p_user_id;
+    
+    -- Finally delete from auth.users
+    DELETE FROM auth.users WHERE id = p_user_id;
     
     RETURN json_build_object('success', true);
     
