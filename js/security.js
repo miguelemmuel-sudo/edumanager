@@ -2,17 +2,18 @@
    EduManager – RBAC Security Middleware
 ============================================== */
 
-const ROUTE_PERMISSIONS = {
-    '/dashboard/paiements.html': ['payments.view', '*'],
-    '/dashboard/rapports.html': ['reports.view', '*'],
-    '/dashboard/classes.html': ['students.view', '*'],
-    '/dashboard/eleves.html': ['students.view', '*'],
-    '/dashboard/notes.html': ['grades.view', '*'],
-    '/dashboard/emploi-du-temps.html': ['students.view', 'teachers.view', '*'],
+const ROUTE_ROLES = {
+    '/dashboard/paiements.html': ['admin', 'secretaire', 'comptable', 'parent', 'eleve'],
+    '/dashboard/rapports.html': ['admin', 'secretaire', 'comptable'],
+    '/dashboard/classes.html': ['admin', 'secretaire', 'enseignant', 'surveillant'],
+    '/dashboard/eleves.html': ['admin', 'secretaire', 'comptable', 'enseignant', 'surveillant', 'parent'],
+    '/dashboard/enseignants.html': ['admin', 'secretaire'],
+    '/dashboard/notes.html': ['admin', 'secretaire', 'enseignant', 'eleve', 'parent'],
+    '/dashboard/emploi-du-temps.html': ['admin', 'secretaire', 'enseignant', 'eleve', 'parent'],
     '/dashboard/messages.html': [], // accessible to all authenticated
     '/dashboard/notifications.html': [], // accessible to all
-    '/dashboard/utilisateurs.html': ['*'], // Admin only
-    '/dashboard/parametres.html': ['settings.manage', '*']
+    '/dashboard/utilisateurs.html': ['admin', 'secretaire'],
+    '/dashboard/parametres.html': ['admin']
 };
 
 function hasPermission(session, permission) {
@@ -60,17 +61,17 @@ function checkAccess() {
         }
 
         // Admin has full access
-        if (permissions.includes('*')) return;
+        if (role === 'admin' || permissions.includes('*')) return;
 
-        // Check if the current path requires specific permissions
-        let allowed = true; // default true for unknown paths, or false? Let's be secure: if it's defined, check it.
+        // Check if the current path requires specific roles
+        let allowed = true; // default true for unknown paths
         
-        for (const [route, reqPerms] of Object.entries(ROUTE_PERMISSIONS)) {
-            if (path.includes(route)) {
-                if (reqPerms.length === 0) {
+        for (const [route, allowedRoles] of Object.entries(ROUTE_ROLES)) {
+            if (path.includes(route.replace('/dashboard/', ''))) {
+                if (allowedRoles.length === 0) {
                     allowed = true; // accessible to all
                 } else {
-                    allowed = reqPerms.some(p => permissions.includes(p));
+                    allowed = allowedRoles.includes(role);
                 }
                 break;
             }
