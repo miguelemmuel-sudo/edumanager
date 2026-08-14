@@ -2316,9 +2316,11 @@ async function fetchAndRenderUtilisateurs() {
 
 window.toggleUserStatus = async function(id, newStatus) {
     if(confirm(`Voulez-vous passer cet utilisateur au statut : ${newStatus} ?`)) {
-        const { error } = await window.supabase.rpc('admin_toggle_user_status', { p_user_id: id, p_statut: newStatus });
+        const { data, error } = await window.supabase.rpc('admin_toggle_user_status', { p_user_id: id, p_statut: newStatus });
         if(error) {
             if(window.showToast) window.showToast(error.message, 'danger');
+        } else if (data && data.success === false) {
+            if(window.showToast) window.showToast(data.error || "Erreur de mise à jour du statut", 'danger');
         } else {
             if(window.showToast) window.showToast('Statut mis à jour', 'success');
             fetchAndRenderUtilisateurs();
