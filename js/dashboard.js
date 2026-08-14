@@ -39,6 +39,21 @@ document.addEventListener('DOMContentLoaded', function() {
               el.textContent = _e(prenom).charAt(0).toUpperCase();
             });
             
+            // Display Welcome Message with Establishment Name
+            if (session.etab_id) {
+                window.supabase.from('etablissements').select('nom').eq('id', session.etab_id).single()
+                .then(({ data: etab, error }) => {
+                    if (etab && etab.nom) {
+                        const titleEls = document.querySelectorAll('main h2');
+                        titleEls.forEach(titleEl => {
+                            if (titleEl.textContent.toLowerCase().includes('tableau de bord') || titleEl.textContent.toLowerCase().includes('gestion des')) {
+                                titleEl.innerHTML = `<i class="fas fa-building text-primary me-2"></i>Bienvenue à ${etab.nom}`;
+                            }
+                        });
+                    }
+                });
+            }
+            
             // Profil.html inputs
             const profileForm = document.querySelector('form');
             if (profileForm && window.location.pathname.includes('profil.html')) {

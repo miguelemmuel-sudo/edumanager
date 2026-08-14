@@ -33,60 +33,61 @@ function renderSidebar() {
 const menuItems = [];
 
     // Dashboard Base
-    if (role === 'admin' || role === 'secretaire' || role === 'surveillant' || role === 'comptable') {
+    if (['admin', 'secretaire', 'surveillant'].includes(role)) {
         menuItems.push({ label: 'Tableau de bord', icon: 'fa-th-large', link: 'index.html', section: 'Principal' });
-    } else if (role === 'enseignant') {
-        menuItems.push({ label: 'Tableau de bord', icon: 'fa-th-large', link: 'enseignant.html', section: 'Principal' });
-    } else if (role === 'parent') {
-        menuItems.push({ label: 'Tableau de bord', icon: 'fa-th-large', link: 'parent.html', section: 'Principal' });
-    } else if (role === 'eleve') {
-        menuItems.push({ label: 'Tableau de bord', icon: 'fa-th-large', link: 'eleve.html', section: 'Principal' });
     }
 
     // Gestion
-    if (['admin', 'secretaire'].includes(role)) {
+    if (['admin', 'secretaire', 'surveillant'].includes(role)) {
         menuItems.push({ label: 'Élèves', icon: 'fa-user-graduate', link: 'eleves.html', section: 'Gestion' });
-    }
-    if (['admin'].includes(role)) {
         menuItems.push({ label: 'Enseignants', icon: 'fa-chalkboard-teacher', link: 'enseignants.html', section: 'Gestion' });
-    }
-    if (['admin', 'enseignant', 'secretaire'].includes(role)) {
         menuItems.push({ label: 'Classes', icon: 'fa-door-open', link: 'classes.html', section: 'Gestion' });
-    }
-    if (['enseignant'].includes(role)) {
-        menuItems.push({ label: 'Mes Matières', icon: 'fa-book-open', link: 'mes-matieres.html', section: 'Gestion' });
-    }
-    if (['admin', 'enseignant', 'parent', 'eleve'].includes(role)) {
         menuItems.push({ label: 'Notes', icon: 'fa-clipboard-list', link: 'notes.html', section: 'Gestion' });
-    }
-    if (['admin', 'enseignant', 'parent', 'eleve'].includes(role)) {
         menuItems.push({ label: 'Bulletins', icon: 'fa-file-alt', link: 'bulletins.html', section: 'Gestion' });
-    }
-    if (['admin', 'enseignant', 'parent', 'eleve'].includes(role)) {
         menuItems.push({ label: 'Emplois du temps', icon: 'fa-calendar-alt', link: 'emploi-du-temps.html', section: 'Gestion' });
+    } else if (role === 'enseignant') {
+        menuItems.push({ label: 'Mes Classes', icon: 'fa-door-open', link: 'classes.html', section: 'Gestion' });
+        menuItems.push({ label: 'Mes Matières', icon: 'fa-book-open', link: 'mes-matieres.html', section: 'Gestion' });
+        menuItems.push({ label: 'Notes', icon: 'fa-clipboard-list', link: 'notes.html', section: 'Gestion' });
+        menuItems.push({ label: 'Bulletins', icon: 'fa-file-alt', link: 'bulletins.html', section: 'Gestion' });
+        menuItems.push({ label: 'Emplois du temps', icon: 'fa-calendar-alt', link: 'emploi-du-temps.html', section: 'Gestion' });
+    } else if (role === 'comptable') {
+        menuItems.push({ label: 'Élèves', icon: 'fa-user-graduate', link: 'eleves.html', section: 'Gestion' });
+    } else if (role === 'parent') {
+        menuItems.push({ label: 'Mes Enfants', icon: 'fa-user-graduate', link: 'eleves.html', section: 'Gestion' });
+        menuItems.push({ label: 'Notes', icon: 'fa-clipboard-list', link: 'notes.html', section: 'Gestion' });
+        menuItems.push({ label: 'Bulletins', icon: 'fa-file-alt', link: 'bulletins.html', section: 'Gestion' });
+        menuItems.push({ label: 'Emploi du temps', icon: 'fa-calendar-alt', link: 'emploi-du-temps.html', section: 'Gestion' });
+    } else if (role === 'eleve') {
+        menuItems.push({ label: 'Mes Notes', icon: 'fa-clipboard-list', link: 'notes.html', section: 'Gestion' });
+        menuItems.push({ label: 'Mes Bulletins', icon: 'fa-file-alt', link: 'bulletins.html', section: 'Gestion' });
+        menuItems.push({ label: 'Mon Emploi du temps', icon: 'fa-calendar-alt', link: 'emploi-du-temps.html', section: 'Gestion' });
     }
 
     // Finance
-    if (['admin', 'comptable'].includes(role)) {
+    if (['admin', 'secretaire'].includes(role)) {
         menuItems.push({ label: 'Paiements', icon: 'fa-credit-card', link: 'paiements.html', section: 'Finance', badge: '0', badgeClass: 'bg-danger-soft text-danger', badgeId: 'sidebarBadgePaiements' });
-    }
-    if (['parent'].includes(role)) {
+    } else if (role === 'comptable') {
+        menuItems.push({ label: 'Paiements', icon: 'fa-credit-card', link: 'paiements.html', section: 'Finance', badge: '0', badgeClass: 'bg-danger-soft text-danger', badgeId: 'sidebarBadgePaiements' });
+        menuItems.push({ label: 'Reçus', icon: 'fa-receipt', link: 'paiements.html', section: 'Finance' });
+        menuItems.push({ label: 'Rapports financiers', icon: 'fa-chart-pie', link: 'rapports.html', section: 'Finance' });
+    } else if (role === 'parent') {
+        menuItems.push({ label: 'Paiements', icon: 'fa-credit-card', link: 'paiements.html', section: 'Finance' });
+    } else if (role === 'eleve') {
         menuItems.push({ label: 'Mes Paiements', icon: 'fa-credit-card', link: 'paiements.html', section: 'Finance' });
     }
 
-    // Communication
+    // Communication (Tous les rôles ont accès)
     menuItems.push({ label: 'Messages', icon: 'fa-comments', link: 'messages.html', section: 'Communication', badge: '0', badgeClass: 'bg-primary-soft text-primary', badgeId: 'sidebarBadgeMessages' });
     menuItems.push({ label: 'Notifications', icon: 'fa-bell', link: 'notifications.html', section: 'Communication' });
 
-    // Administration
-    if (['admin'].includes(role)) {
+    // Administration / Paramètres
+    if (['admin', 'secretaire'].includes(role)) {
         menuItems.push({ label: 'Utilisateurs', icon: 'fa-users-cog', link: 'utilisateurs.html', section: 'Administration' });
-    }
-    if (['admin', 'comptable'].includes(role)) {
         menuItems.push({ label: 'Rapports', icon: 'fa-chart-line', link: 'rapports.html', section: 'Administration' });
-    }
-    if (['admin'].includes(role)) {
         menuItems.push({ label: 'Paramètres', icon: 'fa-cog', link: 'parametres.html', section: 'Administration' });
+    } else {
+        menuItems.push({ label: 'Mon Profil', icon: 'fa-user', link: 'profil.html', section: 'Paramètres' });
     }
 
     let menuHTML = `<div class="sidebar-nav">`;

@@ -214,6 +214,30 @@ window.applyUrlSearch = function() {
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
+    // --- Frontend Route Protection ---
+    const path = window.location.pathname;
+    const sessionStr = localStorage.getItem('edu_session');
+    if (sessionStr) {
+        try {
+            const session = JSON.parse(sessionStr);
+            const role = (session.role || '').toLowerCase();
+            
+            const protectedAdmin = ['utilisateurs.html', 'enseignants.html', 'parametres.html'];
+            
+            if (protectedAdmin.some(p => path.includes(p)) && !['admin', 'secretaire', 'surveillant'].includes(role)) {
+                if (window.showToast) window.showToast("Accès refusé. Redirection...", "danger");
+                setTimeout(() => window.location.href = 'index.html', 1500);
+                return; // Stop execution
+            }
+            if (path.includes('rapports.html') && !['admin', 'comptable'].includes(role)) {
+                if (window.showToast) window.showToast("Accès refusé. Redirection...", "danger");
+                setTimeout(() => window.location.href = 'index.html', 1500);
+                return;
+            }
+        } catch (e) {}
+    }
+    // ---------------------------------
+
     // Attach filterTable to all search inputs automatically
     document.querySelectorAll('.topbar-search input, input[placeholder^="Rechercher"]').forEach(input => {
         input.addEventListener('input', window.filterTable);
