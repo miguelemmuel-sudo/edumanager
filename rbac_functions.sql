@@ -49,7 +49,11 @@ BEGIN
         raw_app_meta_data,
         raw_user_meta_data,
         created_at,
-        updated_at
+        updated_at,
+        confirmation_token,
+        recovery_token,
+        email_change_token_new,
+        email_change
     )
     VALUES (
         '00000000-0000-0000-0000-000000000000',
@@ -61,6 +65,32 @@ BEGIN
         now(),
         '{"provider":"email","providers":["email"]}'::jsonb,
         p_metadata,
+        now(),
+        now(),
+        '',
+        '',
+        '',
+        ''
+    );
+
+    -- Insert into auth.identities (Required for GoTrue to allow login)
+    INSERT INTO auth.identities (
+        id,
+        user_id,
+        provider_id,
+        identity_data,
+        provider,
+        last_sign_in_at,
+        created_at,
+        updated_at
+    )
+    VALUES (
+        gen_random_uuid(),
+        v_new_user_id,
+        v_new_user_id::text,
+        jsonb_build_object('sub', v_new_user_id, 'email', p_email),
+        'email',
+        now(),
         now(),
         now()
     );
