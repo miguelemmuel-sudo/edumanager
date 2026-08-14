@@ -13,7 +13,8 @@ const ROUTE_ROLES = {
     '/dashboard/messages.html': [], // accessible to all authenticated
     '/dashboard/notifications.html': [], // accessible to all
     '/dashboard/utilisateurs.html': ['admin', 'secretaire'],
-    '/dashboard/parametres.html': ['admin']
+    '/dashboard/parametres.html': ['admin'],
+    '/dashboard/profil.html': [] // blocked for everyone
 };
 
 function hasPermission(session, permission) {
@@ -56,7 +57,7 @@ function checkAccess() {
         }
 
         // Bypass for generic pages
-        if (path.includes('profil.html') || path.includes('enseignant.html') || path.includes('parent.html') || path.includes('eleve.html')) {
+        if (path.includes('enseignant.html') || path.includes('parent.html') || path.includes('eleve.html')) {
             return;
         }
 

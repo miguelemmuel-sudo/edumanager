@@ -86,8 +86,6 @@ const menuItems = [];
         menuItems.push({ label: 'Utilisateurs', icon: 'fa-users-cog', link: 'utilisateurs.html', section: 'Administration' });
         menuItems.push({ label: 'Rapports', icon: 'fa-chart-line', link: 'rapports.html', section: 'Administration' });
         menuItems.push({ label: 'Paramètres', icon: 'fa-cog', link: 'parametres.html', section: 'Administration' });
-    } else {
-        menuItems.push({ label: 'Mon Profil', icon: 'fa-user', link: 'profil.html', section: 'Paramètres' });
     }
 
     let menuHTML = `<div class="sidebar-nav">`;
