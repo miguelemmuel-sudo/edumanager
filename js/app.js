@@ -451,17 +451,28 @@ function adaptAppTaxonomy() {
     
     // Update logo in sidebar
     if (window.EduSettings.logo_url) {
-        const brandIcon = document.querySelector('.brand-icon');
-        if (brandIcon) {
-            const img = document.createElement('img');
-            img.src = window.EduSettings.logo_url;
-            img.style.width = '32px';
-            img.style.height = '32px';
-            img.style.objectFit = 'cover';
-            img.style.borderRadius = '50%';
-            img.className = 'me-2';
-            brandIcon.parentNode.insertBefore(img, brandIcon);
-            brandIcon.remove();
+        let img = document.querySelector('.sidebar-brand img');
+        if (!img) {
+            const brandIcon = document.querySelector('.brand-icon');
+            if (brandIcon) {
+                img = document.createElement('img');
+                img.style.width = '32px';
+                img.style.height = '32px';
+                img.style.objectFit = 'cover';
+                img.style.borderRadius = '50%';
+                img.className = 'me-2';
+                brandIcon.parentNode.insertBefore(img, brandIcon);
+                brandIcon.remove();
+            }
+        }
+        if (img) img.src = window.EduSettings.logo_url;
+    }
+
+    // Update name in sidebar
+    if (window.EduSettings.nom) {
+        const brandName = document.querySelector('.brand-name');
+        if (brandName) {
+            brandName.textContent = window.EduSettings.nom;
         }
     }
 
@@ -2452,6 +2463,54 @@ async function initParametres() {
         
         if (etabData.type && document.getElementById('etab_type')) document.getElementById('etab_type').value = etabData.type;
         if (etabData.systeme_educatif && document.getElementById('etab_systeme')) document.getElementById('etab_systeme').value = etabData.systeme_educatif;
+    }
+
+    // Handle logo upload
+    const btnChangerLogo = document.getElementById('btnChangerLogo');
+    const logoUploadInput = document.getElementById('logoUploadInput');
+    
+    if (btnChangerLogo && logoUploadInput) {
+        btnChangerLogo.addEventListener('click', () => {
+            logoUploadInput.click();
+        });
+        
+        logoUploadInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            // Check size (max 2MB)
+            if (file.size > 2 * 1024 * 1024) {
+                if (window.showToast) window.showToast("Le fichier est trop volumineux (max 2MB)", "danger");
+                else alert("Fichier trop volumineux");
+                return;
+            }
+            
+            // Convert to Base64
+            const reader = new FileReader();
+            reader.onload = async (ev) => {
+                const base64String = ev.target.result;
+                
+                // Show loading on button
+                btnChangerLogo.disabled = true;
+                btnChangerLogo.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>...';
+                
+                const { error } = await window.supabase.from('etablissements').update({ logo_url: base64String }).eq('id', etabId);
+                
+                btnChangerLogo.disabled = false;
+                btnChangerLogo.innerHTML = '<i class="fas fa-upload me-1"></i>Changer le logo';
+                
+                if (error) {
+                    console.error("Erreur logo", error);
+                    if (window.showToast) window.showToast("Erreur lors de l'enregistrement du logo", "danger");
+                } else {
+                    if (window.showToast) window.showToast("Logo mis à jour avec succès", "success");
+                    // Update UI right away
+                    if (window.EduSettings) window.EduSettings.logo_url = base64String;
+                    adaptAppTaxonomy(); // Re-run to update the sidebar logo
+                }
+            };
+            reader.readAsDataURL(file);
+        });
     }
 
     // Bind save button
