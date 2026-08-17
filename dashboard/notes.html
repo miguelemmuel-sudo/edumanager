@@ -331,8 +331,7 @@ window.sauvegarderNotes = async function() {
         
         if (devoirInput.classList.contains('dirty') || (devoirInput.value !== '' && !noteDevoirAncienne)) {
             if (devoirInput.value !== '') {
-                notesToUpsert.push({
-                    id: noteDevoirAncienne ? noteDevoirAncienne.id : undefined,
+                const noteObj = {
                     eleve_id: eleveId,
                     matiere_id: currentMatiereId,
                     periode_id: currentPeriodeId,
@@ -340,14 +339,17 @@ window.sauvegarderNotes = async function() {
                     valeur: parseFloat(devoirInput.value),
                     commentaire: appreInput.value,
                     statut: 'Brouillon'
-                });
+                };
+                if (noteDevoirAncienne && noteDevoirAncienne.id) {
+                    noteObj.id = noteDevoirAncienne.id;
+                }
+                notesToUpsert.push(noteObj);
             }
         }
         
         if (examenInput.classList.contains('dirty') || (examenInput.value !== '' && !noteExamenAncienne)) {
             if (examenInput.value !== '') {
-                notesToUpsert.push({
-                    id: noteExamenAncienne ? noteExamenAncienne.id : undefined,
+                const noteObj = {
                     eleve_id: eleveId,
                     matiere_id: currentMatiereId,
                     periode_id: currentPeriodeId,
@@ -355,7 +357,11 @@ window.sauvegarderNotes = async function() {
                     valeur: parseFloat(examenInput.value),
                     commentaire: appreInput.value,
                     statut: 'Brouillon'
-                });
+                };
+                if (noteExamenAncienne && noteExamenAncienne.id) {
+                    noteObj.id = noteExamenAncienne.id;
+                }
+                notesToUpsert.push(noteObj);
             }
         }
     });
