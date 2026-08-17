@@ -75,10 +75,7 @@
       <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-compt" type="button" role="tab" onclick="filterTableByGroup('Comptables')">Comptables</button>
     </li>
     <li class="nav-item" role="presentation">
-      <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-parent" type="button" role="tab" onclick="filterTableByGroup('Parents')">Parents</button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-eleve" type="button" role="tab" onclick="filterTableByGroup('Élèves')">Élèves</button>
+      <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-surv" type="button" role="tab" onclick="filterTableByGroup('Surveillants')">Surveillants</button>
     </li>
   </ul>
 
@@ -131,12 +128,11 @@
           <div class="col-md-6 mb-3">
             <label class="form-label">Groupe Principal *</label>
             <select class="form-select" name="role" id="roleSelect" onchange="toggleRoleFields()" required>
-              <option value="">Sélectionner un groupe…</option>
+              <option value="">Sélectionner un groupe...</option>
               <option value="admin">Direction / Administrateur</option>
               <option value="enseignant">Enseignants</option>
               <option value="comptable">Comptables</option>
-              <option value="parent">Parents</option>
-              <option value="eleve">Élèves</option>
+              <option value="surveillant">Surveillants</option>
             </select>
             <small class="text-muted mt-1 d-block">Le groupe définit les permissions RBAC.</small>
           </div>

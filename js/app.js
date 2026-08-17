@@ -660,9 +660,11 @@ async function fetchAndRenderEleves() {
             <td><div class="d-flex align-items-center"><div class="table-av me-2" style="background:#2563EB">${e.prenom.charAt(0)}</div><span class="fw-semibold">${_e(e.prenom)} ${_e(e.nom)}</span></div></td>
             <td>${_e(e.matricule || '-')}</td>
             <td><span class="status-badge primary">${_e(e.classes ? e.classes.nom : 'Non assigné')}</span></td>
+            <td><span class="fw-bold text-primary" style="letter-spacing: 1px">${_e(e.code_acces || '-')}</span></td>
             <td>${e.date_naissance ? new Date(e.date_naissance).toLocaleDateString('fr-FR') : '-'}</td>
             <td>${_e(e.parent_nom || '-')} <br><small class="text-muted">${_e(e.parent_tel || '-')}</small></td>
             <td><span class="status-badge ${e.statut_paiement === 'À jour' ? 'success' : 'warning'}">${_e(e.statut_paiement || 'Inconnu')}</span></td>
+            <td><span class="status-badge ${e.statut === 'Actif' ? 'success' : 'secondary'}">${_e(e.statut || 'Actif')}</span></td>
             <td>
                 <button class="btn btn-sm btn-icon text-muted"><i class="fas fa-edit"></i></button>
                 <button class="btn btn-sm btn-icon text-danger" onclick="deleteEleve('${e.id}')"><i class="fas fa-trash"></i></button>
@@ -682,6 +684,14 @@ function setupElevesModal() {
             if(window.showToast) window.showToast('Matricule, Prénom, nom et classe requis', 'warning');
             return;
         }
+        
+        // Generate random access code
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let code = '';
+        for (let i = 0; i < 6; i++) {
+            code += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        data.code_acces = code;
         
         btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
         const { error } = await window.supabase.from('eleves').insert([data]);
