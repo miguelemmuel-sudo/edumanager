@@ -114,12 +114,27 @@ const menuItems = [];
     
     menuHTML += `</div>`;
 
+    // Get cached settings for branding
+    let brandName = 'EduManager';
+    let brandLogo = '<i class="fas fa-graduation-cap brand-icon"></i>';
+    
+    const settingsStr = localStorage.getItem('edu_settings');
+    if (settingsStr) {
+        try {
+            const settings = JSON.parse(settingsStr);
+            if (settings.nom) brandName = settings.nom;
+            if (settings.logo_url) {
+                brandLogo = `<img src="${settings.logo_url}" alt="Logo" class="me-2" style="width: 32px; height: 32px; object-fit: cover; border-radius: 50%;">`;
+            }
+        } catch(e) {}
+    }
+
     const sidebar = document.getElementById('sidebar');
     if (sidebar) {
         sidebar.innerHTML = `
             <a href="${basePath}index.html" class="sidebar-brand">
-                <i class="fas fa-graduation-cap brand-icon"></i>
-                <span class="brand-name">EduManager</span>
+                ${brandLogo}
+                <span class="brand-name">${brandName}</span>
             </a>
             ${menuHTML}
             <div class="sidebar-footer">

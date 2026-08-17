@@ -400,8 +400,10 @@ async function initEtablissementSettings() {
             systeme: etabData.systeme_educatif || 'Francophone',
             logo_url: etabData.logo_url || null
         };
+        localStorage.setItem('edu_settings', JSON.stringify(window.EduSettings));
     } else {
         window.EduSettings = { nom: 'Votre établissement', type: 'Collège / Secondaire', systeme: 'Francophone', logo_url: null };
+        localStorage.setItem('edu_settings', JSON.stringify(window.EduSettings));
     }
 }
 
@@ -2505,7 +2507,10 @@ async function initParametres() {
                 } else {
                     if (window.showToast) window.showToast("Logo mis à jour avec succès", "success");
                     // Update UI right away
-                    if (window.EduSettings) window.EduSettings.logo_url = base64String;
+                    if (window.EduSettings) {
+                        window.EduSettings.logo_url = base64String;
+                        localStorage.setItem('edu_settings', JSON.stringify(window.EduSettings));
+                    }
                     adaptAppTaxonomy(); // Re-run to update the sidebar logo
                 }
             };
@@ -2544,6 +2549,7 @@ async function initParametres() {
                 if (window.EduSettings) {
                     window.EduSettings.nom = updates.nom;
                     window.EduSettings.type = updates.type;
+                    localStorage.setItem('edu_settings', JSON.stringify(window.EduSettings));
                 }
             }
         };
