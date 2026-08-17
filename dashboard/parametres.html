@@ -422,12 +422,41 @@ function showTab(name, el) {
     window.deletePeriod = async function(id) {
         if (!confirm("Voulez-vous vraiment supprimer cette période ? Toutes les notes liées seront supprimées !")) return;
         
-        const { error } = await window.supabase.from('periodes_evaluation').delete().eq('id', id);
-        if (error) {
-            alert("Erreur lors de la suppression.");
-            console.error(error);
-        } else {
-            loadPeriods();
+        // Find the button and show a loading spinner
+        const btn = document.querySelector(`button[onclick="deletePeriod('${id}')"]`);
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        }
+        
+        try {
+            const { error, data } = await window.supabase.from('periodes_evaluation').delete().eq('id', id).select();
+            
+            if (error) {
+                console.error("Supabase Delete Error:", error);
+                alert("Erreur lors de la suppression: " + error.message);
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-trash"></i>';
+                }
+            } else if (!data || data.length === 0) {
+                console.warn("Delete executed but no rows were deleted (possible RLS issue). Data:", data);
+                alert("La suppression a échoué (Droits insuffisants ou ligne introuvable).");
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-trash"></i>';
+                }
+            } else {
+                if (window.showToast) window.showToast("Période supprimée avec succès", "success");
+                loadPeriods();
+            }
+        } catch (err) {
+            console.error("Exception in deletePeriod:", err);
+            alert("Une erreur inattendue est survenue.");
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-trash"></i>';
+            }
         }
     }
     
