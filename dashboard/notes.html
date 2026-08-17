@@ -97,9 +97,7 @@
           <tr>
             <th style="width: 50px;" class="text-center">N°</th>
             <th style="width: 250px;">Élève</th>
-            <th class="text-center col-note" title="Devoir">Devoir (/20)</th>
-            <th class="text-center col-note" title="Composition / Examen">Examen (/20)</th>
-            <th class="text-center" style="width: 80px;">Moyenne</th>
+            <th class="text-center col-note" title="Note de la séquence">Note (/20)</th>
             <th>Appréciation / Observation</th>
           </tr>
         </thead>
@@ -248,39 +246,27 @@ window.chargerGrille = async function() {
         .select('*')
         .eq('matiere_id', currentMatiereId)
         .eq('periode_id', currentPeriodeId);
-        // Note: On pourrait rajouter .in('eleve_id', currentEleves.map(e=>e.id)) mais Supabase gère
         
     currentNotes = notes || [];
     
     // 3. Générer le HTML
+    const _e = (str) => str ? str.replace(/"/g, '&quot;') : '';
     tbody.innerHTML = currentEleves.map((e, index) => {
-        const eleveNotes = currentNotes.filter(n => n.eleve_id === e.id);
-        const noteDevoir = eleveNotes.find(n => n.type_evaluation === 'Devoir');
-        const noteExamen = eleveNotes.find(n => n.type_evaluation === 'Examen');
+        const eleveNote = currentNotes.find(n => n.eleve_id === e.id);
         
-        const valDevoir = noteDevoir ? noteDevoir.valeur : '';
-        const valExamen = noteExamen ? noteExamen.valeur : '';
-        const appre = noteExamen ? noteExamen.commentaire : (noteDevoir ? noteDevoir.commentaire : '');
-        
-        let moyenneHtml = '<span class="text-muted">-</span>';
-        if(valDevoir !== '' && valExamen !== '') {
-            const m = (parseFloat(valDevoir) + parseFloat(valExamen)) / 2;
-            let color = m >= 10 ? 'text-success' : 'text-danger';
-            moyenneHtml = `<strong class="${color}">${m.toFixed(2)}</strong>`;
-        } else if (valDevoir !== '') {
-            moyenneHtml = `<strong>${valDevoir}</strong>`;
-        } else if (valExamen !== '') {
-            moyenneHtml = `<strong>${valExamen}</strong>`;
-        }
+        const valNote = eleveNote ? eleveNote.valeur : '';
+        const appre = eleveNote ? eleveNote.commentaire : '';
         
         return `
         <tr data-eleve="${e.id}">
-            <td class="text-center text-muted small">${index + 1}</td>
-            <td><div class="fw-semibold">${e.nom} ${e.prenom}</div><div class="text-muted" style="font-size:0.7rem">${e.matricule}</div></td>
-            <td class="p-0"><input type="number" min="0" max="20" step="0.25" class="excel-input n-devoir" value="${valDevoir}" onchange="markDirty(this)" onkeyup="calculerMoyenneLigne(this)"></td>
-            <td class="p-0"><input type="number" min="0" max="20" step="0.25" class="excel-input n-examen" value="${valExamen}" onchange="markDirty(this)" onkeyup="calculerMoyenneLigne(this)"></td>
-            <td class="text-center bg-light ligne-moyenne">${moyenneHtml}</td>
-            <td class="p-0"><input type="text" class="excel-input n-appre text-start px-2" value="${appre || ''}" onchange="markDirty(this)"></td>
+            <td class="text-center text-muted">${index + 1}</td>
+            <td class="fw-medium">${_e(e.nom)} ${_e(e.prenom)}</td>
+            <td>
+                <input type="number" class="form-control form-control-sm text-center n-seq mx-auto" style="width:80px" min="0" max="20" step="0.25" value="${valNote}" oninput="markDirty(this)">
+            </td>
+            <td>
+                <input type="text" class="form-control form-control-sm n-appre" value="${_e(appre)}" oninput="markDirty(this)">
+            </td>
         </tr>
         `;
     }).join('');
@@ -289,49 +275,32 @@ window.chargerGrille = async function() {
 window.markDirty = function(input) {
     input.classList.add('dirty');
     document.getElementById('saveStatus').innerHTML = '<span class="text-warning"><i class="fas fa-exclamation-triangle me-1"></i>Modifications non enregistrées</span>';
+    
+    // Auto-appreciation logic
+    if (input.classList.contains('n-seq')) {
+        const val = input.value;
+        const tr = input.closest('tr');
+        const inputAppre = tr.querySelector('.n-appre');
+        
+        if (val !== '' && inputAppre) {
+            const m = parseFloat(val);
+            let appreciation = "Excellent";
+            if (m < 5) appreciation = "Mauvais";
+            else if (m < 8) appreciation = "Faible";
+            else if (m < 10) appreciation = "Insuffisant";
+            else if (m < 12) appreciation = "Passable";
+            else if (m < 14) appreciation = "Assez Bien";
+            else if (m < 16) appreciation = "Bien";
+            else if (m < 18) appreciation = "Très Bien";
+            
+            inputAppre.value = appreciation;
+            inputAppre.classList.add('dirty');
+        } else if (val === '' && inputAppre) {
+            inputAppre.value = '';
+            inputAppre.classList.add('dirty');
+        }
+    }
 }
-
-window.calculerMoyenneLigne = function(input) {
-      const tr = input.closest('tr');
-      const dVal = tr.querySelector('.n-devoir').value;
-      const eVal = tr.querySelector('.n-examen').value;
-      const tdMoy = tr.querySelector('.ligne-moyenne');
-      const inputAppre = tr.querySelector('.n-appre');
-      
-      let currentMoy = null;
-
-      if(dVal !== '' && eVal !== '') {
-          const m = (parseFloat(dVal) + parseFloat(eVal)) / 2;
-          currentMoy = m;
-          let color = m >= 10 ? 'text-success' : 'text-danger';
-          tdMoy.innerHTML = `<strong class="${color}">${m.toFixed(2)}</strong>`;
-      } else if (dVal !== '') {
-          currentMoy = parseFloat(dVal);
-          tdMoy.innerHTML = `<strong>${currentMoy}</strong>`;
-      } else if (eVal !== '') {
-          currentMoy = parseFloat(eVal);
-          tdMoy.innerHTML = `<strong>${currentMoy}</strong>`;
-      } else {
-          tdMoy.innerHTML = '<span class="text-muted">-</span>';
-      }
-
-      // Auto-appreciation logic
-      if (currentMoy !== null && inputAppre) {
-          let appreciation = "Excellent";
-          if (currentMoy < 5) appreciation = "Mauvais";
-          else if (currentMoy < 8) appreciation = "Faible";
-          else if (currentMoy < 10) appreciation = "Insuffisant";
-          else if (currentMoy < 12) appreciation = "Passable";
-          else if (currentMoy < 14) appreciation = "Assez Bien";
-          else if (currentMoy < 16) appreciation = "Bien";
-          else if (currentMoy < 18) appreciation = "Très Bien";
-          
-          inputAppre.value = appreciation;
-          inputAppre.classList.add('dirty');
-      } else if (inputAppre && !dVal && !eVal) {
-          inputAppre.value = "";
-      }
-  }
 
 window.sauvegarderNotes = async function() {
     const rows = document.querySelectorAll('#grilleSaisieBody tr');
@@ -342,46 +311,25 @@ window.sauvegarderNotes = async function() {
     
     rows.forEach(tr => {
         const eleveId = tr.getAttribute('data-eleve');
-        const devoirInput = tr.querySelector('.n-devoir');
-        const examenInput = tr.querySelector('.n-examen');
+        const noteInput = tr.querySelector('.n-seq');
         const appreInput = tr.querySelector('.n-appre');
         
-        const noteDevoirAncienne = currentNotes.find(n => n.eleve_id === eleveId && n.type_evaluation === 'Devoir');
-        const noteExamenAncienne = currentNotes.find(n => n.eleve_id === eleveId && n.type_evaluation === 'Examen');
+        const ancienneNote = currentNotes.find(n => n.eleve_id === eleveId);
         
-        if (devoirInput.classList.contains('dirty') || (devoirInput.value !== '' && !noteDevoirAncienne)) {
-            if (devoirInput.value !== '') {
+        if (noteInput.classList.contains('dirty') || appreInput.classList.contains('dirty') || (noteInput.value !== '' && !ancienneNote)) {
+            if (noteInput.value !== '') {
                 const noteObj = {
                     eleve_id: eleveId,
                     matiere_id: currentMatiereId,
                     matiere: matiereNom,
                     periode_id: currentPeriodeId,
-                    type_evaluation: 'Devoir',
-                    valeur: parseFloat(devoirInput.value),
+                    type_evaluation: 'Séquence',
+                    valeur: parseFloat(noteInput.value),
                     commentaire: appreInput.value,
                     statut: 'Brouillon'
                 };
-                if (noteDevoirAncienne && noteDevoirAncienne.id) {
-                    noteObj.id = noteDevoirAncienne.id;
-                }
-                notesToUpsert.push(noteObj);
-            }
-        }
-        
-        if (examenInput.classList.contains('dirty') || (examenInput.value !== '' && !noteExamenAncienne)) {
-            if (examenInput.value !== '') {
-                const noteObj = {
-                    eleve_id: eleveId,
-                    matiere_id: currentMatiereId,
-                    matiere: matiereNom,
-                    periode_id: currentPeriodeId,
-                    type_evaluation: 'Examen',
-                    valeur: parseFloat(examenInput.value),
-                    commentaire: appreInput.value,
-                    statut: 'Brouillon'
-                };
-                if (noteExamenAncienne && noteExamenAncienne.id) {
-                    noteObj.id = noteExamenAncienne.id;
+                if (ancienneNote && ancienneNote.id) {
+                    noteObj.id = ancienneNote.id;
                 }
                 notesToUpsert.push(noteObj);
             }
