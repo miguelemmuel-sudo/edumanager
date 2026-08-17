@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Portail Parent - Suivi Scolaire</title>
+  <link rel="icon" type="image/png" href="/img/favicon.png"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="/css/vendor/bootstrap.min.css" rel="stylesheet"/>
+  <link href="/css/vendor/all.min.css" rel="stylesheet"/>
+  <link href="css/auth.css" rel="stylesheet"/>
+  <style>
+    /* Styles pour la vue du bulletin (masquée par défaut) */
+    #dashboardView {
+      display: none;
+      background: #f8fafc;
+      min-height: 100vh;
+      padding-top: 2rem;
+      padding-bottom: 3rem;
+    }
+    .bulletin-card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      border: 1px solid #e2e8f0;
+      transition: transform 0.2s;
+    }
+    .bulletin-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.08);
+      border-color: #cbd5e1;
+    }
+    .stat-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      background: #f1f5f9;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    .mention-badge {
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+    .mention-tb { background: #dcfce7; color: #166534; }
+    .mention-b { background: #dbeafe; color: #1e40af; }
+    .mention-ab { background: #fef9c3; color: #854d0e; }
+    .mention-p { background: #fefce8; color: #a16207; }
+    .mention-m { background: #fee2e2; color: #991b1b; }
+    
+    .etab-header {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+    .etab-logo {
+      width: 64px;
+      height: 64px;
+      border-radius: 12px;
+      object-fit: cover;
+    }
+    .btn-logout {
+      background: white;
+      border: 1px solid #e2e8f0;
+      color: #64748b;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    .btn-logout:hover {
+      background: #f8fafc;
+      color: #0f172a;
+    }
+    .bulletin-details {
+      display: none;
+      margin-top: 1rem;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 1rem;
+    }
+    .subject-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.75rem 0;
+      border-bottom: 1px dashed #e2e8f0;
+    }
+    .subject-row:last-child {
+      border-bottom: none;
+    }
+  </style>
+</head>
+<body>
+
+<!-- VUE 1 : CONNEXION -->
+<div class="auth-wrapper" id="loginView">
+  <!-- Côté gauche : illustration -->
+  <div class="auth-left d-none d-lg-flex">
+    <div class="auth-left-content">
+      <div class="brand mb-5">
+        <i class="fas fa-user-graduate me-2"></i>Espace Parent
+      </div>
+      <h2 class="text-white fw-bold mb-3">Suivez la scolarité de votre enfant</h2>
+      <p class="text-white opacity-75 mb-5">Accédez instantanément aux bulletins, moyennes et décisions du conseil de classe en toute sécurité.</p>
+      
+      <div class="auth-dash rounded-3 p-4 bg-white bg-opacity-10 text-center">
+        <i class="fas fa-shield-alt text-white opacity-50 mb-3" style="font-size: 3rem"></i>
+        <h5 class="text-white fw-bold">Accès Sécurisé par Code</h5>
+        <p class="text-white opacity-75 small mb-0">Demandez le matricule et le code secret auprès de l'administration de l'établissement scolaire.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Côté droit : formulaire -->
+  <div class="auth-right d-flex align-items-center justify-content-center">
+    <div class="auth-form-wrap">
+      <div class="d-lg-none text-center mb-4">
+        <div class="brand-sm text-decoration-none">
+          <i class="fas fa-user-graduate text-primary me-1"></i>
+          <span class="fw-bold text-dark fs-5">Espace Parent</span>
+        </div>
+      </div>
+      <h2 class="fw-bold mb-1">Consultation en ligne</h2>
+      <p class="text-muted mb-4">Veuillez entrer les identifiants de l'élève.</p>
+
+      <form id="suiviForm" novalidate>
+        <div class="mb-3">
+          <label class="form-label fw-medium">Matricule de l'élève</label>
+          <div class="input-group">
+            <span class="input-group-text auth-icon"><i class="fas fa-id-card"></i></span>
+            <input type="text" id="matricule" class="form-control" placeholder="Ex: M0024" required/>
+          </div>
+        </div>
+        <div class="mb-4">
+          <div class="d-flex justify-content-between">
+            <label class="form-label fw-medium">Code d'accès secret</label>
+          </div>
+          <div class="input-group">
+            <span class="input-group-text auth-icon"><i class="fas fa-key"></i></span>
+            <input type="password" class="form-control" id="code_acces" placeholder="Ex: A7B9K2" required/>
+            <button type="button" class="btn auth-toggle-pwd" onclick="togglePwd('code_acces','eyeI')">
+              <i class="fas fa-eye" id="eyeI"></i>
+            </button>
+          </div>
+        </div>
+        
+        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold mb-3">
+          <i class="fas fa-search me-2"></i>Consulter le dossier
+        </button>
+      </form>
+
+      <p class="text-center mt-4 mb-0">
+        <a href="index.html" class="text-muted small text-decoration-none">
+          <i class="fas fa-arrow-left me-1"></i>Retour au site de l'école
+        </a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- VUE 2 : DASHBOARD PARENT -->
+<div id="dashboardView">
+  <div class="container" style="max-width: 800px;">
+    
+    <!-- En-tête Etablissement & Déconnexion -->
+    <div class="etab-header">
+      <img src="img/favicon.png" id="dashLogo" class="etab-logo" alt="Logo">
+      <div class="flex-grow-1">
+        <h4 class="fw-bold mb-1" id="dashEtabNom">Chargement...</h4>
+        <div class="text-muted small" id="dashEtabContact"></div>
+      </div>
+      <button class="btn-logout" onclick="logoutParent()">
+        <i class="fas fa-sign-out-alt me-2"></i>Quitter
+      </button>
+    </div>
+
+    <!-- Info Eleve -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+      <div>
+        <h2 class="fw-bold mb-1" id="dashEleveNom">Chargement...</h2>
+        <div class="d-flex gap-2 align-items-center">
+          <span class="badge bg-primary rounded-pill px-3" id="dashEleveClasse">Classe</span>
+          <span class="text-muted small">Matricule: <span id="dashEleveMatricule"></span></span>
+        </div>
+      </div>
+      <div class="text-end">
+        <div class="stat-badge text-primary">
+          <i class="fas fa-file-alt"></i> <span id="dashBulletinsCount">0</span> bulletin(s)
+        </div>
+      </div>
+    </div>
+
+    <!-- Liste des Bulletins -->
+    <h5 class="fw-bold mb-3 text-secondary">Résultats Académiques</h5>
+    <div id="bulletinsContainer">
+      <!-- Rendu dynamique -->
+      <div class="text-center p-5 text-muted">
+        <i class="fas fa-spinner fa-spin fs-3 mb-2"></i><br>Recherche des bulletins...
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="/js/vendor/bootstrap.bundle.min.js"></script>
+<script src="js/vendor/supabase.js"></script>
+<script src="js/config.js"></script>
+<script src="js/supabase.js"></script>
+<script src="js/suivi.js"></script>
+<script>
+  function togglePwd(id, iconId) {
+    const f = document.getElementById(id);
+    const i = document.getElementById(iconId);
+    if (f.type === 'password') { f.type = 'text'; i.classList.replace('fa-eye','fa-eye-slash'); }
+    else { f.type = 'password'; i.classList.replace('fa-eye-slash','fa-eye'); }
+  }
+</script>
+</body>
+</html>
