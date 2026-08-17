@@ -1011,7 +1011,7 @@ async function fetchAndRenderClasses() {
                                 <div class="col-12"><div class="text-muted" style="font-size:.72rem">Faculté / Dép.</div><div style="font-size:.82rem;font-weight:600">${_e(c.faculte || '-')} / ${_e(c.departement || '-')}</div></div>
                                 <div class="col-12"><div class="text-muted" style="font-size:.72rem">Filière</div><div style="font-size:.82rem;font-weight:600">${_e(c.filiere || '-')}</div></div>
                                 ` : ''}
-                                <div class="col-12"><div class="text-muted" style="font-size:.72rem">Prof. principal</div><div style="font-size:.82rem;font-weight:600">${_e(prof)}</div></div>
+                                ${!isEnseignant ? `<div class="col-12"><div class="text-muted" style="font-size:.72rem">Prof. principal</div><div style="font-size:.82rem;font-weight:600">${_e(prof)}</div></div>` : ''}
                                 <div class="col-12"><div class="text-muted" style="font-size:.72rem">Salle</div><div style="font-size:.82rem;font-weight:600">${_e(c.salle || '-')}</div></div>
                             </div>
                             <div class="d-flex gap-2 mt-3">
