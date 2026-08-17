@@ -320,6 +320,9 @@ window.sauvegarderNotes = async function() {
     const rows = document.querySelectorAll('#grilleSaisieBody tr');
     let notesToUpsert = [];
     
+    const selMatiere = document.getElementById('selMatiere');
+    const matiereNom = selMatiere.options[selMatiere.selectedIndex].text;
+    
     rows.forEach(tr => {
         const eleveId = tr.getAttribute('data-eleve');
         const devoirInput = tr.querySelector('.n-devoir');
@@ -334,6 +337,7 @@ window.sauvegarderNotes = async function() {
                 const noteObj = {
                     eleve_id: eleveId,
                     matiere_id: currentMatiereId,
+                    matiere: matiereNom,
                     periode_id: currentPeriodeId,
                     type_evaluation: 'Devoir',
                     valeur: parseFloat(devoirInput.value),
@@ -352,6 +356,7 @@ window.sauvegarderNotes = async function() {
                 const noteObj = {
                     eleve_id: eleveId,
                     matiere_id: currentMatiereId,
+                    matiere: matiereNom,
                     periode_id: currentPeriodeId,
                     type_evaluation: 'Examen',
                     valeur: parseFloat(examenInput.value),
