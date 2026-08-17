@@ -993,10 +993,10 @@ async function fetchAndRenderClasses() {
 
     const niveauColors = { 'Terminale':'#1E293B', '1ère':'#EF4444', '2nde':'#8B5CF6', '3ème':'#10B981', '4ème':'#F59E0B', '5ème':'#06B6D4', '6ème':'#2563EB', 'Autre': '#64748b' };
 
-    container.innerHTML = '';
+    let htmlContent = '';
     for (const [niv, cls] of Object.entries(niveaux)) {
         const color = niveauColors[niv] || niveauColors['Autre'];
-        container.innerHTML += `
+        htmlContent += `
             <h6 class="fw-bold mb-3 text-muted text-uppercase" style="font-size:.75rem;letter-spacing:.5px;margin-top:2rem">${_e(niv)}</h6>
             <div class="row g-3 mb-4">
                 ${cls.map(c => {
@@ -1031,6 +1031,7 @@ async function fetchAndRenderClasses() {
             </div>
         `;
     }
+    container.innerHTML = htmlContent;
 }
 window.openJoinClasseModal = function(classeId) {
     const elId = document.getElementById('joinClasseId');
