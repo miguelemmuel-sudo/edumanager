@@ -932,10 +932,7 @@ async function fetchAndRenderClasses() {
         if ((session.role || '').toLowerCase() === 'enseignant') {
             isEnseignant = true;
             
-            // Hide + Nouvelle button
-            const addBtn = document.querySelector('[data-bs-target="#addClasseModal"]');
-            if (addBtn) addBtn.style.display = 'none';
-
+            // Bouton + Nouvelle classe laissé visible selon la demande.
             // Find teacher profile and their linked classes
             const { data: ensData } = await window.supabase.from('enseignants').select('id').eq('user_id', session.userId).single();
             if (ensData) {
