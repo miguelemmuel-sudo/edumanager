@@ -80,8 +80,6 @@ function checkAccess() {
         }
 
         if (!allowed) {
-            alert('Accès refusé. Vous n\'avez pas la permission de voir cette page.');
-            
             // Redirect to appropriate dashboard
             if (groups.includes('Enseignants') || role === 'enseignant') window.location.href = 'enseignant.html';
             else if (groups.includes('Parents') || role === 'parent') window.location.href = 'parent.html';
