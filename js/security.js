@@ -3,6 +3,7 @@
 ============================================== */
 
 const ROUTE_ROLES = {
+    '/dashboard/index.html': ['admin'],
     '/dashboard/paiements.html': ['admin', 'secretaire', 'comptable', 'parent', 'eleve'],
     '/dashboard/rapports.html': ['admin', 'secretaire', 'comptable'],
     '/dashboard/classes.html': ['admin', 'secretaire', 'enseignant', 'surveillant'],
@@ -85,7 +86,9 @@ function checkAccess() {
             if (groups.includes('Enseignants') || role === 'enseignant') window.location.href = 'enseignant.html';
             else if (groups.includes('Parents') || role === 'parent') window.location.href = 'parent.html';
             else if (groups.includes('Élèves') || role === 'eleve') window.location.href = 'eleve.html';
-            else window.location.href = 'index.html';
+            else if (role === 'comptable') window.location.href = 'paiements.html';
+            else if (role === 'secretaire') window.location.href = 'eleves.html';
+            else window.location.href = 'messages.html';
         }
     } catch(e) {
         console.error('Session error', e);

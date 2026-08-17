@@ -130,7 +130,13 @@
       if (typeof login !== 'undefined') {
         const result = await login(email, password);
         if (result.success) {
-          window.location.href = 'dashboard/index.html';
+          const role = (result.user.role || '').toLowerCase();
+          if (role === 'enseignant') window.location.href = 'dashboard/enseignant.html';
+          else if (role === 'parent') window.location.href = 'dashboard/parent.html';
+          else if (role === 'eleve') window.location.href = 'dashboard/eleve.html';
+          else if (role === 'comptable') window.location.href = 'dashboard/paiements.html';
+          else if (role === 'secretaire') window.location.href = 'dashboard/eleves.html';
+          else window.location.href = 'dashboard/index.html';
         } else {
           btn.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>' + (result.message || 'Erreur');
           btn.classList.replace('btn-primary', 'btn-danger');
