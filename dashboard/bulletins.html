@@ -136,7 +136,7 @@
         <h5 class="fw-bold m-0 text-primary"><i class="fas fa-eye me-2"></i>Aperçu du bulletin professionnel</h5>
         <div class="d-flex gap-2">
             <button class="btn btn-warning rounded-pill px-4 text-dark fw-bold" id="btnValider" onclick="validerBulletin()"><i class="fas fa-check-circle me-1"></i>Valider le bulletin</button>
-            <button class="btn btn-outline-primary rounded-pill px-4" onclick="window.print()"><i class="fas fa-print me-1"></i>Imprimer PDF</button>
+            <button class="btn btn-outline-primary rounded-pill px-4" onclick="exporterPDF()"><i class="fas fa-file-pdf me-1"></i>Exporter PDF</button>
         </div>
     </div>
     
@@ -149,6 +149,7 @@
 
 
 <script src="/js/vendor/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="../js/vendor/supabase.js"></script>
 <script src="../js/config.js"></script>
 <script src="../js/vendor/dexie.min.js"></script>
@@ -161,6 +162,7 @@
 let currentEtab = null;
 let currentEleveData = null;
 let generatedData = null;
+let periodesDict = {};
 
 async function initBulletins() {
     if(!window.supabase) return;
@@ -171,6 +173,13 @@ async function initBulletins() {
     
     // Charger Périodes
     const {data: periodes} = await window.supabase.from('periodes_evaluation').select('*').eq('actif', true).order('ordre');
+    
+    // Build dict
+    periodesDict = {};
+    if(periodes) {
+        periodes.forEach(p => periodesDict[p.id] = p);
+    }
+    
     document.getElementById('selPeriode').innerHTML = '<option value="">Sélectionner...</option>' + 
         (periodes||[]).map(p => `<option value="${p.id}">${p.nom}</option>`).join('');
         
@@ -216,14 +225,34 @@ async function genererBulletin() {
     // Charger infos élève, classe, période
     const {data: eleve} = await window.supabase.from('eleves').select('*, classes(nom)').eq('id', eid).single();
     currentEleveData = eleve;
+    
+    const selectedPeriode = periodesDict[pid];
+    if(!selectedPeriode) { alert("Période invalide."); return; }
+    
     const pNom = document.getElementById('selPeriode').options[document.getElementById('selPeriode').selectedIndex].text;
+    
+    // Déterminer les sous-périodes si c'est un Trimestre (parent_id null)
+    let isTrimestre = !selectedPeriode.parent_id;
+    let periodesRecherche = [pid];
+    let seqTitles = ["Note"];
+    
+    if (isTrimestre) {
+        // Trouver les sous-périodes
+        const enfants = Object.values(periodesDict).filter(p => p.parent_id === pid).sort((a,b) => a.ordre - b.ordre);
+        if (enfants.length > 0) {
+            periodesRecherche = enfants.map(e => e.id);
+            seqTitles = enfants.map(e => e.nom);
+        } else {
+            isTrimestre = false; // Pas d'enfants, on traite comme une séquence unique
+        }
+    }
     
     // Charger les notes
     const {data: notes} = await window.supabase
         .from('notes')
         .select('*, matieres(nom, coefficient_defaut)')
         .eq('eleve_id', eid)
-        .eq('periode_id', pid);
+        .in('periode_id', periodesRecherche);
         
     if(!notes || notes.length === 0) {
         alert("Aucune note trouvée pour cet élève sur cette période.");
@@ -240,19 +269,14 @@ async function genererBulletin() {
         if(!matieresStats[mId]) {
             matieresStats[mId] = {
                 nom: n.matieres.nom,
-                coef: n.matieres.coefficient_defaut || 1, // Devrait idéalement venir de classes_matieres
-                devoir: null,
-                examen: null,
-                appreciation: null
+                coef: n.matieres.coefficient_defaut || 1,
+                notesPeriodes: {},
+                appreciation: ''
             };
         }
-        if(n.type_evaluation === 'Devoir') {
-            matieresStats[mId].devoir = parseFloat(n.valeur);
-            if(n.appreciation) matieresStats[mId].appreciation = n.appreciation;
-        }
-        if(n.type_evaluation === 'Examen') {
-            matieresStats[mId].examen = parseFloat(n.valeur);
-            if(n.appreciation) matieresStats[mId].appreciation = n.appreciation;
+        matieresStats[mId].notesPeriodes[n.periode_id] = parseFloat(n.valeur);
+        if(n.commentaire && n.commentaire.length > matieresStats[mId].appreciation.length) {
+            matieresStats[mId].appreciation = n.commentaire; // Prend l'appréciation la plus longue
         }
     });
     
@@ -260,14 +284,33 @@ async function genererBulletin() {
     
     for (let mId in matieresStats) {
         const m = matieresStats[mId];
-        let moy = null;
-        if (m.devoir !== null && m.examen !== null) {
-            moy = (m.devoir + m.examen) / 2;
-        } else if (m.devoir !== null) {
-            moy = m.devoir;
-        } else if (m.examen !== null) {
-            moy = m.examen;
+        let sumNotes = 0;
+        let countNotes = 0;
+        let seqHtml = '';
+        
+        if (isTrimestre) {
+            periodesRecherche.forEach(pId => {
+                const n = m.notesPeriodes[pId];
+                if (n !== undefined) {
+                    sumNotes += n;
+                    countNotes++;
+                    seqHtml += `<td>${n.toFixed(2)}</td>`;
+                } else {
+                    seqHtml += `<td>-</td>`;
+                }
+            });
+        } else {
+            const n = m.notesPeriodes[pid];
+            if (n !== undefined) {
+                sumNotes = n;
+                countNotes = 1;
+                seqHtml += `<td>${n.toFixed(2)}</td>`;
+            } else {
+                seqHtml += `<td>-</td>`;
+            }
         }
+        
+        let moy = countNotes > 0 ? (sumNotes / countNotes) : null;
         
         if (moy !== null) {
             totalPoints += (moy * m.coef);
@@ -277,11 +320,10 @@ async function genererBulletin() {
                 <tr>
                     <td class="text-start fw-bold">${m.nom}</td>
                     <td>${m.coef}</td>
-                    <td>${m.devoir !== null ? m.devoir : '-'}</td>
-                    <td>${m.examen !== null ? m.examen : '-'}</td>
-                    <td class="fw-bold ${moy >= 10 ? 'text-success' : 'text-danger'}">${moy.toFixed(2)}</td>
+                    ${seqHtml}
+                    <td class="fw-bold ${moy >= 10 ? 'text-success' : 'text-danger'}" style="background-color:rgba(0,0,0,.03);">${moy.toFixed(2)}</td>
                     <td class="fw-bold">${(moy * m.coef).toFixed(2)}</td>
-                    <td class="text-muted small">${m.appreciation || ''}</td>
+                    <td class="text-muted small text-start">${m.appreciation || ''}</td>
                 </tr>
             `;
         }
@@ -310,47 +352,64 @@ async function genererBulletin() {
         statut: 'Brouillon'
     };
     
+    // Génération des en-têtes de colonnes dynamiques
+    let headerSeqHtml = '';
+    seqTitles.forEach(t => headerSeqHtml += `<th>${t} (/20)</th>`);
+    
+    // Signatures
+    const sigDir = currentEtab.signature_directeur_url ? `<img src="${currentEtab.signature_directeur_url}" style="max-height:80px; margin-top:10px;">` : `<div style="height:80px"></div>`;
+    const logoHtml = currentEtab.logo_url ? `<img src="${currentEtab.logo_url}" style="max-height:80px;">` : `<div style="height:80px;width:80px;background:#f8f9fa;display:inline-block;border-radius:50%"></div>`;
+
     // Affichage Premium
     const container = document.getElementById('printableBulletin');
     container.innerHTML = `
-        <div class="bulletin-header">
-            <div class="bulletin-etab-info">
-                <h2>${currentEtab.nom}</h2>
-                <p>${currentEtab.adresse} | Tél: ${currentEtab.tel}</p>
-                <p>${currentEtab.email}</p>
+        <div class="bulletin-header d-flex justify-content-between align-items-center mb-4 pb-3" style="border-bottom: 2px solid #1e293b;">
+            <div class="text-center" style="flex:1">
+                <h6 class="fw-bold text-uppercase m-0">République du Cameroun</h6>
+                <p class="small text-muted m-0">Paix - Travail - Patrie</p>
+                <div class="mt-2 text-uppercase fw-bold text-primary" style="font-size: 1.1rem">${currentEtab.nom}</div>
+                <p class="small m-0">${currentEtab.devise || ''}</p>
+                <p class="small m-0">${currentEtab.adresse} | Tél: ${currentEtab.tel}</p>
             </div>
-            <div class="text-end">
-                <h3 class="fw-bold text-uppercase m-0">Bulletin de Notes</h3>
-                <p class="text-muted m-0">${pNom}</p>
-                <p class="text-muted m-0">Année Scolaire: 2025-2026</p>
+            <div class="text-center mx-4">
+                ${logoHtml}
             </div>
-        </div>
-        
-        <div class="bulletin-student-info">
-            <div class="info-group">
-                <span class="label">Élève</span>
-                <span class="val">${eleve.nom} ${eleve.prenom}</span>
-            </div>
-            <div class="info-group">
-                <span class="label">Matricule</span>
-                <span class="val">${eleve.matricule}</span>
-            </div>
-            <div class="info-group">
-                <span class="label">Classe</span>
-                <span class="val">${eleve.classes ? eleve.classes.nom : ''}</span>
+            <div class="text-center" style="flex:1">
+                <h6 class="fw-bold text-uppercase m-0">Republic of Cameroon</h6>
+                <p class="small text-muted m-0">Peace - Work - Fatherland</p>
+                <div class="mt-2 text-uppercase fw-bold" style="font-size: 1.2rem">BULLETIN DE NOTES</div>
+                <div class="badge bg-primary text-white p-2 mt-1" style="font-size: 0.9rem">${pNom}</div>
             </div>
         </div>
         
-        <table class="bulletin-table">
-            <thead>
+        <div class="bulletin-student-info bg-light p-3 rounded-3 mb-4 d-flex justify-content-between border">
+            <div>
+                <div class="text-muted small text-uppercase fw-bold mb-1">Nom de l'élève</div>
+                <h5 class="fw-bold m-0">${eleve.nom} ${eleve.prenom}</h5>
+            </div>
+            <div>
+                <div class="text-muted small text-uppercase fw-bold mb-1">Matricule</div>
+                <div class="fw-medium">${eleve.matricule}</div>
+            </div>
+            <div>
+                <div class="text-muted small text-uppercase fw-bold mb-1">Classe</div>
+                <div class="fw-medium">${eleve.classes ? eleve.classes.nom : ''}</div>
+            </div>
+            <div>
+                <div class="text-muted small text-uppercase fw-bold mb-1">Année Scolaire</div>
+                <div class="fw-medium">2025-2026</div>
+            </div>
+        </div>
+        
+        <table class="bulletin-table table table-bordered table-sm align-middle text-center" style="font-size: 0.9rem">
+            <thead class="table-light">
                 <tr>
-                    <th class="text-start">Matière</th>
-                    <th>Coef</th>
-                    <th>Devoir (/20)</th>
-                    <th>Examen (/20)</th>
-                    <th>Moyenne (/20)</th>
-                    <th>Total Points</th>
-                    <th>Appréciation / Observation</th>
+                    <th class="text-start" style="width:25%">Matière</th>
+                    <th style="width:5%">Coef</th>
+                    ${headerSeqHtml}
+                    <th style="width:10%">Moyenne (/20)</th>
+                    <th style="width:10%">Total Points</th>
+                    <th class="text-start" style="width:30%">Appréciation / Observation</th>
                 </tr>
             </thead>
             <tbody>
@@ -358,33 +417,40 @@ async function genererBulletin() {
             </tbody>
         </table>
         
-        <div class="bulletin-summary">
-            <div class="summary-item">
-                <div class="label">Total Points</div>
-                <div class="val text-dark">${totalPoints.toFixed(2)}</div>
-            </div>
-            <div class="summary-item">
-                <div class="label">Total Coefs</div>
-                <div class="val text-dark">${totalCoefs.toFixed(2)}</div>
-            </div>
-            <div class="summary-item">
-                <div class="label">Moyenne Générale</div>
-                <div class="val ${moyenneGenerale >= 10 ? 'text-success' : 'text-danger'}">${moyenneGenerale.toFixed(2)} <span style="font-size:1rem;color:#777">/20</span></div>
-            </div>
-            <div class="summary-item">
-                <div class="label">Mention</div>
-                <div class="val text-dark">${mention}</div>
+        <div class="bulletin-summary bg-light p-3 rounded-3 mt-4 border">
+            <div class="row text-center">
+                <div class="col">
+                    <div class="text-muted small fw-bold text-uppercase">Total Points</div>
+                    <div class="fs-5 fw-bold">${totalPoints.toFixed(2)}</div>
+                </div>
+                <div class="col">
+                    <div class="text-muted small fw-bold text-uppercase">Total Coefs</div>
+                    <div class="fs-5 fw-bold">${totalCoefs.toFixed(2)}</div>
+                </div>
+                <div class="col border-start border-end">
+                    <div class="text-muted small fw-bold text-uppercase">Moyenne Générale</div>
+                    <div class="fs-3 fw-bold ${moyenneGenerale >= 10 ? 'text-success' : 'text-danger'}">${moyenneGenerale.toFixed(2)} <small class="text-muted" style="font-size:1rem">/20</small></div>
+                </div>
+                <div class="col border-end">
+                    <div class="text-muted small fw-bold text-uppercase">Mention</div>
+                    <div class="fs-5 fw-bold">${mention}</div>
+                </div>
+                <div class="col">
+                    <div class="text-muted small fw-bold text-uppercase">Décision du conseil</div>
+                    <div class="fs-5 fw-bold ${moyenneGenerale >= 10 ? 'text-success' : 'text-danger'}">${decision}</div>
+                </div>
             </div>
         </div>
         
-        <div class="bulletin-footer">
-            <div class="signature-box">
-                <div class="title">Le Professeur Principal</div>
-                <div class="line"></div>
+        <div class="bulletin-footer d-flex justify-content-between mt-5 pt-3">
+            <div class="signature-box text-center" style="width: 250px">
+                <div class="fw-bold mb-4">Le Titulaire de la classe</div>
+                <div style="border-bottom: 1px dotted #ccc; height: 60px;"></div>
             </div>
-            <div class="signature-box">
-                <div class="title">Le Chef d'Établissement</div>
-                <div class="line"></div>
+            <div class="signature-box text-center" style="width: 250px">
+                <div class="fw-bold">${currentEtab.titre_directeur || "Le Chef d'Établissement"}</div>
+                <div class="small text-muted mb-2">${currentEtab.nom_directeur || ""}</div>
+                ${sigDir}
             </div>
         </div>
     `;
@@ -427,6 +493,20 @@ async function validerBulletin() {
         btn.classList.replace('btn-warning', 'btn-success');
         btn.innerHTML = '<i class="fas fa-check-double me-1"></i>Bulletin Validé';
     }
+}
+
+window.exporterPDF = function() {
+    const element = document.getElementById('printableBulletin');
+    
+    const opt = {
+        margin:       [10, 10, 10, 10],
+        filename:     `Bulletin_${currentEleveData.nom}_${currentEleveData.prenom}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+    
+    html2pdf().set(opt).from(element).save();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
