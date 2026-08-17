@@ -920,7 +920,32 @@ async function fetchAndRenderClasses() {
         }
     }
 
-    const { data: classes, error } = await window.supabase.from('classes').select('*, enseignants(nom, prenom), eleves(count)');
+    let query = window.supabase.from('classes').select('*, enseignants(nom, prenom), eleves(count)');
+    
+    // RBAC: Check role
+    const sessionStr = localStorage.getItem('edu_session');
+    let isEnseignant = false;
+    if (sessionStr) {
+        const session = JSON.parse(sessionStr);
+        if ((session.role || '').toLowerCase() === 'enseignant') {
+            isEnseignant = true;
+            
+            // Hide + Nouvelle button
+            const addBtn = document.querySelector('[data-bs-target="#addClasseModal"]');
+            if (addBtn) addBtn.style.display = 'none';
+
+            // Filter classes for this enseignant
+            const { data: ensData } = await window.supabase.from('enseignants').select('id').eq('user_id', session.userId).single();
+            if (ensData) {
+                query = query.eq('enseignant_principal_id', ensData.id);
+            } else {
+                container.innerHTML = '<div class="text-center py-5 text-muted">Profil enseignant introuvable</div>';
+                return;
+            }
+        }
+    }
+
+    const { data: classes, error } = await query;
     if (error) return console.error(error);
 
     if (classes.length === 0) {
@@ -985,7 +1010,7 @@ async function fetchAndRenderClasses() {
                             </div>
                             <div class="d-flex gap-2 mt-3">
                                 <a href="eleves.html" class="btn btn-sm flex-1 rounded-pill" style="background:rgba(37,99,235,.1);color:var(--primary);font-size:.78rem"><i class="fas fa-users me-1"></i>Élèves</a>
-                                <button class="btn btn-sm btn-icon text-danger" onclick="deleteClasse('${c.id}')"><i class="fas fa-trash"></i></button>
+                                ${!isEnseignant ? `<button class="btn btn-sm btn-icon text-danger" onclick="deleteClasse('${c.id}')"><i class="fas fa-trash"></i></button>` : ''}
                             </div>
                         </div>
                     </div>
