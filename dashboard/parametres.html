@@ -287,7 +287,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Annuler</button>
-        <button type="button" class="btn btn-primary rounded-pill" id="btnSavePeriod">Enregistrer</button>
+        <button type="submit" form="periodForm" class="btn btn-primary rounded-pill" id="btnSavePeriod">Enregistrer</button>
       </div>
     </div>
   </div>
@@ -497,27 +497,44 @@ function showTab(name, el) {
             loadMatieresAdmin();
         }, 1000);
         
-        document.getElementById('btnSavePeriod')?.addEventListener('click', async () => {
-            const id = document.getElementById('period_id').value;
-            const data = {
-                nom: document.getElementById('period_nom').value,
-                type: document.getElementById('period_type').value,
-                ordre: parseInt(document.getElementById('period_ordre').value) || 1,
-                parent_id: document.getElementById('period_parent').value || null
-            };
-            
-            let res;
-            if (id) {
-                res = await window.supabase.from('periodes_evaluation').update(data).eq('id', id);
-            } else {
-                res = await window.supabase.from('periodes_evaluation').insert([data]);
+        document.getElementById('periodForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btnSave = document.getElementById('btnSavePeriod');
+            if (btnSave) {
+                btnSave.disabled = true;
+                btnSave.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Enregistrement...';
             }
             
-            if (res.error) {
-                alert("Erreur: " + res.error.message);
-            } else {
-                bootstrap.Modal.getInstance(document.getElementById('periodModal')).hide();
-                loadPeriods();
+            try {
+                const id = document.getElementById('period_id').value;
+                const data = {
+                    nom: document.getElementById('period_nom').value,
+                    type: document.getElementById('period_type').value,
+                    ordre: parseInt(document.getElementById('period_ordre').value) || 1,
+                    parent_id: document.getElementById('period_parent').value || null
+                };
+                
+                let res;
+                if (id) {
+                    res = await window.supabase.from('periodes_evaluation').update(data).eq('id', id);
+                } else {
+                    res = await window.supabase.from('periodes_evaluation').insert([data]);
+                }
+                
+                if (res.error) {
+                    alert("Erreur: " + res.error.message);
+                } else {
+                    bootstrap.Modal.getInstance(document.getElementById('periodModal')).hide();
+                    loadPeriods();
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Une erreur est survenue.");
+            } finally {
+                if (btnSave) {
+                    btnSave.disabled = false;
+                    btnSave.innerHTML = 'Enregistrer';
+                }
             }
         });
     });
