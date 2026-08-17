@@ -2567,7 +2567,7 @@ async function initParametres() {
 
     // Load Etablissement Data
     const { data: etabData } = await window.supabase.from('etablissements').select('*').eq('id', etabId).single();
-    if (etabData) {
+        if (etabData) {
         if(document.getElementById('etab_nom')) document.getElementById('etab_nom').value = etabData.nom || '';
         if(document.getElementById('etab_email')) document.getElementById('etab_email').value = etabData.email || '';
         if(document.getElementById('etab_tel')) document.getElementById('etab_tel').value = etabData.telephone || '';
@@ -2575,9 +2575,19 @@ async function initParametres() {
         if(document.getElementById('etab_ville')) document.getElementById('etab_ville').value = etabData.ville || '';
         if(document.getElementById('etab_adresse')) document.getElementById('etab_adresse').value = etabData.adresse || '';
         if(document.getElementById('etab_site')) document.getElementById('etab_site').value = etabData.site_web || '';
+        if(document.getElementById('etab_devise')) document.getElementById('etab_devise').value = etabData.devise || '';
+        if(document.getElementById('etab_nom_directeur')) document.getElementById('etab_nom_directeur').value = etabData.nom_directeur || '';
+        if(document.getElementById('etab_titre_directeur')) document.getElementById('etab_titre_directeur').value = etabData.titre_directeur || 'Le Directeur';
         
         if (etabData.type && document.getElementById('etab_type')) document.getElementById('etab_type').value = etabData.type;
         if (etabData.systeme_educatif && document.getElementById('etab_systeme')) document.getElementById('etab_systeme').value = etabData.systeme_educatif;
+
+        if (etabData.logo_url && document.getElementById('logoPreview')) {
+            document.getElementById('logoPreview').innerHTML = `<img src="${etabData.logo_url}" style="width:100%;height:100%;object-fit:cover;border-radius:4px;">`;
+        }
+        if (etabData.signature_directeur_url && document.getElementById('signaturePreview')) {
+            document.getElementById('signaturePreview').innerHTML = `<img src="${etabData.signature_directeur_url}" style="max-width:100%;max-height:100%;object-fit:contain;">`;
+        }
     }
 
     // Handle logo upload
@@ -2619,12 +2629,59 @@ async function initParametres() {
                     if (window.showToast) window.showToast("Erreur lors de l'enregistrement du logo", "danger");
                 } else {
                     if (window.showToast) window.showToast("Logo mis à jour avec succès", "success");
-                    // Update UI right away
+                    if (document.getElementById('logoPreview')) {
+                        document.getElementById('logoPreview').innerHTML = `<img src="${base64String}" style="width:100%;height:100%;object-fit:cover;border-radius:4px;">`;
+                    }
                     if (window.EduSettings) {
                         window.EduSettings.logo_url = base64String;
                         localStorage.setItem('edu_settings', JSON.stringify(window.EduSettings));
                     }
                     adaptAppTaxonomy(); // Re-run to update the sidebar logo
+                }
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // Handle signature upload
+    const btnChangerSignature = document.getElementById('btnChangerSignature');
+    const signatureUploadInput = document.getElementById('signatureUploadInput');
+    
+    if (btnChangerSignature && signatureUploadInput) {
+        btnChangerSignature.addEventListener('click', () => {
+            signatureUploadInput.click();
+        });
+        
+        signatureUploadInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            if (file.size > 2 * 1024 * 1024) {
+                if (window.showToast) window.showToast("Le fichier est trop volumineux (max 2MB)", "danger");
+                else alert("Fichier trop volumineux");
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = async (ev) => {
+                const base64String = ev.target.result;
+                
+                btnChangerSignature.disabled = true;
+                btnChangerSignature.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>...';
+                
+                const { error } = await window.supabase.from('etablissements').update({ signature_directeur_url: base64String }).eq('id', etabId);
+                
+                btnChangerSignature.disabled = false;
+                btnChangerSignature.innerHTML = '<i class="fas fa-upload me-1"></i>Importer la signature';
+                
+                if (error) {
+                    console.error("Erreur signature", error);
+                    if (window.showToast) window.showToast("Erreur lors de l'enregistrement de la signature", "danger");
+                } else {
+                    if (window.showToast) window.showToast("Signature mise à jour avec succès", "success");
+                    if (document.getElementById('signaturePreview')) {
+                        document.getElementById('signaturePreview').innerHTML = `<img src="${base64String}" style="max-width:100%;max-height:100%;object-fit:contain;">`;
+                    }
                 }
             };
             reader.readAsDataURL(file);
@@ -2646,6 +2703,9 @@ async function initParametres() {
                 ville: document.getElementById('etab_ville').value.trim(),
                 adresse: document.getElementById('etab_adresse').value.trim(),
                 site_web: document.getElementById('etab_site').value.trim(),
+                devise: document.getElementById('etab_devise') ? document.getElementById('etab_devise').value.trim() : null,
+                nom_directeur: document.getElementById('etab_nom_directeur') ? document.getElementById('etab_nom_directeur').value.trim() : null,
+                titre_directeur: document.getElementById('etab_titre_directeur') ? document.getElementById('etab_titre_directeur').value.trim() : null,
                 type: document.getElementById('etab_type').value,
                 systeme_educatif: document.getElementById('etab_systeme').value
             };

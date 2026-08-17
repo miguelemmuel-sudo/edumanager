@@ -58,19 +58,39 @@
             <div class="col-md-6"><label class="form-label">Téléphone</label><input type="tel" id="etab_tel" class="form-control" value=""/></div>
             <div class="col-md-6"><label class="form-label">Pays</label><input type="text" id="etab_pays" class="form-control" value=""/></div>
             <div class="col-md-6"><label class="form-label">Ville</label><input type="text" id="etab_ville" class="form-control" value=""/></div>
-            <div class="col-12"><label class="form-label">Adresse</label><input type="text" id="etab_adresse" class="form-control" value=""/></div>
+            <div class="col-12"><label class="form-label">Adresse complète</label><input type="text" id="etab_adresse" class="form-control" value=""/></div>
             <div class="col-12"><label class="form-label">Site web</label><input type="url" id="etab_site" class="form-control" value=""/></div>
+            <div class="col-12"><label class="form-label">Devise de l'établissement (ex: Paix - Travail - Patrie)</label><input type="text" id="etab_devise" class="form-control" value=""/></div>
+            <div class="col-md-6"><label class="form-label">Nom complet du Directeur / Principal</label><input type="text" id="etab_nom_directeur" class="form-control" value=""/></div>
+            <div class="col-md-6"><label class="form-label">Titre exact (ex: Le Proviseur)</label><input type="text" id="etab_titre_directeur" class="form-control" value="Le Directeur"/></div>
           </div>
         </div>
         <div class="form-section">
-          <div class="form-section-title"><i class="fas fa-palette text-primary me-2"></i>Logo & Apparence</div>
-          <div class="d-flex align-items-center gap-4">
-            <div class="table-av" style="width:72px;height:72px;font-size:1.8rem;background:#2563EB">SJ</div>
-            <div>
-              <button id="btnChangerLogo" class="btn btn-outline-primary rounded-pill btn-sm px-3 d-block mb-2"><i class="fas fa-upload me-1"></i>Changer le logo</button>
-              <input type="file" id="logoUploadInput" class="d-none" accept="image/png, image/jpeg">
-
-              <div class="text-muted" style="font-size:.78rem">PNG ou JPG · max 2MB · recommandé 200Ã—200px</div>
+          <div class="form-section-title"><i class="fas fa-palette text-primary me-2"></i>Logo & Signature</div>
+          <div class="row g-4">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Logo Officiel (Bulletins & Entêtes)</label>
+              <div class="d-flex align-items-center gap-4">
+                <div class="table-av" id="logoPreview" style="width:72px;height:72px;font-size:1.8rem;background:#2563EB">SJ</div>
+                <div>
+                  <button id="btnChangerLogo" class="btn btn-outline-primary rounded-pill btn-sm px-3 d-block mb-2"><i class="fas fa-upload me-1"></i>Changer le logo</button>
+                  <input type="file" id="logoUploadInput" class="d-none" accept="image/png, image/jpeg">
+                  <div class="text-muted" style="font-size:.78rem">PNG ou JPG • max 2MB</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Signature Numérique du Directeur</label>
+              <div class="d-flex align-items-center gap-4">
+                <div class="table-av" id="signaturePreview" style="width:120px;height:60px;background:#f8f9fa;border:1px dashed #cbd5e1;border-radius:4px;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+                  <i class="fas fa-signature text-muted" style="font-size:1.5rem"></i>
+                </div>
+                <div>
+                  <button id="btnChangerSignature" class="btn btn-outline-primary rounded-pill btn-sm px-3 d-block mb-2"><i class="fas fa-upload me-1"></i>Importer la signature</button>
+                  <input type="file" id="signatureUploadInput" class="d-none" accept="image/png">
+                  <div class="text-muted" style="font-size:.78rem">PNG transparent recommandé</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
