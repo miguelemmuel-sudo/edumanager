@@ -146,26 +146,36 @@ async function initNotes() {
     selPeriode.innerHTML = '<option value="">Sélectionner...</option>' + 
         (periodes||[]).map(p => `<option value="${p.id}">${p.nom}</option>`).join('');
         
-    // Charger les classes
-    let queryClasses = window.supabase.from('classes').select('id, nom').order('nom');
+    // Charger toutes les classes
+    let queryClasses = window.supabase.from('classes').select('id, nom, enseignant_principal_id').order('nom');
+    const {data: allClasses} = await queryClasses;
+    let classesAffichees = allClasses || [];
     
-    // Si c'est un enseignant, on devrait filtrer les classes où il enseigne (classes_matieres)
+    // Si c'est un enseignant, on filtre localement
     if (role === 'enseignant') {
         const uid = session.data.session.user.id;
         const {data: ens} = await window.supabase.from('enseignants').select('id').eq('user_id', uid).single();
         if (ens) {
-            // Un peu complexe en une requête, on va charger toutes les classes_matieres de ce prof
-            const {data: cm} = await window.supabase.from('classes_matieres').select('classe_id').eq('matiere_id', 
-                window.supabase.from('matieres').select('id').eq('enseignant_id', ens.id)
-            );
-            // C'est une simplification pour l'exemple
+            window.currentEnseignantId = ens.id; // Stocker pour le filtrage des matières
+            
+            // Trouver ses matières
+            const {data: matieres} = await window.supabase.from('matieres').select('id').eq('enseignant_id', ens.id);
+            const matIds = (matieres||[]).map(m => m.id);
+            
+            let classeIdsOuIlEnseigne = new Set();
+            if(matIds.length > 0) {
+                const {data: cm} = await window.supabase.from('classes_matieres').select('classe_id').in('matiere_id', matIds);
+                (cm||[]).forEach(c => classeIdsOuIlEnseigne.add(c.classe_id));
+            }
+            
+            // Garder uniquement les classes où il enseigne OU dont il est prof principal
+            classesAffichees = classesAffichees.filter(c => classeIdsOuIlEnseigne.has(c.id) || c.enseignant_principal_id === ens.id);
         }
     }
     
-    const {data: classes} = await queryClasses;
     const selClasse = document.getElementById('selClasse');
     selClasse.innerHTML = '<option value="">Sélectionner une classe</option>' + 
-        (classes||[]).map(c => `<option value="${c.id}">${c.nom}</option>`).join('');
+        classesAffichees.map(c => `<option value="${c.id}">${c.nom}</option>`).join('');
 }
 
 window.onClasseChange = async function() {
@@ -184,14 +194,21 @@ window.onClasseChange = async function() {
     // Charger les matières assignées à cette classe
     const {data: matieresAssignees} = await window.supabase
         .from('classes_matieres')
-        .select('matiere_id, matieres(id, nom)')
+        .select('matiere_id, matieres(id, nom, enseignant_id)')
         .eq('classe_id', cid);
         
-    if(!matieresAssignees || matieresAssignees.length === 0) {
-        selMatiere.innerHTML = '<option value="">Aucune matière configurée pour cette classe</option>';
+    let matieresAffichees = matieresAssignees || [];
+    
+    // Si c'est un enseignant, il ne voit que SES matières
+    if (role === 'enseignant' && window.currentEnseignantId) {
+        matieresAffichees = matieresAffichees.filter(m => m.matieres && m.matieres.enseignant_id === window.currentEnseignantId);
+    }
+          
+    if(matieresAffichees.length === 0) {
+        selMatiere.innerHTML = '<option value="">Aucune matière disponible pour vous</option>';
     } else {
         selMatiere.innerHTML = '<option value="">Sélectionner une matière</option>' + 
-            matieresAssignees.map(m => `<option value="${m.matieres.id}">${m.matieres.nom}</option>`).join('');
+            matieresAffichees.map(m => `<option value="${m.matieres.id}">${m.matieres.nom}</option>`).join('');
         selMatiere.disabled = false;
     }
 }
