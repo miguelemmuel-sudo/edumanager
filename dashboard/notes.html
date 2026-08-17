@@ -237,22 +237,21 @@ window.chargerGrille = async function() {
     
     // 3. Générer le HTML
     tbody.innerHTML = currentEleves.map((e, index) => {
-        // Trouver les notes de cet élève (Devoir et Examen)
-        const noteDevoir = currentNotes.find(n => n.eleve_id === e.id && n.type_evaluation === 'Devoir');
-        const noteExamen = currentNotes.find(n => n.eleve_id === e.id && n.type_evaluation === 'Examen');
+        const eleveNotes = currentNotes.filter(n => n.eleve_id === e.id);
+        const noteDevoir = eleveNotes.find(n => n.type_evaluation === 'Devoir');
+        const noteExamen = eleveNotes.find(n => n.type_evaluation === 'Examen');
         
         const valDevoir = noteDevoir ? noteDevoir.valeur : '';
         const valExamen = noteExamen ? noteExamen.valeur : '';
-        const appre = noteExamen ? noteExamen.appreciation : (noteDevoir ? noteDevoir.appreciation : '');
+        const appre = noteExamen ? noteExamen.commentaire : (noteDevoir ? noteDevoir.commentaire : '');
         
         let moyenneHtml = '<span class="text-muted">-</span>';
         if(valDevoir !== '' && valExamen !== '') {
-            // Moyenne (Ex: (Devoir + Examen)/2)
             const m = (parseFloat(valDevoir) + parseFloat(valExamen)) / 2;
             let color = m >= 10 ? 'text-success' : 'text-danger';
             moyenneHtml = `<strong class="${color}">${m.toFixed(2)}</strong>`;
         } else if (valDevoir !== '') {
-            moyenneHtml = `<strong>${valDevoir}</strong>`; // Moyenne provisoire
+            moyenneHtml = `<strong>${valDevoir}</strong>`;
         } else if (valExamen !== '') {
             moyenneHtml = `<strong>${valExamen}</strong>`;
         }
@@ -296,7 +295,7 @@ window.calculerMoyenneLigne = function(input) {
 
 window.sauvegarderNotes = async function() {
     const rows = document.querySelectorAll('#grilleSaisieBody tr');
-    let notesToUpsert = []; // Supabase upsert works on conflict
+    let notesToUpsert = [];
     
     rows.forEach(tr => {
         const eleveId = tr.getAttribute('data-eleve');
@@ -304,7 +303,6 @@ window.sauvegarderNotes = async function() {
         const examenInput = tr.querySelector('.n-examen');
         const appreInput = tr.querySelector('.n-appre');
         
-        // Trouver si la note existait déjà
         const noteDevoirAncienne = currentNotes.find(n => n.eleve_id === eleveId && n.type_evaluation === 'Devoir');
         const noteExamenAncienne = currentNotes.find(n => n.eleve_id === eleveId && n.type_evaluation === 'Examen');
         
@@ -317,7 +315,7 @@ window.sauvegarderNotes = async function() {
                     periode_id: currentPeriodeId,
                     type_evaluation: 'Devoir',
                     valeur: parseFloat(devoirInput.value),
-                    appreciation: appreInput.value,
+                    commentaire: appreInput.value,
                     statut: 'Brouillon'
                 });
             }
@@ -332,7 +330,7 @@ window.sauvegarderNotes = async function() {
                     periode_id: currentPeriodeId,
                     type_evaluation: 'Examen',
                     valeur: parseFloat(examenInput.value),
-                    appreciation: appreInput.value,
+                    commentaire: appreInput.value,
                     statut: 'Brouillon'
                 });
             }
