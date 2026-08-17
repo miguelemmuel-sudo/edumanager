@@ -921,10 +921,12 @@ async function fetchAndRenderClasses() {
     }
 
     let query = window.supabase.from('classes').select('*, enseignants(nom, prenom), eleves(count)');
-    
     // RBAC: Check role
     const sessionStr = localStorage.getItem('edu_session');
     let isEnseignant = false;
+    let currentEnsId = null;
+    let classeIdsOuIlEnseigne = new Set();
+    
     if (sessionStr) {
         const session = JSON.parse(sessionStr);
         if ((session.role || '').toLowerCase() === 'enseignant') {
@@ -934,10 +936,17 @@ async function fetchAndRenderClasses() {
             const addBtn = document.querySelector('[data-bs-target="#addClasseModal"]');
             if (addBtn) addBtn.style.display = 'none';
 
-            // Filter classes for this enseignant
+            // Find teacher profile and their linked classes
             const { data: ensData } = await window.supabase.from('enseignants').select('id').eq('user_id', session.userId).single();
             if (ensData) {
-                query = query.eq('enseignant_principal_id', ensData.id);
+                currentEnsId = ensData.id;
+                // Trouver ses matières pour savoir à quelles classes il est lié
+                const {data: matieres} = await window.supabase.from('matieres').select('id').eq('enseignant_id', currentEnsId);
+                const matIds = (matieres||[]).map(m => m.id);
+                if(matIds.length > 0) {
+                    const {data: cm} = await window.supabase.from('classes_matieres').select('classe_id').in('matiere_id', matIds);
+                    (cm||[]).forEach(c => classeIdsOuIlEnseigne.add(c.classe_id));
+                }
             } else {
                 container.innerHTML = '<div class="text-center py-5 text-muted">Profil enseignant introuvable</div>';
                 return;
@@ -1009,7 +1018,10 @@ async function fetchAndRenderClasses() {
                                 <div class="col-12"><div class="text-muted" style="font-size:.72rem">Salle</div><div style="font-size:.82rem;font-weight:600">${_e(c.salle || '-')}</div></div>
                             </div>
                             <div class="d-flex gap-2 mt-3">
-                                <a href="eleves.html" class="btn btn-sm flex-1 rounded-pill" style="background:rgba(37,99,235,.1);color:var(--primary);font-size:.78rem"><i class="fas fa-users me-1"></i>Élèves</a>
+                                ${(!isEnseignant || classeIdsOuIlEnseigne.has(c.id) || c.enseignant_principal_id === currentEnsId) 
+                                  ? `<a href="eleves.html" class="btn btn-sm flex-1 rounded-pill" style="background:rgba(37,99,235,.1);color:var(--primary);font-size:.78rem"><i class="fas fa-users me-1"></i>Élèves</a>`
+                                  : `<button class="btn btn-sm flex-1 rounded-pill btn-outline-primary" style="font-size:.78rem" onclick="openJoinClasseModal('${c.id}')"><i class="fas fa-plus me-1"></i>S'ajouter</button>`
+                                }
                                 ${!isEnseignant ? `<button class="btn btn-sm btn-icon text-danger" onclick="deleteClasse('${c.id}')"><i class="fas fa-trash"></i></button>` : ''}
                             </div>
                         </div>
@@ -1020,6 +1032,73 @@ async function fetchAndRenderClasses() {
         `;
     }
 }
+window.openJoinClasseModal = function(classeId) {
+    const elId = document.getElementById('joinClasseId');
+    const elNom = document.getElementById('joinMatiereNom');
+    const modalEl = document.getElementById('joinClasseModal');
+    if(elId && elNom && modalEl) {
+        elId.value = classeId;
+        elNom.value = '';
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+    }
+}
+
+window.submitJoinClasse = async function() {
+    const classeId = document.getElementById('joinClasseId').value;
+    const matiereNom = document.getElementById('joinMatiereNom').value.trim();
+    if (!matiereNom) {
+        if(window.showToast) window.showToast('Veuillez saisir une matière', 'warning');
+        return;
+    }
+    
+    const sessionStr = localStorage.getItem('edu_session');
+    if (!sessionStr) return;
+    const session = JSON.parse(sessionStr);
+    
+    // Obtenir ID enseignant
+    const { data: ensData } = await window.supabase.from('enseignants').select('id').eq('user_id', session.userId).single();
+    if (!ensData) return;
+    
+    const btn = document.getElementById('btnJoinClasse');
+    btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    
+    try {
+        // 1. Chercher si la matière existe déjà pour cet enseignant
+        let matiereId = null;
+        const { data: existingMat } = await window.supabase.from('matieres').select('id').eq('enseignant_id', ensData.id).ilike('nom', matiereNom).maybeSingle();
+        
+        if (existingMat) {
+            matiereId = existingMat.id;
+        } else {
+            // Créer la matière
+            const { data: newMat, error: matErr } = await window.supabase.from('matieres').insert([{
+                enseignant_id: ensData.id,
+                nom: matiereNom,
+                etablissement_id: session.etablissement_id
+            }]).select('id').single();
+            if (matErr) throw matErr;
+            matiereId = newMat.id;
+        }
+        
+        // 2. Lier la matière à la classe
+        const { error: cmErr } = await window.supabase.from('classes_matieres').insert([{
+            classe_id: classeId,
+            matiere_id: matiereId,
+            etablissement_id: session.etablissement_id
+        }]);
+        if (cmErr && cmErr.code !== '23505') throw cmErr; // Ignore duplicate
+        
+        if(window.showToast) window.showToast('Vous avez rejoint cette classe', 'success');
+        bootstrap.Modal.getInstance(document.getElementById('joinClasseModal')).hide();
+        fetchAndRenderClasses(); // Recharge la vue
+    } catch (e) {
+        if(window.showToast) window.showToast(e.message, 'danger');
+    } finally {
+        btn.disabled = false; btn.innerHTML = 'Rejoindre';
+    }
+}
+
 function setupClassesModal() {
     const btn = document.querySelector('#addClasseModal .btn-primary');
     if (!btn) return;
