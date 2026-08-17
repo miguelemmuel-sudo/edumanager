@@ -275,23 +275,46 @@ window.markDirty = function(input) {
 }
 
 window.calculerMoyenneLigne = function(input) {
-    const tr = input.closest('tr');
-    const dVal = tr.querySelector('.n-devoir').value;
-    const eVal = tr.querySelector('.n-examen').value;
-    const tdMoy = tr.querySelector('.ligne-moyenne');
-    
-    if(dVal !== '' && eVal !== '') {
-        const m = (parseFloat(dVal) + parseFloat(eVal)) / 2;
-        let color = m >= 10 ? 'text-success' : 'text-danger';
-        tdMoy.innerHTML = `<strong class="${color}">${m.toFixed(2)}</strong>`;
-    } else if (dVal !== '') {
-        tdMoy.innerHTML = `<strong>${parseFloat(dVal)}</strong>`;
-    } else if (eVal !== '') {
-        tdMoy.innerHTML = `<strong>${parseFloat(eVal)}</strong>`;
-    } else {
-        tdMoy.innerHTML = '<span class="text-muted">-</span>';
-    }
-}
+      const tr = input.closest('tr');
+      const dVal = tr.querySelector('.n-devoir').value;
+      const eVal = tr.querySelector('.n-examen').value;
+      const tdMoy = tr.querySelector('.ligne-moyenne');
+      const inputAppre = tr.querySelector('.n-appre');
+      
+      let currentMoy = null;
+
+      if(dVal !== '' && eVal !== '') {
+          const m = (parseFloat(dVal) + parseFloat(eVal)) / 2;
+          currentMoy = m;
+          let color = m >= 10 ? 'text-success' : 'text-danger';
+          tdMoy.innerHTML = `<strong class="${color}">${m.toFixed(2)}</strong>`;
+      } else if (dVal !== '') {
+          currentMoy = parseFloat(dVal);
+          tdMoy.innerHTML = `<strong>${currentMoy}</strong>`;
+      } else if (eVal !== '') {
+          currentMoy = parseFloat(eVal);
+          tdMoy.innerHTML = `<strong>${currentMoy}</strong>`;
+      } else {
+          tdMoy.innerHTML = '<span class="text-muted">-</span>';
+      }
+
+      // Auto-appreciation logic
+      if (currentMoy !== null && inputAppre) {
+          let appreciation = "Excellent";
+          if (currentMoy < 5) appreciation = "Mauvais";
+          else if (currentMoy < 8) appreciation = "Faible";
+          else if (currentMoy < 10) appreciation = "Insuffisant";
+          else if (currentMoy < 12) appreciation = "Passable";
+          else if (currentMoy < 14) appreciation = "Assez Bien";
+          else if (currentMoy < 16) appreciation = "Bien";
+          else if (currentMoy < 18) appreciation = "Très Bien";
+          
+          inputAppre.value = appreciation;
+          inputAppre.classList.add('dirty');
+      } else if (inputAppre && !dVal && !eVal) {
+          inputAppre.value = "";
+      }
+  }
 
 window.sauvegarderNotes = async function() {
     const rows = document.querySelectorAll('#grilleSaisieBody tr');
