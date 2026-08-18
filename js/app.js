@@ -647,6 +647,16 @@ async function fetchAndRenderEleves() {
     const info = document.getElementById('elevesPaginationInfo');
     if (info) info.textContent = `Affichage de 1 à ${eleves.length} sur ${eleves.length} élèves`;
 
+    let userRole = '';
+    const sessionStr = localStorage.getItem('edu_session');
+    if (sessionStr) {
+        try {
+            const session = JSON.parse(sessionStr);
+            userRole = (session.role || '').toLowerCase();
+        } catch(e){}
+    }
+    const canDeleteEleve = userRole === 'admin' || userRole === 'direction' || userRole === 'superadmin';
+
     if (eleves.length === 0) {
         tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted">Aucun élève trouvé</td></tr>';
         return;
@@ -667,7 +677,7 @@ async function fetchAndRenderEleves() {
             <td><span class="status-badge ${e.statut === 'Actif' ? 'success' : 'secondary'}">${_e(e.statut || 'Actif')}</span></td>
             <td>
                 <button class="btn btn-sm btn-icon text-muted"><i class="fas fa-edit"></i></button>
-                <button class="btn btn-sm btn-icon text-danger" onclick="deleteEleve('${e.id}')"><i class="fas fa-trash"></i></button>
+                ${canDeleteEleve ? `<button class="btn btn-sm btn-icon text-danger" onclick="deleteEleve('${e.id}')"><i class="fas fa-trash"></i></button>` : ''}
             </td>
         `;
         tbody.appendChild(tr);
@@ -709,6 +719,20 @@ function setupElevesModal() {
     });
 }
 window.deleteEleve = async function(id) {
+    let userRole = '';
+    const sessionStr = localStorage.getItem('edu_session');
+    if (sessionStr) {
+        try {
+            const session = JSON.parse(sessionStr);
+            userRole = (session.role || '').toLowerCase();
+        } catch(e){}
+    }
+    const canDeleteEleve = userRole === 'admin' || userRole === 'direction' || userRole === 'superadmin';
+    if (!canDeleteEleve) {
+        if(window.showToast) window.showToast('Action non autorisée', 'danger');
+        return;
+    }
+
     if(!confirm('Supprimer cet élève ?')) return;
     await window.supabase.from('eleves').delete().eq('id', id);
     if(window.showToast) window.showToast('Élève supprimé', 'success');
