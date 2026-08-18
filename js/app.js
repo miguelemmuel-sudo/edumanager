@@ -358,8 +358,68 @@ document.addEventListener('DOMContentLoaded', async () => {
             const isEcole = window.EduSettings.type.toLowerCase().includes('école');
             subtitle.textContent = `Bienvenue à votre ${isEcole ? 'école' : 'établissement'}, ${window.EduSettings.nom} 👋`;
         }
+        if (typeof fetchAndRenderAdminDashboard === 'function') {
+            await fetchAndRenderAdminDashboard();
+        }
     }
 });
+
+async function fetchAndRenderAdminDashboard() {
+    try {
+        const [
+            { count: nbEleves },
+            { count: nbEnseignants },
+            { count: nbClasses },
+            { data: paiements }
+        ] = await Promise.all([
+            window.supabase.from('eleves').select('id', { count: 'exact', head: true }),
+            window.supabase.from('enseignants').select('id', { count: 'exact', head: true }),
+            window.supabase.from('classes').select('id', { count: 'exact', head: true }),
+            window.supabase.from('paiements').select('montant')
+        ]);
+        
+        let revenus = 0;
+        if (paiements) {
+            paiements.forEach(p => revenus += parseFloat(p.montant || 0));
+        }
+        
+        const scValues = document.querySelectorAll('.stat-card .sc-value');
+        if (scValues.length >= 4) {
+            scValues[0].textContent = nbEleves || 0;
+            scValues[1].textContent = revenus.toLocaleString('fr-FR') + ' FCFA';
+            scValues[2].textContent = nbEnseignants || 0;
+            scValues[3].textContent = nbClasses || 0;
+        }
+
+        // Fetch recent enrollments
+        const { data: recentEleves } = await window.supabase.from('eleves').select('id, prenom, nom, created_at, statut, classes(nom)').order('created_at', { ascending: false }).limit(5);
+        const tbody = document.getElementById('dynamicBody');
+        if (tbody && recentEleves) {
+            tbody.innerHTML = '';
+            const safeStr = (s) => String(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+            recentEleves.forEach(e => {
+                const tr = document.createElement('tr');
+                const date = e.created_at ? new Date(e.created_at).toLocaleDateString('fr-FR') : '-';
+                const nomComplet = safeStr(e.prenom) + ' ' + safeStr(e.nom);
+                const classeNom = e.classes ? e.classes.nom : 'Non assigné';
+                const statusBadge = e.statut === 'Actif' ? '<span class="status-badge success">Actif</span>' : '<span class="status-badge secondary">' + safeStr(e.statut || 'En attente') + '</span>';
+                tr.innerHTML = `
+                    <td><div class="fw-semibold">${nomComplet}</div></td>
+                    <td>${safeStr(classeNom)}</td>
+                    <td>${date}</td>
+                    <td>${statusBadge}</td>
+                    <td><a href="eleves.html" class="btn btn-sm btn-icon text-muted"><i class="fas fa-eye"></i></a></td>
+                `;
+                tbody.appendChild(tr);
+            });
+            if (recentEleves.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">Aucune inscription récente</td></tr>';
+            }
+        }
+    } catch(err) {
+        console.error('Erreur chargement dashboard:', err);
+    }
+}
 
 // --- HELPER: Setup Realtime ---
 function setupRealtime(table, callback) {
