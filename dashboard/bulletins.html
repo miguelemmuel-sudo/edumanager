@@ -357,6 +357,40 @@ async function genererBulletin() {
     let headerSeqHtml = '';
     seqTitles.forEach(t => headerSeqHtml += `<th>${t} (/20)</th>`);
     
+    // Mapping des pays
+    const countryData = {
+        'cameroun': { nameFR: 'République du Cameroun', nameEN: 'Republic of Cameroon', mottoFR: 'Paix - Travail - Patrie', mottoEN: 'Peace - Work - Fatherland', flagUrl: 'https://flagcdn.com/w80/cm.png' },
+        'gabon': { nameFR: 'République Gabonaise', nameEN: 'Gabonese Republic', mottoFR: 'Union - Travail - Justice', mottoEN: 'Union - Work - Justice', flagUrl: 'https://flagcdn.com/w80/ga.png' },
+        'senegal': { nameFR: 'République du Sénégal', nameEN: 'Republic of Senegal', mottoFR: 'Un Peuple - Un But - Une Foi', mottoEN: 'One People - One Goal - One Faith', flagUrl: 'https://flagcdn.com/w80/sn.png' },
+        'cote d\'ivoire': { nameFR: 'République de Côte d\'Ivoire', nameEN: 'Republic of Côte d\'Ivoire', mottoFR: 'Union - Discipline - Travail', mottoEN: 'Unity - Discipline - Work', flagUrl: 'https://flagcdn.com/w80/ci.png' },
+        'mali': { nameFR: 'République du Mali', nameEN: 'Republic of Mali', mottoFR: 'Un Peuple - Un But - Une Foi', mottoEN: 'One People - One Goal - One Faith', flagUrl: 'https://flagcdn.com/w80/ml.png' },
+        'france': { nameFR: 'République Française', nameEN: 'French Republic', mottoFR: 'Liberté, Égalité, Fraternité', mottoEN: 'Liberty, Equality, Fraternity', flagUrl: 'https://flagcdn.com/w80/fr.png' },
+        'togo': { nameFR: 'République Togolaise', nameEN: 'Togolese Republic', mottoFR: 'Travail - Liberté - Patrie', mottoEN: 'Work - Liberty - Homeland', flagUrl: 'https://flagcdn.com/w80/tg.png' },
+        'benin': { nameFR: 'République du Bénin', nameEN: 'Republic of Benin', mottoFR: 'Fraternité - Justice - Travail', mottoEN: 'Fraternity - Justice - Work', flagUrl: 'https://flagcdn.com/w80/bj.png' },
+        'congo': { nameFR: 'République du Congo', nameEN: 'Republic of the Congo', mottoFR: 'Unité - Travail - Progrès', mottoEN: 'Unity - Work - Progress', flagUrl: 'https://flagcdn.com/w80/cg.png' },
+        'rdc': { nameFR: 'République Démocratique du Congo', nameEN: 'Democratic Republic of the Congo', mottoFR: 'Justice - Paix - Travail', mottoEN: 'Justice - Peace - Work', flagUrl: 'https://flagcdn.com/w80/cd.png' },
+        'tchad': { nameFR: 'République du Tchad', nameEN: 'Republic of Chad', mottoFR: 'Unité - Travail - Progrès', mottoEN: 'Unity - Work - Progress', flagUrl: 'https://flagcdn.com/w80/td.png' },
+        'niger': { nameFR: 'République du Niger', nameEN: 'Republic of Niger', mottoFR: 'Fraternité - Travail - Progrès', mottoEN: 'Fraternity - Work - Progress', flagUrl: 'https://flagcdn.com/w80/ne.png' },
+        'burkina faso': { nameFR: 'Burkina Faso', nameEN: 'Burkina Faso', mottoFR: 'La Patrie ou la mort, nous vaincrons', mottoEN: 'Homeland or death, we will overcome', flagUrl: 'https://flagcdn.com/w80/bf.png' },
+        'guinee': { nameFR: 'République de Guinée', nameEN: 'Republic of Guinea', mottoFR: 'Travail - Justice - Solidarité', mottoEN: 'Work - Justice - Solidarity', flagUrl: 'https://flagcdn.com/w80/gn.png' }
+    };
+
+    let cInfo = countryData['cameroun']; // Default
+    if (currentEtab.pays) {
+        let pNorm = currentEtab.pays.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        if (countryData[pNorm]) {
+            cInfo = countryData[pNorm];
+        } else if (pNorm.includes('ivoire')) {
+            cInfo = countryData['cote d\'ivoire'];
+        } else if (pNorm.includes('democratique') || pNorm === 'rdc') {
+            cInfo = countryData['rdc'];
+        } else {
+            cInfo = { nameFR: 'République du ' + currentEtab.pays, nameEN: 'Republic of ' + currentEtab.pays, mottoFR: '', mottoEN: '', flagUrl: '' };
+        }
+    }
+
+    const flagHtml = cInfo.flagUrl ? `<img src="${cInfo.flagUrl}" style="height:15px; vertical-align:middle; margin-left:6px; margin-bottom: 2px; border-radius: 2px; box-shadow: 0 0 2px rgba(0,0,0,0.3);" alt="Drapeau">` : '';
+
     // Signatures
     const sigDir = currentEtab.signature_directeur_url ? `<img src="${currentEtab.signature_directeur_url}" style="max-height:80px; margin-top:10px;">` : `<div style="height:80px"></div>`;
     const logoHtml = currentEtab.logo_url ? `<img src="${currentEtab.logo_url}" style="max-height:80px;">` : `<div style="height:80px;width:80px;background:#f8f9fa;display:inline-block;border-radius:50%"></div>`;
@@ -366,8 +400,8 @@ async function genererBulletin() {
     container.innerHTML = `
         <div class="bulletin-header d-flex justify-content-between align-items-center mb-4 pb-3" style="border-bottom: 2px solid #1e293b;">
             <div class="text-center" style="flex:1">
-                <h6 class="fw-bold text-uppercase m-0">République du Cameroun</h6>
-                <p class="small text-muted m-0">Paix - Travail - Patrie</p>
+                <h6 class="fw-bold text-uppercase m-0">${cInfo.nameFR} ${flagHtml}</h6>
+                <p class="small text-muted m-0">${cInfo.mottoFR}</p>
                 <div class="mt-2 text-uppercase fw-bold text-primary" style="font-size: 1.1rem">${currentEtab.nom}</div>
                 <p class="small m-0">${currentEtab.devise || ''}</p>
                 <p class="small m-0">${currentEtab.adresse} | Tél: ${currentEtab.tel}</p>
@@ -376,8 +410,8 @@ async function genererBulletin() {
                 ${logoHtml}
             </div>
             <div class="text-center" style="flex:1">
-                <h6 class="fw-bold text-uppercase m-0">Republic of Cameroon</h6>
-                <p class="small text-muted m-0">Peace - Work - Fatherland</p>
+                <h6 class="fw-bold text-uppercase m-0">${cInfo.nameEN} ${flagHtml}</h6>
+                <p class="small text-muted m-0">${cInfo.mottoEN}</p>
                 <div class="mt-2 text-uppercase fw-bold" style="font-size: 1.2rem">BULLETIN DE NOTES</div>
                 <div class="badge bg-primary text-white p-2 mt-1" style="font-size: 0.9rem">${pNom}</div>
             </div>
