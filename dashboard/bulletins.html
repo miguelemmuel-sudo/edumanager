@@ -137,6 +137,7 @@
         <div class="d-flex gap-2">
             <button class="btn btn-warning rounded-pill px-4 text-dark fw-bold" id="btnValider" onclick="validerBulletin()"><i class="fas fa-check-circle me-1"></i>Valider le bulletin</button>
             <button class="btn btn-success rounded-pill px-4 fw-bold d-none" id="btnPublier" onclick="publierBulletin()"><i class="fas fa-paper-plane me-1"></i>Publier</button>
+            <button class="btn btn-info rounded-pill px-4 fw-bold text-white d-none" id="btnWhatsApp" onclick="envoyerWhatsApp()" style="background-color: #25D366; border-color: #25D366;"><i class="fab fa-whatsapp me-1"></i>Envoyer au parent</button>
             <button class="btn btn-outline-primary rounded-pill px-4" onclick="exporterPDF()"><i class="fas fa-file-pdf me-1"></i>Exporter PDF</button>
         </div>
     </div>
@@ -520,6 +521,8 @@ async function genererBulletin() {
         btnPublier.innerHTML = '<i class="fas fa-paper-plane me-1"></i>Publier';
         btnPublier.disabled = false;
     }
+    const btnWa = document.getElementById('btnWhatsApp');
+    if (btnWa) btnWa.classList.add('d-none');
 
     if (existingB && existingB.statut === 'Publié') {
         btnValider.className = 'btn btn-secondary rounded-pill px-4 fw-bold';
@@ -530,6 +533,7 @@ async function genererBulletin() {
             btnPublier.innerHTML = '<i class="fas fa-check-double me-1"></i>Publié';
             btnPublier.disabled = true;
         }
+        if (btnWa) btnWa.classList.remove('d-none');
     } else if(existingB && existingB.statut === 'Validé') {
         btnValider.className = 'btn btn-success rounded-pill px-4 fw-bold';
         btnValider.innerHTML = '<i class="fas fa-check-double me-1"></i>Bulletin déjà validé';
@@ -580,7 +584,32 @@ async function publierBulletin() {
     } else {
         btn.className = 'btn btn-secondary rounded-pill px-4 fw-bold';
         btn.innerHTML = '<i class="fas fa-check-double me-1"></i>Bulletin Publié';
+        
+        const btnWa = document.getElementById('btnWhatsApp');
+        if (btnWa) btnWa.classList.remove('d-none');
+        
+        // Envoi automatique via WhatsApp (peut être bloqué par le navigateur, d'où le bouton manuel)
+        window.envoyerWhatsApp();
     }
+}
+
+window.envoyerWhatsApp = function() {
+    if (!currentEleveData) return;
+    if (!currentEleveData.parent_tel) {
+        alert("Aucun numéro de téléphone parent n'est enregistré pour cet élève.");
+        return;
+    }
+    let phone = currentEleveData.parent_tel.replace(/[^\d+]/g, '');
+    if (!phone) return;
+    if (phone.startsWith('+')) phone = phone.substring(1);
+    
+    // Fallback if no country code provided, although typically it should be provided
+    // but WhatsApp requires a valid international number
+    const portalUrl = window.location.origin + '/suivi.html';
+    const message = `Bonjour, le bulletin de ${currentEleveData.prenom} est disponible.\n\nMatricule : ${currentEleveData.matricule || 'N/A'}\nCode secret : ${currentEleveData.code_acces || 'N/A'}\n\nConsultez-le ici : ${portalUrl}`;
+    
+    const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+    window.open(waUrl, '_blank');
 }
 
 window.exporterPDF = function() {
