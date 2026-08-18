@@ -539,11 +539,128 @@ function showTab(name, el) {
         loadMatieresAdmin();
     }
     
+    // --- Gestion des Frais Scolaires ---
+    let currentFraisTypes = ['Inscription', 'Scolarité'];
+    let currentFraisData = [];
+
+    async function loadFraisAdmin() {
+        if (!window.supabase) return;
+        
+        const { data, error } = await window.supabase.from('frais_scolaires').select('*');
+        if (data) {
+            currentFraisData = data;
+            // extract new types
+            data.forEach(f => {
+                if (f.type_frais && !currentFraisTypes.includes(f.type_frais)) {
+                    currentFraisTypes.push(f.type_frais);
+                }
+            });
+        }
+        renderFraisTable();
+    }
+
+    function renderFraisTable() {
+        const thead = document.getElementById('fraisTableHead');
+        if (!thead) return;
+        let headHtml = '<th>Niveau</th>';
+        currentFraisTypes.forEach(t => {
+            headHtml += `<th>${t} (FCFA)</th>`;
+        });
+        thead.innerHTML = headHtml;
+        
+        const tbody = document.getElementById('fraisTableBody');
+        if (!tbody) return;
+        
+        let niveaux = ['Maternelle', 'Primaire', 'Collège', 'Lycée'];
+        if (typeof getNiveauxList === 'function') {
+            const nList = getNiveauxList();
+            if (nList && nList.length > 0) niveaux = nList;
+        }
+        
+        if (!niveaux || niveaux.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="${currentFraisTypes.length+1}" class="text-center py-3">Aucun niveau défini pour ce type d'établissement.</td></tr>`;
+            return;
+        }
+        
+        let bodyHtml = '';
+        niveaux.forEach(niv => {
+            let rowHtml = `<tr><td class="fw-bold">${niv}</td>`;
+            currentFraisTypes.forEach(t => {
+                const existing = currentFraisData.find(f => f.niveau === niv && f.type_frais === t);
+                const val = existing ? existing.montant : '';
+                rowHtml += `<td><input type="number" class="form-control form-control-sm frais-input" data-niveau="${niv}" data-type="${t}" value="${val}" placeholder="0"></td>`;
+            });
+            rowHtml += '</tr>';
+            bodyHtml += rowHtml;
+        });
+        tbody.innerHTML = bodyHtml;
+    }
+
+    document.getElementById('btnAddFrais')?.addEventListener('click', () => {
+        const newType = prompt("Entrez le nom du nouveau type de frais (ex: Cantine, Transport) :");
+        if (newType && newType.trim() !== '') {
+            const typeClean = newType.trim();
+            if (!currentFraisTypes.includes(typeClean)) {
+                currentFraisTypes.push(typeClean);
+                renderFraisTable();
+            } else {
+                alert("Ce type de frais existe déjà.");
+            }
+        }
+    });
+
+    document.getElementById('btnSaveFrais')?.addEventListener('click', async () => {
+        const btn = document.getElementById('btnSaveFrais');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Enregistrement...';
+        
+        try {
+            const inputs = document.querySelectorAll('.frais-input');
+            const toUpsert = [];
+            
+            const {data: etab} = await window.supabase.from('etablissements').select('id').limit(1).single();
+            const etab_id = etab ? etab.id : null;
+            
+            inputs.forEach(inp => {
+                const val = inp.value.trim();
+                if (val !== '') {
+                    toUpsert.push({
+                        etablissement_id: etab_id,
+                        niveau: inp.getAttribute('data-niveau'),
+                        type_frais: inp.getAttribute('data-type'),
+                        montant: parseFloat(val) || 0
+                    });
+                }
+            });
+            
+            if (etab_id) {
+                // Delete existing ones to prevent duplicates (since we might not have a unique constraint)
+                await window.supabase.from('frais_scolaires').delete().eq('etablissement_id', etab_id);
+                if (toUpsert.length > 0) {
+                    const {error} = await window.supabase.from('frais_scolaires').insert(toUpsert);
+                    if(error) throw error;
+                }
+                if (window.showToast) window.showToast("Frais enregistrés avec succès", "success");
+                else alert("Frais enregistrés avec succès");
+            } else {
+                alert("Erreur: ID de l'établissement introuvable.");
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Erreur lors de l'enregistrement des frais: " + e.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save me-2"></i>Enregistrer les frais';
+            loadFraisAdmin(); 
+        }
+    });
+    
     document.addEventListener('DOMContentLoaded', () => {
         // Wait for supabase to be ready
         setTimeout(() => {
             loadPeriods();
             loadMatieresAdmin();
+            loadFraisAdmin();
         }, 1000);
         
         document.getElementById('periodForm')?.addEventListener('submit', async (e) => {
