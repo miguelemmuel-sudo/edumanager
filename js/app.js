@@ -2428,20 +2428,20 @@ async function fetchAndRenderUtilisateurs() {
     
     // Update KPIs
     if ((!window.currentGroupFilter || window.currentGroupFilter === 'Tous') && !statusFilter) {
-        let admins=0, profs=0, compts=0, parents=0, eleves=0;
+        let admins=0, profs=0, compts=0, survs=0, eleves=0;
         usersList.forEach(u => {
             const role = (u.role || '').toLowerCase();
             if(role === 'admin' || role === 'directeur') admins++;
             if(role === 'enseignant') profs++;
             if(role === 'comptable') compts++;
-            if(role === 'parent') parents++;
+            if(role === 'surveillant') survs++;
             if(role === 'eleve') eleves++;
         });
         if(document.getElementById('kpiTotal')) document.getElementById('kpiTotal').innerText = usersList.length;
         if(document.getElementById('kpiAdmins')) document.getElementById('kpiAdmins').innerText = admins;
         if(document.getElementById('kpiProfs')) document.getElementById('kpiProfs').innerText = profs;
         if(document.getElementById('kpiComptables')) document.getElementById('kpiComptables').innerText = compts;
-        if(document.getElementById('kpiParents')) document.getElementById('kpiParents').innerText = parents;
+        if(document.getElementById('kpiSurveillants')) document.getElementById('kpiSurveillants').innerText = survs;
         if(document.getElementById('kpiEleves')) document.getElementById('kpiEleves').innerText = eleves;
     }
     
