@@ -136,6 +136,7 @@
         <h5 class="fw-bold m-0 text-primary"><i class="fas fa-eye me-2"></i>Aperçu du bulletin professionnel</h5>
         <div class="d-flex gap-2">
             <button class="btn btn-warning rounded-pill px-4 text-dark fw-bold" id="btnValider" onclick="validerBulletin()"><i class="fas fa-check-circle me-1"></i>Valider le bulletin</button>
+            <button class="btn btn-success rounded-pill px-4 fw-bold d-none" id="btnPublier" onclick="publierBulletin()"><i class="fas fa-paper-plane me-1"></i>Publier</button>
             <button class="btn btn-outline-primary rounded-pill px-4" onclick="exporterPDF()"><i class="fas fa-file-pdf me-1"></i>Exporter PDF</button>
         </div>
     </div>
@@ -460,15 +461,45 @@ async function genererBulletin() {
     // Vérifier si le bulletin existe déjà et son statut
     const {data: existingB} = await window.supabase.from('bulletins').select('id, statut').eq('eleve_id', eid).eq('periode_id', pid).maybeSingle();
     const btnValider = document.getElementById('btnValider');
+    const btnPublier = document.getElementById('btnPublier');
     
-    if(existingB && existingB.statut === 'Validé') {
-        btnValider.classList.replace('btn-warning', 'btn-success');
+    // RBAC: Show/Hide Publier button
+    let userRole = '';
+    const sessionStr = localStorage.getItem('edu_session');
+    if (sessionStr) {
+        try {
+            const session = JSON.parse(sessionStr);
+            userRole = (session.role || '').toLowerCase();
+        } catch(e){}
+    }
+    const isAdminOrDirection = (userRole === 'admin' || userRole === 'direction' || userRole === 'superadmin');
+    if (isAdminOrDirection && btnPublier) {
+        btnPublier.classList.remove('d-none');
+    }
+
+    // Reset styles
+    btnValider.className = 'btn btn-warning rounded-pill px-4 text-dark fw-bold';
+    btnValider.innerHTML = '<i class="fas fa-check-circle me-1"></i>Valider le bulletin';
+    btnValider.disabled = false;
+    if (btnPublier) {
+        btnPublier.className = 'btn btn-success rounded-pill px-4 fw-bold' + (isAdminOrDirection ? '' : ' d-none');
+        btnPublier.innerHTML = '<i class="fas fa-paper-plane me-1"></i>Publier';
+        btnPublier.disabled = false;
+    }
+
+    if (existingB && existingB.statut === 'Publié') {
+        btnValider.className = 'btn btn-secondary rounded-pill px-4 fw-bold';
+        btnValider.innerHTML = '<i class="fas fa-check-double me-1"></i>Déjà publié';
+        btnValider.disabled = true;
+        if (btnPublier) {
+            btnPublier.className = 'btn btn-secondary rounded-pill px-4 fw-bold' + (isAdminOrDirection ? '' : ' d-none');
+            btnPublier.innerHTML = '<i class="fas fa-check-double me-1"></i>Publié';
+            btnPublier.disabled = true;
+        }
+    } else if(existingB && existingB.statut === 'Validé') {
+        btnValider.className = 'btn btn-success rounded-pill px-4 fw-bold';
         btnValider.innerHTML = '<i class="fas fa-check-double me-1"></i>Bulletin déjà validé';
         btnValider.disabled = true;
-    } else {
-        btnValider.classList.replace('btn-success', 'btn-warning');
-        btnValider.innerHTML = '<i class="fas fa-check-circle me-1"></i>Valider le bulletin';
-        btnValider.disabled = false;
     }
 }
 
@@ -490,8 +521,31 @@ async function validerBulletin() {
         btn.disabled = false;
         btn.innerHTML = '<i class="fas fa-check-circle me-1"></i>Valider le bulletin';
     } else {
-        btn.classList.replace('btn-warning', 'btn-success');
+        btn.className = 'btn btn-success rounded-pill px-4 fw-bold';
         btn.innerHTML = '<i class="fas fa-check-double me-1"></i>Bulletin Validé';
+    }
+}
+
+async function publierBulletin() {
+    if(!generatedData) return;
+    
+    generatedData.statut = 'Publié';
+    const btn = document.getElementById('btnPublier');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Publication...';
+    
+    const { error } = await window.supabase.from('bulletins').upsert({
+        ...generatedData,
+        updated_at: new Date().toISOString()
+    }, { onConflict: 'eleve_id, periode_id' });
+    
+    if(error) {
+        alert("Erreur lors de la publication: " + error.message);
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-paper-plane me-1"></i>Publier';
+    } else {
+        btn.className = 'btn btn-secondary rounded-pill px-4 fw-bold';
+        btn.innerHTML = '<i class="fas fa-check-double me-1"></i>Bulletin Publié';
     }
 }
 
