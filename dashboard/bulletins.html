@@ -433,7 +433,7 @@ async function genererBulletin() {
     // --- FIN DU NOUVEAU MOTEUR ---
     
     let studentRankStr = 'N/A';
-    const rankIdx = classNotes.indexOf(moyenneGenerale);
+    const rankIdx = classNotes.indexOf(parseFloat(moyenneGenerale.toFixed(2)));
     if (rankIdx !== -1) {
         studentRankStr = (rankIdx + 1) + (rankIdx === 0 ? 'er' : 'ème') + ` / ${classNotes.length}`;
     }
