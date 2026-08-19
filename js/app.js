@@ -332,13 +332,6 @@ async function fetchAndRenderAdminDashboard() {
         let queryClasses = window.supabase.from('classes').select('id');
         let queryPaiements = window.supabase.from('paiements').select('montant');
         
-        if (etabId) {
-            queryEleves = queryEleves.eq('etablissement_id', etabId);
-            queryEnseignants = queryEnseignants.eq('etablissement_id', etabId);
-            queryClasses = queryClasses.eq('etablissement_id', etabId);
-            queryPaiements = queryPaiements.eq('etablissement_id', etabId);
-        }
-        
         const [
             resEleves,
             resEnseignants,
