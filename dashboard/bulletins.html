@@ -250,54 +250,130 @@ async function genererBulletin() {
         }
     }
     
-    // Charger les notes
-    const {data: notes} = await window.supabase
+    // Charger les notes de toute la classe pour calculer la moyenne de classe et les rangs exacts
+    const { data: elevesClasse } = await window.supabase.from('eleves').select('id').eq('classe_id', cid);
+    const elevesIds = elevesClasse ? elevesClasse.map(e => e.id) : [eid];
+
+    const {data: allNotes} = await window.supabase
         .from('notes')
-        .select('*, matieres(nom, coefficient_defaut, categorie, enseignants(nom, prenom))')
-        .eq('eleve_id', eid)
+        .select('eleve_id, matiere_id, valeur, periode_id, commentaire, matieres(nom, coefficient_defaut, categorie, enseignants(nom, prenom))')
+        .in('eleve_id', elevesIds)
         .in('periode_id', periodesRecherche);
         
-    if(!notes || notes.length === 0) {
-        alert("Aucune note trouvée pour cet élève sur cette période.");
+    if(!allNotes || allNotes.length === 0) {
+        alert("Aucune note trouvée sur cette période.");
         return;
     }
     
-    // Engine de calcul
-    let totalPoints = 0;
-    let totalCoefs = 0;
-    let matieresStats = {};
+    // Engine de calcul - Agrégation des notes pour toute la classe
+    const studentStats = {};
+    const subjectAverages = {}; // mId -> array of averages of all students
     
-    notes.forEach(n => {
+    allNotes.forEach(n => {
+        const eId = n.eleve_id;
         const mId = n.matiere_id;
-        if(!matieresStats[mId]) {
-            matieresStats[mId] = {
-                nom: n.matieres.nom,
-                coef: n.matieres.coefficient_defaut || 1,
-                categorie: n.matieres.categorie || 'Enseignement Général',
-                prof: n.matieres.enseignants ? `${n.matieres.enseignants.nom} ${n.matieres.enseignants.prenom}` : 'Non assigné',
+        const pId = n.periode_id;
+        const m = n.matieres || {};
+        
+        if (!studentStats[eId]) studentStats[eId] = { matieres: {} };
+        if (!studentStats[eId].matieres[mId]) {
+            studentStats[eId].matieres[mId] = { 
+                nom: m.nom,
+                coef: m.coefficient_defaut || 1,
+                categorie: m.categorie || 'Enseignement Général',
+                prof: m.enseignants ? `${m.enseignants.nom} ${m.enseignants.prenom}` : 'Non assigné',
                 notesPeriodes: {},
                 appreciation: ''
             };
         }
-        matieresStats[mId].notesPeriodes[n.periode_id] = parseFloat(n.valeur);
-        if(n.commentaire && n.commentaire.length > matieresStats[mId].appreciation.length) {
-            matieresStats[mId].appreciation = n.commentaire; // Prend l'appréciation la plus longue
+        studentStats[eId].matieres[mId].notesPeriodes[pId] = parseFloat(n.valeur);
+        if(n.commentaire && n.commentaire.length > studentStats[eId].matieres[mId].appreciation.length) {
+            studentStats[eId].matieres[mId].appreciation = n.commentaire;
         }
     });
     
-    // Regroupement par catégorie (branche)
+    // Calcul des moyennes par matière pour chaque élève et moyenne générale
+    let classNotes = [];
+    let currentStudentTotalPoints = 0;
+    let currentStudentTotalCoefs = 0;
+    let currentStudentMatieresStats = studentStats[eid] ? studentStats[eid].matieres : {};
+
+    for (let eId in studentStats) {
+        let sTotalPoints = 0;
+        let sTotalCoefs = 0;
+        
+        for (let mId in studentStats[eId].matieres) {
+            const m = studentStats[eId].matieres[mId];
+            let sumNotes = 0;
+            let countNotes = 0;
+            
+            if (isTrimestre) {
+                periodesRecherche.forEach(pId => {
+                    if (m.notesPeriodes[pId] !== undefined) {
+                        sumNotes += m.notesPeriodes[pId];
+                        countNotes++;
+                    }
+                });
+            } else {
+                if (m.notesPeriodes[pid] !== undefined) {
+                    sumNotes = m.notesPeriodes[pid];
+                    countNotes = 1;
+                }
+            }
+            
+            if (countNotes > 0) {
+                const moy = sumNotes / countNotes;
+                sTotalPoints += (moy * m.coef);
+                sTotalCoefs += m.coef;
+                
+                // Enregistrer la moyenne de la matière pour calculer le rang par matière
+                if (!subjectAverages[mId]) subjectAverages[mId] = [];
+                subjectAverages[mId].push(parseFloat(moy.toFixed(2)));
+                
+                // Sauvegarder la moyenne calculée dans l'objet pour l'élève actuel
+                if (eId === eid) {
+                    m.moyenneCalculee = parseFloat(moy.toFixed(2));
+                }
+            }
+        }
+        
+        const avg = sTotalCoefs > 0 ? (sTotalPoints / sTotalCoefs) : 0;
+        classNotes.push(parseFloat(avg.toFixed(2)));
+        
+        if (eId === eid) {
+            currentStudentTotalPoints = sTotalPoints;
+            currentStudentTotalCoefs = sTotalCoefs;
+        }
+    }
+    
+    // Si l'élève actuel n'avait aucune note, initialiser ses stats
+    if (!studentStats[eid]) {
+        alert("L'élève sélectionné n'a aucune note.");
+        return;
+    }
+    
+    // Trier les moyennes générales de la classe
+    classNotes.sort((a, b) => b - a); // Décroissant
+    
+    // Trier les moyennes par matière pour les classements par matière
+    for (let mId in subjectAverages) {
+        subjectAverages[mId].sort((a, b) => b - a);
+    }
+    
+    // Regroupement par catégorie (branche) pour l'élève actuel
     const categories = {};
-    for (let mId in matieresStats) {
-        const m = matieresStats[mId];
-        if (!categories[m.categorie]) categories[m.categorie] = [];
-        categories[m.categorie].push({ id: mId, ...m });
+    for (let mId in currentStudentMatieresStats) {
+        const m = currentStudentMatieresStats[mId];
+        if (m.moyenneCalculee !== undefined) {
+            if (!categories[m.categorie]) categories[m.categorie] = [];
+            categories[m.categorie].push({ id: mId, ...m });
+        }
     }
     
     let rowsHtml = '';
-    const totalCols = 5 + seqTitles.length;
+    const totalCols = 6 + seqTitles.length; // +1 pour la colonne Rang
     
     for (let catName in categories) {
-        // En-tête de catégorie
         rowsHtml += `
             <tr>
                 <td colspan="${totalCols}" class="bg-light fw-bold text-start text-primary" style="text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.5px;">
@@ -307,16 +383,12 @@ async function genererBulletin() {
         `;
         
         categories[catName].forEach(m => {
-            let sumNotes = 0;
-            let countNotes = 0;
             let seqHtml = '';
             
             if (isTrimestre) {
                 periodesRecherche.forEach(pId => {
                     const n = m.notesPeriodes[pId];
                     if (n !== undefined) {
-                        sumNotes += n;
-                        countNotes++;
                         seqHtml += `<td class="align-middle">${n.toFixed(2)}</td>`;
                     } else {
                         seqHtml += `<td class="align-middle">-</td>`;
@@ -325,38 +397,43 @@ async function genererBulletin() {
             } else {
                 const n = m.notesPeriodes[pid];
                 if (n !== undefined) {
-                    sumNotes = n;
-                    countNotes = 1;
                     seqHtml += `<td class="align-middle">${n.toFixed(2)}</td>`;
                 } else {
                     seqHtml += `<td class="align-middle">-</td>`;
                 }
             }
             
-            let moy = countNotes > 0 ? (sumNotes / countNotes) : null;
-            
-            if (moy !== null) {
-                totalPoints += (moy * m.coef);
-                totalCoefs += m.coef;
-                
-                rowsHtml += `
-                    <tr>
-                        <td class="text-start">
-                            <div class="fw-bold">${m.nom}</div>
-                            <div class="text-muted" style="font-size: 0.70rem; font-style: italic;">Prof: ${m.prof}</div>
-                        </td>
-                        <td class="align-middle">${m.coef}</td>
-                        ${seqHtml}
-                        <td class="align-middle fw-bold ${moy >= 10 ? 'text-success' : 'text-danger'}" style="background-color:rgba(0,0,0,.03);">${moy.toFixed(2)}</td>
-                        <td class="align-middle fw-bold">${(moy * m.coef).toFixed(2)}</td>
-                        <td class="text-muted small text-start align-middle">${m.appreciation || ''}</td>
-                    </tr>
-                `;
+            // Trouver le rang de l'élève pour cette matière
+            let rankMatStr = '-';
+            if (subjectAverages[m.id] && m.moyenneCalculee !== undefined) {
+                const rankM = subjectAverages[m.id].indexOf(m.moyenneCalculee);
+                if (rankM !== -1) {
+                    rankMatStr = (rankM + 1) + (rankM === 0 ? 'er' : 'ème');
+                }
             }
+            
+            rowsHtml += `
+                <tr>
+                    <td class="text-start">
+                        <div class="fw-bold">${m.nom}</div>
+                        <div class="text-muted" style="font-size: 0.70rem; font-style: italic;">Prof: ${m.prof}</div>
+                    </td>
+                    <td class="align-middle">${m.coef}</td>
+                    ${seqHtml}
+                    <td class="align-middle fw-bold ${m.moyenneCalculee >= 10 ? 'text-success' : 'text-danger'}" style="background-color:rgba(0,0,0,.03);">${m.moyenneCalculee.toFixed(2)}</td>
+                    <td class="align-middle fw-bold text-primary" style="font-size:0.85rem">${rankMatStr}</td>
+                    <td class="align-middle fw-bold">${(m.moyenneCalculee * m.coef).toFixed(2)}</td>
+                    <td class="text-muted small text-start align-middle">${m.appreciation || ''}</td>
+                </tr>
+            `;
         });
     }
     
-    const moyenneGenerale = totalCoefs > 0 ? (totalPoints / totalCoefs) : 0;
+    const moyenneGenerale = currentStudentTotalCoefs > 0 ? (currentStudentTotalPoints / currentStudentTotalCoefs) : 0;
+    const totalPoints = currentStudentTotalPoints;
+    const totalCoefs = currentStudentTotalCoefs;
+    const matieresStats = currentStudentMatieresStats;
+    
     let mention = 'Passable';
     if(moyenneGenerale >= 16) mention = 'Très Bien';
     else if(moyenneGenerale >= 14) mention = 'Bien';
@@ -364,73 +441,6 @@ async function genererBulletin() {
     else if(moyenneGenerale < 10) mention = 'Insuffisant';
     
     let decision = moyenneGenerale >= 10 ? 'Admis' : 'Échec';
-    
-    // --- NOUVEAU MOTEUR DE CALCUL DES RANGS ---
-    // Calcul dynamique de la moyenne de tous les élèves de la classe pour un classement exact
-    const { data: elevesClasse } = await window.supabase.from('eleves').select('id').eq('classe_id', cid);
-    const elevesIds = elevesClasse ? elevesClasse.map(e => e.id) : [eid];
-    
-    const { data: allNotes } = await window.supabase
-        .from('notes')
-        .select('eleve_id, matiere_id, valeur, periode_id, matieres(coefficient_defaut)')
-        .in('eleve_id', elevesIds)
-        .in('periode_id', periodesRecherche);
-
-    let classNotes = [];
-    if (allNotes) {
-        const studentStats = {};
-        allNotes.forEach(n => {
-            const eId = n.eleve_id;
-            const mId = n.matiere_id;
-            const pId = n.periode_id;
-            const coef = n.matieres ? (n.matieres.coefficient_defaut || 1) : 1;
-            
-            if (!studentStats[eId]) studentStats[eId] = { matieres: {} };
-            if (!studentStats[eId].matieres[mId]) studentStats[eId].matieres[mId] = { coef, notesPeriodes: {} };
-            studentStats[eId].matieres[mId].notesPeriodes[pId] = parseFloat(n.valeur);
-        });
-
-        for (let eId in studentStats) {
-            let sTotalPoints = 0;
-            let sTotalCoefs = 0;
-            
-            for (let mId in studentStats[eId].matieres) {
-                const m = studentStats[eId].matieres[mId];
-                let sumNotes = 0;
-                let countNotes = 0;
-                
-                if (isTrimestre) {
-                    periodesRecherche.forEach(pId => {
-                        if (m.notesPeriodes[pId] !== undefined) {
-                            sumNotes += m.notesPeriodes[pId];
-                            countNotes++;
-                        }
-                    });
-                } else {
-                    if (m.notesPeriodes[pid] !== undefined) {
-                        sumNotes = m.notesPeriodes[pid];
-                        countNotes = 1;
-                    }
-                }
-                
-                if (countNotes > 0) {
-                    const moy = sumNotes / countNotes;
-                    sTotalPoints += (moy * m.coef);
-                    sTotalCoefs += m.coef;
-                }
-            }
-            const avg = sTotalCoefs > 0 ? (sTotalPoints / sTotalCoefs) : 0;
-            // Éviter d'ajouter l'élève actuel s'il est déjà compté, on va forcer l'ajout avec la moyenne exacte calculée au-dessus
-            if (eId !== eid) {
-                classNotes.push(parseFloat(avg.toFixed(2)));
-            }
-        }
-    }
-    
-    // Ajout explicite de la moyenne de l'élève actuel (calculée avec précision plus haut)
-    classNotes.push(parseFloat(moyenneGenerale.toFixed(2)));
-    classNotes.sort((a, b) => b - a); // Décroissant
-    // --- FIN DU NOUVEAU MOTEUR ---
     
     let studentRankStr = 'N/A';
     const rankIdx = classNotes.indexOf(parseFloat(moyenneGenerale.toFixed(2)));
@@ -544,6 +554,7 @@ async function genererBulletin() {
                     <th style="width:5%">Coef</th>
                     ${headerSeqHtml}
                     <th style="width:10%">Moyenne (/20)</th>
+                    <th style="width:8%">Rang</th>
                     <th style="width:10%">Total Points</th>
                     <th class="text-start" style="width:30%">Appréciation / Observation</th>
                 </tr>
@@ -564,7 +575,7 @@ async function genererBulletin() {
                     <div class="fs-5 fw-bold">${totalCoefs.toFixed(2)}</div>
                 </div>
                 <div class="col border-start border-end">
-                    <div class="text-muted small fw-bold text-uppercase">Moyenne Générale</div>
+                    <div class="text-muted small fw-bold text-uppercase">Moyenne de l'élève</div>
                     <div class="fs-3 fw-bold ${moyenneGenerale >= 10 ? 'text-success' : 'text-danger'}">${moyenneGenerale.toFixed(2)} <small class="text-muted" style="font-size:1rem">/20</small></div>
                 </div>
                 <div class="col border-end">
@@ -582,7 +593,7 @@ async function genererBulletin() {
                     <div class="fs-5 fw-bold text-primary">${studentRankStr}</div>
                 </div>
                 <div class="col">
-                    <div class="text-muted small fw-bold text-uppercase">Moyenne de la classe</div>
+                    <div class="text-muted small fw-bold text-uppercase">Moyenne Générale de la Classe</div>
                     <div class="fs-5 fw-bold">${classMoyenne} <small class="text-muted" style="font-size:0.9rem">/20</small></div>
                 </div>
             </div>
