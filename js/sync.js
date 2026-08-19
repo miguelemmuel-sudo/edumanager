@@ -6,11 +6,12 @@
 const db = new Dexie("EduManagerDB");
 
 // Définition du schéma
-db.version(1).stores({
+db.version(2).stores({
     eleves: "id, matricule, nom, prenom, classe_id, etablissement_id, date_naissance, genre",
     enseignants: "id, matricule, nom, prenom, user_id, etablissement_id",
     classes: "id, nom, niveau, etablissement_id",
     matieres: "id, nom, enseignant_id, coefficient_defaut",
+    classes_matieres: "id, classe_id, matiere_id",
     notes: "id, eleve_id, matiere_id, periode_id, type_evaluation, valeur, statut",
     paiements: "id, eleve_id, montant, motif, date_paiement, statut, caissier_id",
     emplois_temps: "id, classe_id, matiere_id, enseignant_id, jour, heure_debut, heure_fin",

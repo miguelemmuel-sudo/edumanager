@@ -608,16 +608,32 @@ let cachedMatieres = null;
 
 async function fetchEtablissementClasses(force = false) {
     if (cachedClasses && !force) return cachedClasses;
-    const { data, error } = await window.supabase.from('classes').select('id, nom').order('nom');
-    if (error) { console.error('Erreur chargement classes:', error); return []; }
-    cachedClasses = data || [];
-    return cachedClasses;
+    let fetched = false;
+    if (navigator.onLine && window.supabase) {
+        try {
+            const { data, error } = await window.supabase.from('classes').select('id, nom').order('nom');
+            if (!error) { cachedClasses = data || []; fetched = true; }
+        } catch(e) {}
+    }
+    if (!fetched && window.edumanagerDB) {
+        const classes = await window.edumanagerDB.classes.toArray();
+        cachedClasses = classes.sort((a,b) => (a.nom||'').localeCompare(b.nom||''));
+    }
+    return cachedClasses || [];
 }
 
 async function fetchEtablissementMatieres(force = false) {
     if (cachedMatieres && !force) return cachedMatieres;
-    const { data, error } = await window.supabase.from('enseignants').select('matiere');
-    if (error) { console.error('Erreur chargement matières:', error); return []; }
+    let fetched = false, data = [];
+    if (navigator.onLine && window.supabase) {
+        try {
+            const res = await window.supabase.from('enseignants').select('matiere');
+            if (!res.error) { data = res.data || []; fetched = true; }
+        } catch(e) {}
+    }
+    if (!fetched && window.edumanagerDB) {
+        data = await window.edumanagerDB.enseignants.toArray();
+    }
     const uniqueMatieres = [...new Set((data || []).map(e => e.matiere).filter(m => m && m.trim() !== ''))];
     cachedMatieres = uniqueMatieres.map(m => m.charAt(0).toUpperCase() + m.slice(1)).sort();
     cachedMatieres = [...new Set(cachedMatieres)];
@@ -647,8 +663,31 @@ async function fetchAndRenderEleves() {
         }
     }
 
-    const { data: eleves, error } = await window.supabase.from('eleves').select('*, classes(nom)');
-    if (error) return console.error(error);
+    let eleves = [];
+    let dataFetched = false;
+    
+    if (navigator.onLine && window.supabase) {
+        try {
+            const { data, error } = await window.supabase.from('eleves').select('*, classes(nom)');
+            if (!error) {
+                eleves = data || [];
+                dataFetched = true;
+            } else {
+                console.error(error);
+            }
+        } catch(err) {
+            console.error(err);
+        }
+    }
+    
+    if (!dataFetched && window.edumanagerDB) {
+        const allEleves = await window.edumanagerDB.eleves.toArray();
+        const allClasses = await window.edumanagerDB.classes.toArray();
+        eleves = allEleves.map(e => {
+            const classe = allClasses.find(c => c.id === e.classe_id);
+            return { ...e, classes: { nom: classe ? classe.nom : 'Non assigné' } };
+        });
+    }
 
     // Update KPIs Eleves
     const nbEleves = eleves.length;
@@ -763,7 +802,7 @@ function setupElevesModal() {
         data.code_acces = code;
         
         btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-        const { error } = await window.supabase.from('eleves').insert([data]);
+        const { error } = await window.saveRecord('eleves', data, 'insert');
         btn.disabled = false; btn.innerHTML = 'Enregistrer';
         
         if (error) {
@@ -792,7 +831,7 @@ window.deleteEleve = async function(id) {
     }
 
     if(!confirm('Supprimer cet élève ?')) return;
-    await window.supabase.from('eleves').delete().eq('id', id);
+    await window.saveRecord('eleves', { id: id }, 'delete');
     if(window.showToast) window.showToast('Élève supprimé', 'success');
     fetchAndRenderEleves();
 }
@@ -828,8 +867,19 @@ async function fetchAndRenderEnseignants() {
         `).join('');
     }
 
-    const { data: enseignants, error } = await window.supabase.from('enseignants').select('*');
-    if (error) return console.error(error);
+    let enseignants = [];
+    let dataFetched = false;
+    
+    if (navigator.onLine && window.supabase) {
+        try {
+            const { data, error } = await window.supabase.from('enseignants').select('*');
+            if (!error) { enseignants = data || []; dataFetched = true; }
+            else { console.error(error); }
+        } catch(e) { console.error(e); }
+    }
+    if (!dataFetched && window.edumanagerDB) {
+        enseignants = await window.edumanagerDB.enseignants.toArray();
+    }
 
     // Update KPIs Enseignants
     const nbEnseignants = enseignants.length;
@@ -963,7 +1013,7 @@ function setupEnseignantsModal() {
         if(data.sexe) delete data.sexe; // Sexe is not in the schema either
 
         btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-        const { error } = await window.supabase.from('enseignants').insert([data]);
+        const { error } = await window.saveRecord('enseignants', data, 'insert');
         btn.disabled = false; btn.innerHTML = 'Enregistrer';
         
         if (error) {
@@ -978,7 +1028,7 @@ function setupEnseignantsModal() {
 }
 window.deleteEnseignant = async function(id) {
     if(!confirm('Supprimer cet enseignant ?')) return;
-    await window.supabase.from('enseignants').delete().eq('id', id);
+    await window.saveRecord('enseignants', { id: id }, 'delete');
     if(window.showToast) window.showToast('Enseignant supprimé', 'success');
     fetchAndRenderEnseignants();
 }
@@ -1033,8 +1083,41 @@ async function fetchAndRenderClasses() {
         }
     }
 
-    const { data: classes, error } = await query;
-    if (error) return console.error(error);
+    let classes = [];
+    let dataFetched = false;
+    
+    if (navigator.onLine && window.supabase) {
+        try {
+            const { data: c, error } = await query;
+            if (!error) {
+                classes = c || [];
+                dataFetched = true;
+            } else { console.error(error); }
+        } catch(e) { console.error(e); }
+    }
+    
+    if (!dataFetched && window.edumanagerDB) {
+        const allClasses = await window.edumanagerDB.classes.toArray();
+        const allEleves = await window.edumanagerDB.eleves.toArray();
+        const allEnseignants = await window.edumanagerDB.enseignants.toArray();
+        
+        classes = allClasses.map(c => {
+            const elvs = allEleves.filter(e => e.classe_id === c.id);
+            const prof = allEnseignants.find(p => p.id === c.prof_principal_id);
+            return {
+                ...c,
+                _elevesCount: elvs.length,
+                enseignants: prof ? { nom: prof.nom, prenom: prof.prenom } : null
+            };
+        });
+    } else {
+        classes.forEach(c => {
+            let count = 0;
+            if(c.eleves && c.eleves.length > 0 && c.eleves[0].count !== undefined) count = c.eleves[0].count;
+            else if (c.eleves && !Array.isArray(c.eleves) && c.eleves.count !== undefined) count = c.eleves.count;
+            c._elevesCount = count;
+        });
+    }
 
     if (classes.length === 0) {
         container.innerHTML = '<div class="text-center py-5 text-muted">Aucune classe disponible</div>';
@@ -1049,13 +1132,7 @@ async function fetchAndRenderClasses() {
         if (!niveaux[niv]) niveaux[niv] = [];
         niveaux[niv].push(c);
         
-        let count = 0;
-        if(c.eleves && c.eleves.length > 0 && c.eleves[0].count !== undefined) {
-            count = c.eleves[0].count;
-        } else if (c.eleves && !Array.isArray(c.eleves) && c.eleves.count !== undefined) {
-            count = c.eleves.count; // Sometimes Supabase returns object instead of array for count
-        }
-        c._elevesCount = count; // Cache it for the render below
+        let count = c._elevesCount || 0;
         totalEleves += count;
     });
 
@@ -1152,21 +1229,24 @@ window.submitJoinClasse = async function() {
             matiereId = existingMat.id;
         } else {
             // Créer la matière
-            const { data: newMat, error: matErr } = await window.supabase.from('matieres').insert([{
+            const resMat = await window.saveRecord('matieres', {
                 enseignant_id: ensData.id,
                 nom: matiereNom,
                 etablissement_id: session.etablissement_id
-            }]).select('id').single();
+            });
+            const matErr = resMat.error;
+            const newMat = resMat.data;
             if (matErr) throw matErr;
             matiereId = newMat.id;
         }
         
         // 2. Lier la matière à la classe
-        const { error: cmErr } = await window.supabase.from('classes_matieres').insert([{
+        const cmRes = await window.saveRecord('classes_matieres', {
             classe_id: classeId,
             matiere_id: matiereId,
             etablissement_id: session.etablissement_id
-        }]);
+        });
+        const cmErr = cmRes.error;
         if (cmErr && cmErr.code !== '23505') throw cmErr; // Ignore duplicate
         
         if(window.showToast) window.showToast('Vous avez rejoint cette classe', 'success');
@@ -1193,7 +1273,7 @@ function setupClassesModal() {
         const { data: etabData } = await window.supabase.from('etablissements').select('id').limit(1).maybeSingle();
         if (etabData) data.etablissement_id = etabData.id;
         
-        const { error } = await window.supabase.from('classes').insert([data]);
+        const { error } = await window.saveRecord('classes', data, 'insert');
         btn.disabled = false; btn.innerHTML = 'Enregistrer';
         
         if (error) {
@@ -1208,7 +1288,7 @@ function setupClassesModal() {
 }
 window.deleteClasse = async function(id) {
     if(!confirm('Supprimer cette classe ?')) return;
-    await window.supabase.from('classes').delete().eq('id', id);
+    await window.saveRecord('classes', { id: id }, 'delete');
     if(window.showToast) window.showToast('Classe supprimée', 'success');
     fetchAndRenderClasses();
 }
@@ -1359,7 +1439,7 @@ function setupEmploiModal() {
             }
             
             btnSaveCreneau.disabled = true; btnSaveCreneau.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            const { error } = await window.supabase.from('emplois_temps').insert([data]);
+            const { error } = await window.saveRecord('emplois_temps', data, 'insert');
             btnSaveCreneau.disabled = false; btnSaveCreneau.innerHTML = 'Ajouter';
             
             if (error) {
@@ -1384,7 +1464,7 @@ function setupEmploiModal() {
 
 window.deleteCreneau = async function(id) {
     if(!confirm('Supprimer ce créneau ?')) return;
-    await window.supabase.from('emplois_temps').delete().eq('id', id);
+    await window.saveRecord('emplois_temps', { id: id }, 'delete');
     if(window.showToast) window.showToast('Créneau supprimé', 'success');
     fetchAndRenderEmploi();
 }
@@ -1395,14 +1475,53 @@ async function fetchAndRenderPaiements() {
     const tbody = document.getElementById('dynamicBody') || document.getElementById('paiementsBody');
     if (!tbody) return;
 
-    const { data: eleves } = await window.supabase.from('eleves').select('id, nom, prenom, matricule, classe_id');
+    let eleves = [], classes = [], frais = [], etabData = null, paiements = [];
+    let dataFetched = false;
+
+    if (navigator.onLine && window.supabase) {
+        try {
+            const [resEleves, resClasses, resFrais, resEtab, resPaiements] = await Promise.all([
+                window.supabase.from('eleves').select('id, nom, prenom, matricule, classe_id'),
+                window.supabase.from('classes').select('id, niveau, etablissement_id'),
+                window.supabase.from('frais_scolaires').select('*'),
+                window.supabase.from('etablissements').select('id, pays').limit(1).maybeSingle(),
+                window.supabase.from('paiements').select('*, eleves(nom, prenom, matricule, classes(nom))').order('created_at', { ascending: false })
+            ]);
+            if (!resEleves.error && !resPaiements.error) {
+                eleves = resEleves.data || [];
+                classes = resClasses.data || [];
+                frais = resFrais.data || [];
+                etabData = resEtab.data;
+                paiements = resPaiements.data || [];
+                dataFetched = true;
+            }
+        } catch(e) { console.error(e); }
+    }
+
+    if (!dataFetched && window.edumanagerDB) {
+        eleves = await window.edumanagerDB.eleves.toArray();
+        classes = await window.edumanagerDB.classes.toArray();
+        const allPaiements = await window.edumanagerDB.paiements.toArray();
+        
+        paiements = allPaiements.sort((a,b) => new Date(b.created_at || 0) - new Date(a.created_at || 0)).map(p => {
+            const elv = eleves.find(e => e.id === p.eleve_id);
+            let elvObj = null;
+            if (elv) {
+                const cls = classes.find(c => c.id === elv.classe_id);
+                elvObj = {
+                    nom: elv.nom, prenom: elv.prenom, matricule: elv.matricule,
+                    classes: cls ? { nom: cls.nom } : null
+                };
+            }
+            return { ...p, eleves: elvObj };
+        });
+    }
+
     const pEleveSelect = document.getElementById('paiementEleveSelect');
-    if (pEleveSelect && pEleveSelect.children.length <= 1 && eleves) {
+    if (pEleveSelect && pEleveSelect.children.length <= 1 && eleves.length) {
         pEleveSelect.innerHTML = '<option value="">Sélectionner un élève...</option>' + eleves.map(e => `<option value="${e.id}">${_e(e.matricule || '-')} - ${_e(e.prenom)} ${_e(e.nom)}</option>`).join('');
     }
-    const { data: classes } = await window.supabase.from('classes').select('id, niveau, etablissement_id');
-    const { data: frais } = await window.supabase.from('frais_scolaires').select('*');
-    const { data: etabData } = await window.supabase.from('etablissements').select('id').limit(1).maybeSingle();
+
     const currentEtabId = etabData ? etabData.id : null;
     
     // Map classes to niveaux
@@ -1448,8 +1567,7 @@ async function fetchAndRenderPaiements() {
         totalAttenduGlobal += expected;
     });
 
-    const { data: paiements, error } = await window.supabase.from('paiements').select('*, eleves(nom, prenom, matricule, classes(nom))').order('created_at', { ascending: false });
-    if (error) return console.error(error);
+    // We already fetched paiements in the Promise.all above!
 
     let totalCollecte = 0;
     const elevePaid = {};
@@ -1705,7 +1823,7 @@ function setupPaiementsModal() {
         if (session.data.session) data.caissier_id = session.data.session.user.id;
         
         btnSavePaiement.disabled = true; btnSavePaiement.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-        const { error } = await window.supabase.from('paiements').insert([data]);
+        const { error } = await window.saveRecord('paiements', data, 'insert');
         
         if (!error) {
             // Update financial status in eleves
@@ -1801,7 +1919,7 @@ window.printReceipt = async function(id) {
 
 window.deletePaiement = async function(id) {
     if(!confirm('Supprimer ce paiement ?')) return;
-    await window.supabase.from('paiements').delete().eq('id', id);
+    await window.saveRecord('paiements', { id: id }, 'delete');
     if(window.showToast) window.showToast('Paiement supprimé', 'success');
     fetchAndRenderPaiements();
 }
