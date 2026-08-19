@@ -321,17 +321,45 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function fetchAndRenderAdminDashboard() {
     try {
+        let etabId = null;
+        const sessionStr = localStorage.getItem('edu_session');
+        if (sessionStr) {
+            try { etabId = JSON.parse(sessionStr).etablissement_id; } catch(e) {}
+        }
+        
+        let queryEleves = window.supabase.from('eleves').select('id', { count: 'exact', head: true });
+        let queryEnseignants = window.supabase.from('enseignants').select('id', { count: 'exact', head: true });
+        let queryClasses = window.supabase.from('classes').select('id', { count: 'exact', head: true });
+        let queryPaiements = window.supabase.from('paiements').select('montant');
+        
+        if (etabId) {
+            queryEleves = queryEleves.eq('etablissement_id', etabId);
+            queryEnseignants = queryEnseignants.eq('etablissement_id', etabId);
+            queryClasses = queryClasses.eq('etablissement_id', etabId);
+            queryPaiements = queryPaiements.eq('etablissement_id', etabId);
+        }
+        
         const [
-            { count: nbEleves },
-            { count: nbEnseignants },
-            { count: nbClasses },
-            { data: paiements }
+            resEleves,
+            resEnseignants,
+            resClasses,
+            resPaiements
         ] = await Promise.all([
-            window.supabase.from('eleves').select('id', { count: 'exact', head: true }),
-            window.supabase.from('enseignants').select('id', { count: 'exact', head: true }),
-            window.supabase.from('classes').select('id', { count: 'exact', head: true }),
-            window.supabase.from('paiements').select('montant')
+            queryEleves,
+            queryEnseignants,
+            queryClasses,
+            queryPaiements
         ]);
+        
+        if (resEleves.error) console.error("Erreur eleves:", resEleves.error);
+        if (resEnseignants.error) console.error("Erreur enseignants:", resEnseignants.error);
+        if (resClasses.error) console.error("Erreur classes:", resClasses.error);
+        if (resPaiements.error) console.error("Erreur paiements:", resPaiements.error);
+        
+        const nbEleves = resEleves.count || 0;
+        const nbEnseignants = resEnseignants.count || 0;
+        const nbClasses = resClasses.count || 0;
+        const paiements = resPaiements.data || [];
         
         let revenus = 0;
         if (paiements) {
@@ -340,14 +368,19 @@ async function fetchAndRenderAdminDashboard() {
         
         const scValues = document.querySelectorAll('.stat-card .sc-value');
         if (scValues.length >= 4) {
-            scValues[0].textContent = nbEleves || 0;
+            scValues[0].textContent = nbEleves;
             scValues[1].textContent = revenus.toLocaleString('fr-FR') + ' FCFA';
-            scValues[2].textContent = nbEnseignants || 0;
-            scValues[3].textContent = nbClasses || 0;
+            scValues[2].textContent = nbEnseignants;
+            scValues[3].textContent = nbClasses;
         }
 
         // Fetch recent enrollments
-        const { data: recentEleves } = await window.supabase.from('eleves').select('id, prenom, nom, created_at, statut, classes(nom)').order('created_at', { ascending: false }).limit(5);
+        let queryRecent = window.supabase.from('eleves').select('id, prenom, nom, created_at, statut, classes(nom)').order('created_at', { ascending: false }).limit(5);
+        if (etabId) queryRecent = queryRecent.eq('etablissement_id', etabId);
+        
+        const { data: recentEleves, error: recentError } = await queryRecent;
+        if (recentError) console.error("Erreur eleves recents:", recentError);
+        
         const tbody = document.getElementById('dynamicBody');
         if (tbody && recentEleves) {
             tbody.innerHTML = '';
