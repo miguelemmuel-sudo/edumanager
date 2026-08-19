@@ -135,13 +135,71 @@ function showDashboard(data) {
         `;
 
         // Render details from JSON
-        let detailsHtml = `<div class="bulletin-details" id="details-${b.id}">`;
+        let detailsHtml = `<div class="bulletin-details" id="details-${b.id}" style="display:none; margin-top: 15px;">`;
         
-        if (b.donnees_json && b.donnees_json.lignes) {
+        if (b.donnees_json && Object.keys(b.donnees_json).length > 0 && !b.donnees_json.lignes) {
+            // Nouveau format des données
+            let categories = {};
+            for (let mId in b.donnees_json) {
+                let m = b.donnees_json[mId];
+                let cat = m.categorie || 'Enseignement Général';
+                if (!categories[cat]) categories[cat] = [];
+                categories[cat].push(m);
+            }
+
+            let rowsHtml = '';
+            for (let cat in categories) {
+                rowsHtml += `<tr><td colspan="5" class="bg-light fw-bold text-start text-primary" style="text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.5px;">${_e(cat)}</td></tr>`;
+                categories[cat].forEach(m => {
+                    let sum = 0; let count = 0;
+                    for (let p in m.notesPeriodes) {
+                        sum += m.notesPeriodes[p];
+                        count++;
+                    }
+                    let moy = count > 0 ? (sum / count) : 0;
+                    let moyFormatted = moy.toFixed(2);
+                    let noteColor = moy >= 10 ? 'text-success' : 'text-danger';
+                    let totalPoints = (moy * m.coef).toFixed(2);
+                    
+                    rowsHtml += `
+                        <tr>
+                            <td class="text-start">
+                                <div class="fw-bold text-dark" style="font-size: 0.95rem">${_e(m.nom)}</div>
+                                <div class="text-muted" style="font-size: 0.75rem; font-style: italic;">Prof: ${_e(m.prof)}</div>
+                            </td>
+                            <td class="align-middle">${m.coef}</td>
+                            <td class="align-middle fw-bold ${noteColor}" style="background-color:rgba(0,0,0,.03);">${moyFormatted}</td>
+                            <td class="align-middle fw-bold">${totalPoints}</td>
+                            <td class="text-muted small text-start align-middle">${_e(m.appreciation)}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            detailsHtml += `
+                <div class="table-responsive mt-3 border rounded">
+                    <table class="table table-bordered table-sm align-middle text-center mb-0" style="font-size: 0.9rem">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="text-start" style="width:25%">Matière</th>
+                                <th style="width:5%">Coef</th>
+                                <th style="width:10%">Moyenne (/20)</th>
+                                <th style="width:10%">Total Points</th>
+                                <th class="text-start" style="width:30%">Appréciation / Observation</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rowsHtml}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        } else if (b.donnees_json && b.donnees_json.lignes) {
+            // Ancien format (rétrocompatibilité)
             b.donnees_json.lignes.forEach(ligne => {
                 let noteColor = parseFloat(ligne.moyenne) < 10 ? 'text-danger fw-bold' : 'text-dark fw-bold';
                 detailsHtml += `
-                    <div class="subject-row">
+                    <div class="subject-row p-2 border-bottom">
                         <div class="flex-grow-1">
                             <div class="fw-semibold text-dark">${_e(ligne.matiere)} <span class="badge bg-light text-dark ms-1">Coef ${ligne.coef}</span></div>
                             <div class="small text-muted fst-italic mt-1">${_e(ligne.appreciation || '')}</div>
