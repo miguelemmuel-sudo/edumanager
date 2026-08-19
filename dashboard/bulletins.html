@@ -137,6 +137,7 @@
         <div class="d-flex gap-2">
             <button class="btn btn-warning rounded-pill px-4 text-dark fw-bold" id="btnValider" onclick="validerBulletin()"><i class="fas fa-check-circle me-1"></i>Valider le bulletin</button>
             <button class="btn btn-success rounded-pill px-4 fw-bold d-none" id="btnPublier" onclick="publierBulletin()"><i class="fas fa-paper-plane me-1"></i>Publier</button>
+            <button class="btn btn-danger rounded-pill px-4 fw-bold d-none" id="btnAnnulerPub" onclick="annulerPublication()"><i class="fas fa-undo me-1"></i>Annuler la publication</button>
             <button class="btn btn-info rounded-pill px-4 fw-bold text-white d-none" id="btnWhatsApp" onclick="envoyerWhatsApp()" style="background-color: #25D366; border-color: #25D366;"><i class="fab fa-whatsapp me-1"></i>Envoyer au parent</button>
             <button class="btn btn-outline-primary rounded-pill px-4" onclick="exporterPDF()"><i class="fas fa-file-pdf me-1"></i>Exporter PDF</button>
         </div>
@@ -521,6 +522,7 @@ async function genererBulletin() {
     const {data: existingB} = await window.supabase.from('bulletins').select('id, statut').eq('eleve_id', eid).eq('periode_id', pid).maybeSingle();
     const btnValider = document.getElementById('btnValider');
     const btnPublier = document.getElementById('btnPublier');
+    const btnAnnulerPub = document.getElementById('btnAnnulerPub');
     
     // RBAC: Show/Hide Publier button
     let userRole = '';
@@ -545,6 +547,9 @@ async function genererBulletin() {
         btnPublier.innerHTML = '<i class="fas fa-paper-plane me-1"></i>Publier';
         btnPublier.disabled = false;
     }
+    if (btnAnnulerPub) {
+        btnAnnulerPub.classList.add('d-none');
+    }
     const btnWa = document.getElementById('btnWhatsApp');
     if (btnWa) btnWa.classList.add('d-none');
 
@@ -553,9 +558,10 @@ async function genererBulletin() {
         btnValider.innerHTML = '<i class="fas fa-check-double me-1"></i>Déjà publié';
         btnValider.disabled = true;
         if (btnPublier) {
-            btnPublier.className = 'btn btn-secondary rounded-pill px-4 fw-bold' + (isAdminOrDirection ? '' : ' d-none');
-            btnPublier.innerHTML = '<i class="fas fa-check-double me-1"></i>Publié';
-            btnPublier.disabled = true;
+            btnPublier.classList.add('d-none');
+        }
+        if (btnAnnulerPub && isAdminOrDirection) {
+            btnAnnulerPub.classList.remove('d-none');
         }
         if (btnWa) btnWa.classList.remove('d-none');
     } else if(existingB && existingB.statut === 'Validé') {
@@ -606,14 +612,68 @@ async function publierBulletin() {
         btn.disabled = false;
         btn.innerHTML = '<i class="fas fa-paper-plane me-1"></i>Publier';
     } else {
-        btn.className = 'btn btn-secondary rounded-pill px-4 fw-bold';
-        btn.innerHTML = '<i class="fas fa-check-double me-1"></i>Bulletin Publié';
+        btn.classList.add('d-none');
+        
+        const btnAnnulerPub = document.getElementById('btnAnnulerPub');
+        if(btnAnnulerPub) btnAnnulerPub.classList.remove('d-none');
+        
+        const btnValider = document.getElementById('btnValider');
+        if(btnValider) {
+            btnValider.className = 'btn btn-secondary rounded-pill px-4 fw-bold';
+            btnValider.innerHTML = '<i class="fas fa-check-double me-1"></i>Déjà publié';
+            btnValider.disabled = true;
+        }
         
         const btnWa = document.getElementById('btnWhatsApp');
         if (btnWa) btnWa.classList.remove('d-none');
         
         // Envoi automatique via WhatsApp (peut être bloqué par le navigateur, d'où le bouton manuel)
         window.envoyerWhatsApp();
+    }
+}
+
+async function annulerPublication() {
+    if(!generatedData) return;
+    
+    const btn = document.getElementById('btnAnnulerPub');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Annulation...';
+    
+    generatedData.statut = 'Validé';
+    
+    const { error } = await window.supabase.from('bulletins').update({
+        statut: 'Validé',
+        updated_at: new Date().toISOString()
+    }).eq('eleve_id', generatedData.eleve_id).eq('periode_id', generatedData.periode_id);
+    
+    if(error) {
+        alert("Erreur lors de l'annulation: " + error.message);
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-undo me-1"></i>Annuler la publication';
+    } else {
+        btn.classList.add('d-none');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-undo me-1"></i>Annuler la publication';
+        
+        const btnPublier = document.getElementById('btnPublier');
+        if(btnPublier) {
+            btnPublier.classList.remove('d-none');
+            btnPublier.className = 'btn btn-success rounded-pill px-4 fw-bold';
+            btnPublier.innerHTML = '<i class="fas fa-paper-plane me-1"></i>Publier';
+            btnPublier.disabled = false;
+        }
+        
+        const btnValider = document.getElementById('btnValider');
+        if(btnValider) {
+            btnValider.className = 'btn btn-success rounded-pill px-4 fw-bold';
+            btnValider.innerHTML = '<i class="fas fa-check-double me-1"></i>Bulletin déjà validé';
+            btnValider.disabled = true;
+        }
+        
+        const btnWa = document.getElementById('btnWhatsApp');
+        if (btnWa) btnWa.classList.add('d-none');
+        
+        alert("La publication du bulletin a été annulée. Vous pouvez maintenant corriger les erreurs et republier.");
     }
 }
 
