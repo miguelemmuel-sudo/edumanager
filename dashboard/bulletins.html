@@ -252,7 +252,7 @@ async function genererBulletin() {
     // Charger les notes
     const {data: notes} = await window.supabase
         .from('notes')
-        .select('*, matieres(nom, coefficient_defaut)')
+        .select('*, matieres(nom, coefficient_defaut, categorie, enseignants(nom, prenom))')
         .eq('eleve_id', eid)
         .in('periode_id', periodesRecherche);
         
@@ -272,6 +272,8 @@ async function genererBulletin() {
             matieresStats[mId] = {
                 nom: n.matieres.nom,
                 coef: n.matieres.coefficient_defaut || 1,
+                categorie: n.matieres.categorie || 'Enseignement Général',
+                prof: n.matieres.enseignants ? `${n.matieres.enseignants.nom} ${n.matieres.enseignants.prenom}` : 'Non assigné',
                 notesPeriodes: {},
                 appreciation: ''
             };
@@ -282,53 +284,75 @@ async function genererBulletin() {
         }
     });
     
-    let rowsHtml = '';
-    
+    // Regroupement par catégorie (branche)
+    const categories = {};
     for (let mId in matieresStats) {
         const m = matieresStats[mId];
-        let sumNotes = 0;
-        let countNotes = 0;
-        let seqHtml = '';
+        if (!categories[m.categorie]) categories[m.categorie] = [];
+        categories[m.categorie].push({ id: mId, ...m });
+    }
+    
+    let rowsHtml = '';
+    const totalCols = 5 + seqTitles.length;
+    
+    for (let catName in categories) {
+        // En-tête de catégorie
+        rowsHtml += `
+            <tr>
+                <td colspan="${totalCols}" class="bg-light fw-bold text-start text-primary" style="text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.5px;">
+                    ${catName}
+                </td>
+            </tr>
+        `;
         
-        if (isTrimestre) {
-            periodesRecherche.forEach(pId => {
-                const n = m.notesPeriodes[pId];
-                if (n !== undefined) {
-                    sumNotes += n;
-                    countNotes++;
-                    seqHtml += `<td>${n.toFixed(2)}</td>`;
-                } else {
-                    seqHtml += `<td>-</td>`;
-                }
-            });
-        } else {
-            const n = m.notesPeriodes[pid];
-            if (n !== undefined) {
-                sumNotes = n;
-                countNotes = 1;
-                seqHtml += `<td>${n.toFixed(2)}</td>`;
-            } else {
-                seqHtml += `<td>-</td>`;
-            }
-        }
-        
-        let moy = countNotes > 0 ? (sumNotes / countNotes) : null;
-        
-        if (moy !== null) {
-            totalPoints += (moy * m.coef);
-            totalCoefs += m.coef;
+        categories[catName].forEach(m => {
+            let sumNotes = 0;
+            let countNotes = 0;
+            let seqHtml = '';
             
-            rowsHtml += `
-                <tr>
-                    <td class="text-start fw-bold">${m.nom}</td>
-                    <td>${m.coef}</td>
-                    ${seqHtml}
-                    <td class="fw-bold ${moy >= 10 ? 'text-success' : 'text-danger'}" style="background-color:rgba(0,0,0,.03);">${moy.toFixed(2)}</td>
-                    <td class="fw-bold">${(moy * m.coef).toFixed(2)}</td>
-                    <td class="text-muted small text-start">${m.appreciation || ''}</td>
-                </tr>
-            `;
-        }
+            if (isTrimestre) {
+                periodesRecherche.forEach(pId => {
+                    const n = m.notesPeriodes[pId];
+                    if (n !== undefined) {
+                        sumNotes += n;
+                        countNotes++;
+                        seqHtml += `<td class="align-middle">${n.toFixed(2)}</td>`;
+                    } else {
+                        seqHtml += `<td class="align-middle">-</td>`;
+                    }
+                });
+            } else {
+                const n = m.notesPeriodes[pid];
+                if (n !== undefined) {
+                    sumNotes = n;
+                    countNotes = 1;
+                    seqHtml += `<td class="align-middle">${n.toFixed(2)}</td>`;
+                } else {
+                    seqHtml += `<td class="align-middle">-</td>`;
+                }
+            }
+            
+            let moy = countNotes > 0 ? (sumNotes / countNotes) : null;
+            
+            if (moy !== null) {
+                totalPoints += (moy * m.coef);
+                totalCoefs += m.coef;
+                
+                rowsHtml += `
+                    <tr>
+                        <td class="text-start">
+                            <div class="fw-bold">${m.nom}</div>
+                            <div class="text-muted" style="font-size: 0.70rem; font-style: italic;">Prof: ${m.prof}</div>
+                        </td>
+                        <td class="align-middle">${m.coef}</td>
+                        ${seqHtml}
+                        <td class="align-middle fw-bold ${moy >= 10 ? 'text-success' : 'text-danger'}" style="background-color:rgba(0,0,0,.03);">${moy.toFixed(2)}</td>
+                        <td class="align-middle fw-bold">${(moy * m.coef).toFixed(2)}</td>
+                        <td class="text-muted small text-start align-middle">${m.appreciation || ''}</td>
+                    </tr>
+                `;
+            }
+        });
     }
     
     const moyenneGenerale = totalCoefs > 0 ? (totalPoints / totalCoefs) : 0;
@@ -593,20 +617,42 @@ async function publierBulletin() {
     }
 }
 
-window.envoyerWhatsApp = function() {
+window.envoyerWhatsApp = async function() {
     if (!currentEleveData) return;
     if (!currentEleveData.parent_tel) {
         alert("Aucun numéro de téléphone parent n'est enregistré pour cet élève.");
         return;
     }
+    
+    // Calcul du rang
+    let studentRank = 'Non classé';
+    let studentAverage = generatedData ? generatedData.moyenne_generale : 'N/A';
+    
+    if (generatedData && generatedData.classe_id && generatedData.periode_id) {
+        const { data: allBulls } = await window.supabase
+            .from('bulletins')
+            .select('eleve_id, moyenne_generale')
+            .eq('classe_id', generatedData.classe_id)
+            .eq('periode_id', generatedData.periode_id);
+            
+        if (allBulls && allBulls.length > 0) {
+            // Trier décroissant pour avoir le rang
+            const ranked = allBulls.sort((a, b) => parseFloat(b.moyenne_generale) - parseFloat(a.moyenne_generale));
+            const idx = ranked.findIndex(b => b.eleve_id === currentEleveData.id);
+            if (idx !== -1) {
+                studentRank = (idx + 1) + (idx === 0 ? 'er' : 'ème') + ` sur ${ranked.length}`;
+            }
+        }
+    }
+    
     let phone = currentEleveData.parent_tel.replace(/[^\d+]/g, '');
     if (!phone) return;
     if (phone.startsWith('+')) phone = phone.substring(1);
     
-    // Fallback if no country code provided, although typically it should be provided
-    // but WhatsApp requires a valid international number
+    const parentName = currentEleveData.parent_nom || 'Parent';
     const portalUrl = window.location.origin + '/suivi.html';
-    const message = `Bonjour, le bulletin de ${currentEleveData.prenom} est disponible.\n\nMatricule : ${currentEleveData.matricule || 'N/A'}\nCode secret : ${currentEleveData.code_acces || 'N/A'}\n\nConsultez-le ici : ${portalUrl}`;
+    
+    const message = `Bonjour Mr ou Mme ${parentName},\n\nLe bulletin de ${currentEleveData.prenom} est disponible.\n\nMoyenne : ${studentAverage}/20\nRang : ${studentRank}\n\nMatricule : ${currentEleveData.matricule || 'N/A'}\nCode secret : ${currentEleveData.code_acces || 'N/A'}\n\nConsultez tous les détails (notes par matière, coefficients, etc.) au lien suivant : ${portalUrl}`;
     
     const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
     window.open(waUrl, '_blank');
