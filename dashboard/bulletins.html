@@ -365,22 +365,72 @@ async function genererBulletin() {
     
     let decision = moyenneGenerale >= 10 ? 'Admis' : 'Échec';
     
-    // Calcul de la moyenne de la classe et du rang (basé sur les bulletins déjà générés)
-    const { data: allBulls } = await window.supabase
-        .from('bulletins')
-        .select('eleve_id, moyenne_generale')
-        .eq('classe_id', cid)
-        .eq('periode_id', pid);
+    // --- NOUVEAU MOTEUR DE CALCUL DES RANGS ---
+    // Calcul dynamique de la moyenne de tous les élèves de la classe pour un classement exact
+    const { data: elevesClasse } = await window.supabase.from('eleves').select('id').eq('classe_id', cid);
+    const elevesIds = elevesClasse ? elevesClasse.map(e => e.id) : [eid];
+    
+    const { data: allNotes } = await window.supabase
+        .from('notes')
+        .select('eleve_id, matiere_id, valeur, periode_id, matieres(coefficient_defaut)')
+        .in('eleve_id', elevesIds)
+        .in('periode_id', periodesRecherche);
 
-    let classNotes = allBulls ? allBulls.map(b => parseFloat(b.moyenne_generale)) : [];
-    const existingIdx = classNotes.findIndex((_, idx) => allBulls && allBulls[idx].eleve_id === eid);
-    if (existingIdx === -1) {
-        classNotes.push(moyenneGenerale);
-    } else {
-        classNotes[existingIdx] = moyenneGenerale;
+    let classNotes = [];
+    if (allNotes) {
+        const studentStats = {};
+        allNotes.forEach(n => {
+            const eId = n.eleve_id;
+            const mId = n.matiere_id;
+            const pId = n.periode_id;
+            const coef = n.matieres ? (n.matieres.coefficient_defaut || 1) : 1;
+            
+            if (!studentStats[eId]) studentStats[eId] = { matieres: {} };
+            if (!studentStats[eId].matieres[mId]) studentStats[eId].matieres[mId] = { coef, notesPeriodes: {} };
+            studentStats[eId].matieres[mId].notesPeriodes[pId] = parseFloat(n.valeur);
+        });
+
+        for (let eId in studentStats) {
+            let sTotalPoints = 0;
+            let sTotalCoefs = 0;
+            
+            for (let mId in studentStats[eId].matieres) {
+                const m = studentStats[eId].matieres[mId];
+                let sumNotes = 0;
+                let countNotes = 0;
+                
+                if (isTrimestre) {
+                    periodesRecherche.forEach(pId => {
+                        if (m.notesPeriodes[pId] !== undefined) {
+                            sumNotes += m.notesPeriodes[pId];
+                            countNotes++;
+                        }
+                    });
+                } else {
+                    if (m.notesPeriodes[pid] !== undefined) {
+                        sumNotes = m.notesPeriodes[pid];
+                        countNotes = 1;
+                    }
+                }
+                
+                if (countNotes > 0) {
+                    const moy = sumNotes / countNotes;
+                    sTotalPoints += (moy * m.coef);
+                    sTotalCoefs += m.coef;
+                }
+            }
+            const avg = sTotalCoefs > 0 ? (sTotalPoints / sTotalCoefs) : 0;
+            // Éviter d'ajouter l'élève actuel s'il est déjà compté, on va forcer l'ajout avec la moyenne exacte calculée au-dessus
+            if (eId !== eid) {
+                classNotes.push(parseFloat(avg.toFixed(2)));
+            }
+        }
     }
     
+    // Ajout explicite de la moyenne de l'élève actuel (calculée avec précision plus haut)
+    classNotes.push(parseFloat(moyenneGenerale.toFixed(2)));
     classNotes.sort((a, b) => b - a); // Décroissant
+    // --- FIN DU NOUVEAU MOTEUR ---
     
     let studentRankStr = 'N/A';
     const rankIdx = classNotes.indexOf(moyenneGenerale);
