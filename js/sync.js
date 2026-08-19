@@ -53,34 +53,42 @@ async function pullDataFromSupabase() {
         const syncStatusEl = document.getElementById('syncStatusIndicator');
         if (syncStatusEl && isOnline) syncStatusEl.innerHTML = '<span class="badge bg-warning text-dark rounded-pill"><i class="fas fa-sync fa-spin me-1"></i>Synchro...</span>';
 
-        // Obtenir l'etablissement_id
-        const { data: prof } = await window.supabase.from('profiles').select('etablissement_id').single();
-        if (!prof || !prof.etablissement_id) return;
-        const etabId = prof.etablissement_id;
+        // Obtenir l'etablissement_id depuis la session locale
+        let etabId = null;
+        const sessionStr = localStorage.getItem('edu_session');
+        if (sessionStr) {
+            try { etabId = JSON.parse(sessionStr).etablissement_id; } catch(e) {}
+        }
+        
+        if (!etabId) {
+            // Fallback s'il manque dans le localStorage, on essaye depuis profiles
+            const { data: prof } = await window.supabase.from('profiles').select('etablissement_id').maybeSingle();
+            if (prof && prof.etablissement_id) etabId = prof.etablissement_id;
+        }
 
         // 1. Classes
-        const { data: classes } = await window.supabase.from('classes').select('*').eq('etablissement_id', etabId);
+        let qClasses = window.supabase.from('classes').select('*'); if(etabId) qClasses = qClasses.eq('etablissement_id', etabId); const { data: classes } = await qClasses;
         if (classes) {
             await db.classes.clear();
             if (classes.length > 0) await db.classes.bulkPut(classes);
         }
 
         // 2. Eleves
-        const { data: eleves } = await window.supabase.from('eleves').select('*').eq('etablissement_id', etabId);
+        let qEleves = window.supabase.from('eleves').select('*'); if(etabId) qEleves = qEleves.eq('etablissement_id', etabId); const { data: eleves } = await qEleves;
         if (eleves) {
             await db.eleves.clear();
             if (eleves.length > 0) await db.eleves.bulkPut(eleves);
         }
 
         // 3. Enseignants
-        const { data: enseignants } = await window.supabase.from('enseignants').select('*').eq('etablissement_id', etabId);
+        let qEns = window.supabase.from('enseignants').select('*'); if(etabId) qEns = qEns.eq('etablissement_id', etabId); const { data: enseignants } = await qEns;
         if (enseignants) {
             await db.enseignants.clear();
             if (enseignants.length > 0) await db.enseignants.bulkPut(enseignants);
         }
         
         // 4. Périodes
-        const { data: periodes } = await window.supabase.from('periodes_evaluation').select('*').eq('etablissement_id', etabId);
+        let qPer = window.supabase.from('periodes_evaluation').select('*'); if(etabId) qPer = qPer.eq('etablissement_id', etabId); const { data: periodes } = await qPer;
         if (periodes) {
             await db.periodes_evaluation.clear();
             if (periodes.length > 0) await db.periodes_evaluation.bulkPut(periodes);

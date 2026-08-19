@@ -258,6 +258,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ----- INITIALISATION ETABLISSEMENT -----
     await initEtablissementSettings();
     adaptAppTaxonomy();
+    
+    // Déclencher la synchronisation PULL (Stale-While-Revalidate)
+    if (typeof pullDataFromSupabase === 'function') {
+        pullDataFromSupabase();
+    }
 
     // ----- ÉLÈVES -----
     if (path.includes('eleves.html') && !path.includes('eleves_test')) {
