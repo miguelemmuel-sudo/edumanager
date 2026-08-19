@@ -1966,7 +1966,7 @@ window.deleteMessage = async function(id) {
 window.editMessage = function(id, oldContent) {
     let modalEl = document.getElementById('editMessageModal');
     if (!modalEl) {
-        const modalHtml = \`
+        const modalHtml = `
         <div class="modal fade" id="editMessageModal" tabindex="-1">
           <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content" style="border-radius:12px;">
@@ -1984,7 +1984,7 @@ window.editMessage = function(id, oldContent) {
               </div>
             </div>
           </div>
-        </div>\`;
+        </div>`;
         document.body.insertAdjacentHTML('beforeend', modalHtml);
         modalEl = document.getElementById('editMessageModal');
     }
