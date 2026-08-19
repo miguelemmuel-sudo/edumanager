@@ -1799,19 +1799,48 @@ async function fetchAndRenderMessages() {
         }
     }
 
+    // Fetch parents for the select list
+    const specificParentsGroup = document.getElementById('specificParentsGroup');
+    if (specificParentsGroup) {
+        const { data: elevesParents } = await window.supabase.from('eleves').select('parent_nom, parent_tel, prenom, nom').eq('etablissement_id', etabId).not('parent_tel', 'is', null);
+        if (elevesParents) {
+            specificParentsGroup.innerHTML = '';
+            const validParents = elevesParents.filter(e => e.parent_tel && e.parent_tel.trim() !== '');
+            const uniqueParents = {};
+            validParents.forEach(p => {
+                if (!uniqueParents[p.parent_tel]) uniqueParents[p.parent_tel] = [];
+                uniqueParents[p.parent_tel].push(p);
+            });
+            for (const [tel, children] of Object.entries(uniqueParents)) {
+                const parentName = children[0].parent_nom || 'Parent';
+                const childrenNames = children.map(c => c.prenom).join(', ');
+                const opt = document.createElement('option');
+                opt.value = `tel:${tel.replace(/[^0-9+]/g, '')}`; 
+                opt.textContent = `${parentName} (Parent de ${childrenNames}) - ${tel}`;
+                specificParentsGroup.appendChild(opt);
+            }
+        }
+    }
+
     // Group messages by 'sujet' (which acts as the conversation partner / group)
     const conversations = {};
     messages.forEach(m => {
         let chatName = m.sujet || 'Général';
         if (chatName.startsWith('To: ')) chatName = chatName.substring(4);
-        if (!conversations[chatName]) conversations[chatName] = [];
-        conversations[chatName].push(m);
+        
+        let displayChatName = chatName;
+        if (chatName.startsWith('tel:')) displayChatName = 'Parent: ' + chatName.substring(4);
+        
+        if (!conversations[chatName]) conversations[chatName] = { display: displayChatName, msgs: [] };
+        conversations[chatName].msgs.push(m);
     });
 
     msgList.innerHTML = '';
-    for (const [name, msgs] of Object.entries(conversations)) {
+    for (const [name, chatData] of Object.entries(conversations)) {
+        const msgs = chatData.msgs;
+        const displayName = chatData.display;
         const lastMsg = msgs[0];
-        const initial = name.charAt(0).toUpperCase();
+        const initial = displayName.charAt(0).toUpperCase();
         
         const div = document.createElement('div');
         div.className = 'msg-item ' + (currentChat === name ? 'active' : '');
@@ -1819,7 +1848,7 @@ async function fetchAndRenderMessages() {
             <div class="msg-item-av" style="background:#2563EB">${initial}</div>
             <div class="msg-item-content">
                 <div class="d-flex justify-content-between align-items-baseline mb-1">
-                    <span class="msg-item-name">${_e(name)}</span>
+                    <span class="msg-item-name">${_e(displayName)}</span>
                     <span class="msg-item-time">${new Date(lastMsg.date_envoi).toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'})}</span>
                 </div>
                 <div class="msg-item-preview">${_e(lastMsg.contenu).substring(0, 40)}...</div>
@@ -1828,23 +1857,23 @@ async function fetchAndRenderMessages() {
         div.onclick = () => {
             document.querySelectorAll('.msg-item').forEach(el => el.classList.remove('active'));
             div.classList.add('active');
-            openChat(name, msgs);
+            openChat(name, displayName, msgs);
         };
         msgList.appendChild(div);
     }
     
     if(!currentChat && Object.keys(conversations).length > 0) {
         const firstName = Object.keys(conversations)[0];
-        openChat(firstName, conversations[firstName]);
+        openChat(firstName, conversations[firstName].display, conversations[firstName].msgs);
         msgList.firstChild.classList.add('active');
     }
 }
 
-function openChat(name, msgs) {
+function openChat(name, displayName, msgs) {
     currentChat = name;
     document.getElementById('chatHeader').style.display = 'flex';
-    document.getElementById('chatName').textContent = name;
-    document.getElementById('chatHeaderAv').textContent = name.charAt(0).toUpperCase();
+    document.getElementById('chatName').textContent = displayName;
+    document.getElementById('chatHeaderAv').textContent = displayName.charAt(0).toUpperCase();
     
     const body = document.getElementById('chatBody');
     body.innerHTML = '';
@@ -1859,8 +1888,8 @@ function openChat(name, msgs) {
         let time = new Date(m.date_envoi).toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'});
         
         let smsIndicator = '';
-        if (isSent && name.toLowerCase().includes('parent')) {
-            smsIndicator = ' &middot; <i class="fas fa-sms text-success" title="Notifié par SMS"></i> SMS envoyé';
+        if (isSent && (name.toLowerCase().includes('parent') || name.startsWith('tel:'))) {
+            smsIndicator = ' &middot; <i class="fab fa-whatsapp text-success" title="Redirigé vers WhatsApp"></i> WhatsApp';
         }
         
         let optionsMenu = '';
@@ -1971,8 +2000,21 @@ window.sendMessage = async function() {
     } else {
         inp.value = '';
         fetchAndRenderMessages();
-        if (currentChat.toLowerCase().includes('parent')) {
-            if(window.showToast) window.showToast('Message et SMS envoyés avec succès', 'success');
+        if (currentChat.toLowerCase().includes('parent') || currentChat.startsWith('tel:')) {
+            if(window.showToast) window.showToast('Ouverture de WhatsApp...', 'success');
+            
+            let waUrl = '';
+            const text = encodeURIComponent(txt);
+            if (currentChat.startsWith('tel:')) {
+                const phone = currentChat.substring(4);
+                waUrl = `https://wa.me/${phone}?text=${text}`;
+            } else {
+                waUrl = `https://wa.me/?text=${text}`;
+            }
+            
+            setTimeout(() => {
+                window.open(waUrl, '_blank');
+            }, 800);
         }
     }
 }
@@ -2004,8 +2046,21 @@ window.sendNewMessage = async function() {
         closeModal('newMsgModal');
         clearFormData('newMsgModal');
         fetchAndRenderMessages();
-        if (form.destinataire_grp.toLowerCase().includes('parent')) {
-            if(window.showToast) window.showToast('Message et SMS envoyés avec succès', 'success');
+        if (form.destinataire_grp.toLowerCase().includes('parent') || form.destinataire_grp.startsWith('tel:')) {
+            if(window.showToast) window.showToast('Ouverture de WhatsApp...', 'success');
+            
+            let waUrl = '';
+            const text = encodeURIComponent(form.contenu);
+            if (form.destinataire_grp.startsWith('tel:')) {
+                const phone = form.destinataire_grp.substring(4);
+                waUrl = `https://wa.me/${phone}?text=${text}`;
+            } else {
+                waUrl = `https://wa.me/?text=${text}`;
+            }
+            
+            setTimeout(() => {
+                window.open(waUrl, '_blank');
+            }, 800);
         } else {
             if(window.showToast) window.showToast('Message envoyé', 'success');
         }

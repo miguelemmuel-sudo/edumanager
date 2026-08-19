@@ -117,12 +117,17 @@
       <form id="formAddMessage">
         <div class="mb-3">
           <label class="form-label">Destinataire(s) / Groupe *</label>
-          <select name="destinataire_grp" class="form-select">
-            <option value="">Sélectionner un groupe…</option>
-            <option value="Tous les parents">Tous les parents</option>
-            <option value="Parents – 3ème B">Parents – 3ème B</option>
-            <option value="Parents – 6ème A">Parents – 6ème A</option>
-            <option value="Tous les enseignants">Tous les enseignants</option>
+          <select name="destinataire_grp" id="destinataireSelect" class="form-select">
+            <option value="">Sélectionner un destinataire…</option>
+            <optgroup label="Groupes">
+                <option value="Tous les parents">Tous les parents</option>
+                <option value="Parents – 3ème B">Parents – 3ème B</option>
+                <option value="Parents – 6ème A">Parents – 6ème A</option>
+                <option value="Tous les enseignants">Tous les enseignants</option>
+            </optgroup>
+            <optgroup label="Parents Spécifiques" id="specificParentsGroup">
+                <!-- Dynamique -->
+            </optgroup>
           </select>
         </div>
         <div class="mb-3"><label class="form-label">Objet</label><input type="text" name="sujet" class="form-control" placeholder="Objet du message"/></div>
