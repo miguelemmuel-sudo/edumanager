@@ -327,9 +327,9 @@ async function fetchAndRenderAdminDashboard() {
             try { etabId = JSON.parse(sessionStr).etablissement_id; } catch(e) {}
         }
         
-        let queryEleves = window.supabase.from('eleves').select('id', { count: 'exact', head: true });
-        let queryEnseignants = window.supabase.from('enseignants').select('id', { count: 'exact', head: true });
-        let queryClasses = window.supabase.from('classes').select('id', { count: 'exact', head: true });
+        let queryEleves = window.supabase.from('eleves').select('id');
+        let queryEnseignants = window.supabase.from('enseignants').select('id');
+        let queryClasses = window.supabase.from('classes').select('id');
         let queryPaiements = window.supabase.from('paiements').select('montant');
         
         if (etabId) {
@@ -356,9 +356,9 @@ async function fetchAndRenderAdminDashboard() {
         if (resClasses.error) console.error("Erreur classes:", resClasses.error);
         if (resPaiements.error) console.error("Erreur paiements:", resPaiements.error);
         
-        const nbEleves = resEleves.count || 0;
-        const nbEnseignants = resEnseignants.count || 0;
-        const nbClasses = resClasses.count || 0;
+        const nbEleves = resEleves.data ? resEleves.data.length : 0;
+        const nbEnseignants = resEnseignants.data ? resEnseignants.data.length : 0;
+        const nbClasses = resClasses.data ? resClasses.data.length : 0;
         const paiements = resPaiements.data || [];
         
         let revenus = 0;
