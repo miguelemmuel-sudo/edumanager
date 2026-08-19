@@ -327,36 +327,60 @@ async function fetchAndRenderAdminDashboard() {
             try { etabId = JSON.parse(sessionStr).etablissement_id; } catch(e) {}
         }
         
-        let queryEleves = window.supabase.from('eleves').select('id');
-        let queryEnseignants = window.supabase.from('enseignants').select('id');
-        let queryClasses = window.supabase.from('classes').select('id');
-        let queryPaiements = window.supabase.from('paiements').select('montant');
+        let nbEleves = 0, nbEnseignants = 0, nbClasses = 0, revenus = 0;
+        let recentEleves = [];
+        let dataFetched = false;
         
-        const [
-            resEleves,
-            resEnseignants,
-            resClasses,
-            resPaiements
-        ] = await Promise.all([
-            queryEleves,
-            queryEnseignants,
-            queryClasses,
-            queryPaiements
-        ]);
+        if (navigator.onLine && window.supabase) {
+            try {
+                let queryEleves = window.supabase.from('eleves').select('id');
+                let queryEnseignants = window.supabase.from('enseignants').select('id');
+                let queryClasses = window.supabase.from('classes').select('id');
+                let queryPaiements = window.supabase.from('paiements').select('montant');
+                
+                const [resEleves, resEnseignants, resClasses, resPaiements] = await Promise.all([
+                    queryEleves, queryEnseignants, queryClasses, queryPaiements
+                ]);
+                
+                if (!resEleves.error && !resEnseignants.error && !resClasses.error) {
+                    nbEleves = resEleves.data ? resEleves.data.length : 0;
+                    nbEnseignants = resEnseignants.data ? resEnseignants.data.length : 0;
+                    nbClasses = resClasses.data ? resClasses.data.length : 0;
+                    
+                    const paiements = resPaiements.data || [];
+                    paiements.forEach(p => revenus += parseFloat(p.montant || 0));
+                    
+                    dataFetched = true;
+                }
+                
+                let queryRecent = window.supabase.from('eleves').select('id, prenom, nom, created_at, statut, classes(nom)').order('created_at', { ascending: false }).limit(5);
+                if (etabId) queryRecent = queryRecent.eq('etablissement_id', etabId);
+                const { data: recents } = await queryRecent;
+                if (recents) recentEleves = recents;
+            } catch (err) {
+                console.error("Erreur de connexion Supabase", err);
+            }
+        }
         
-        if (resEleves.error) console.error("Erreur eleves:", resEleves.error);
-        if (resEnseignants.error) console.error("Erreur enseignants:", resEnseignants.error);
-        if (resClasses.error) console.error("Erreur classes:", resClasses.error);
-        if (resPaiements.error) console.error("Erreur paiements:", resPaiements.error);
-        
-        const nbEleves = resEleves.data ? resEleves.data.length : 0;
-        const nbEnseignants = resEnseignants.data ? resEnseignants.data.length : 0;
-        const nbClasses = resClasses.data ? resClasses.data.length : 0;
-        const paiements = resPaiements.data || [];
-        
-        let revenus = 0;
-        if (paiements) {
-            paiements.forEach(p => revenus += parseFloat(p.montant || 0));
+        // Mode Hors-ligne / Fallback via Dexie
+        if (!dataFetched && window.edumanagerDB) {
+            nbEleves = await window.edumanagerDB.eleves.count();
+            nbEnseignants = await window.edumanagerDB.enseignants.count();
+            nbClasses = await window.edumanagerDB.classes.count();
+            
+            const paiements = await window.edumanagerDB.paiements.toArray();
+            revenus = paiements.reduce((acc, p) => acc + parseFloat(p.montant || 0), 0);
+            
+            // Pour recentEleves en hors ligne
+            const allEleves = await window.edumanagerDB.eleves.toArray();
+            // On récupère les classes pour joindre le nom (simili-jointure)
+            const allClasses = await window.edumanagerDB.classes.toArray();
+            
+            recentEleves = allEleves.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0)).slice(0, 5);
+            recentEleves = recentEleves.map(e => {
+                const classe = allClasses.find(c => c.id === e.classe_id);
+                return { ...e, classes: { nom: classe ? classe.nom : 'Non assigné' } };
+            });
         }
         
         const scValues = document.querySelectorAll('.stat-card .sc-value');
@@ -367,15 +391,8 @@ async function fetchAndRenderAdminDashboard() {
             scValues[3].textContent = nbClasses;
         }
 
-        // Fetch recent enrollments
-        let queryRecent = window.supabase.from('eleves').select('id, prenom, nom, created_at, statut, classes(nom)').order('created_at', { ascending: false }).limit(5);
-        if (etabId) queryRecent = queryRecent.eq('etablissement_id', etabId);
-        
-        const { data: recentEleves, error: recentError } = await queryRecent;
-        if (recentError) console.error("Erreur eleves recents:", recentError);
-        
         const tbody = document.getElementById('dynamicBody');
-        if (tbody && recentEleves) {
+        if (tbody) {
             tbody.innerHTML = '';
             const safeStr = (s) => String(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;');
             recentEleves.forEach(e => {
