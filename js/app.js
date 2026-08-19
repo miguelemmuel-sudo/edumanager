@@ -1096,6 +1096,7 @@ async function fetchAndRenderClasses() {
             const { data: c, error } = await query;
             if (!error) {
                 classes = c || [];
+                window.currentClassesData = classes;
                 dataFetched = true;
             } else { console.error(error); }
         } catch(e) { console.error(e); }
@@ -1115,6 +1116,7 @@ async function fetchAndRenderClasses() {
                 enseignants: prof ? { nom: prof.nom, prenom: prof.prenom } : null
             };
         });
+        window.currentClassesData = classes;
     } else {
         classes.forEach(c => {
             let count = 0;
@@ -1309,7 +1311,7 @@ window.prepareAddClasseModal = function() {
 };
 
 window.openEditClasseModal = function(id) {
-    const c = classes.find(c => c.id === id);
+    const c = (window.currentClassesData || []).find(c => c.id === id);
     if(!c) return;
     document.getElementById('classeIdInput').value = c.id;
     document.querySelector('#addClasseModal input[name="nom"]').value = c.nom || '';
