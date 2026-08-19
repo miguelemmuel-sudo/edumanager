@@ -1790,6 +1790,15 @@ async function fetchAndRenderMessages() {
     const { data: messages, error } = await query;
     if (error) return console.error(error);
 
+    // Update sidebar badge
+    const badge = document.getElementById('sidebarBadgeMessages');
+    if (badge) {
+        badge.textContent = messages.length;
+        if (messages.length > 0) {
+            badge.style.display = 'inline-block';
+        }
+    }
+
     // Group messages by 'sujet' (which acts as the conversation partner / group)
     const conversations = {};
     messages.forEach(m => {
@@ -1854,10 +1863,88 @@ function openChat(name, msgs) {
             smsIndicator = ' &middot; <i class="fas fa-sms text-success" title="Notifié par SMS"></i> SMS envoyé';
         }
         
-        body.innerHTML += `<div class="bubble ${bubbleClass}">${_e(m.contenu).replace(/\n/g,'<br>')}</div><div class="bubble-meta ${metaClass}">${sender} &middot; ${time}${smsIndicator}</div>`;
+        let optionsMenu = '';
+        if (isSent) {
+            // Dropdown menu WhatsApp style
+            optionsMenu = `
+            <div class="dropdown" style="display:inline-block; margin-left: 8px; vertical-align: top;">
+                <button class="btn btn-sm text-white opacity-50 p-0 hover-opacity-100" data-bs-toggle="dropdown" style="border:none; box-shadow:none;"><i class="fas fa-chevron-down" style="font-size:0.7rem;"></i></button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="font-size:0.85rem; border-radius:8px;">
+                    <li><a class="dropdown-item" href="#" onclick="editMessage('${m.id}', \`${_e(m.contenu).replace(/`/g, '\\`')}\`); event.preventDefault();"><i class="fas fa-edit me-2 text-primary"></i>Modifier</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger" href="#" onclick="deleteMessage('${m.id}'); event.preventDefault();"><i class="fas fa-trash me-2"></i>Supprimer</a></li>
+                </ul>
+            </div>`;
+        }
+        
+        body.innerHTML += `
+        <div class="d-flex align-items-center justify-content-${isSent ? 'end' : 'start'}">
+            <div class="bubble ${bubbleClass}" style="position:relative; display:inline-block; max-width: 80%;">
+                ${_e(m.contenu).replace(/\n/g,'<br>')}
+                ${optionsMenu}
+            </div>
+        </div>
+        <div class="bubble-meta ${metaClass}">${sender} &middot; ${time}${smsIndicator}</div>`;
     });
     
     body.scrollTop = body.scrollHeight;
+}
+
+window.deleteMessage = async function(id) {
+    if(!confirm('Voulez-vous vraiment supprimer ce message ? (Cette action est irréversible)')) return;
+    const { error } = await window.supabase.from('messages').delete().eq('id', id);
+    if (error) {
+        if(window.showToast) window.showToast(error.message, 'danger');
+    } else {
+        if(window.showToast) window.showToast('Message supprimé', 'success');
+        fetchAndRenderMessages();
+    }
+}
+
+window.editMessage = function(id, oldContent) {
+    let modalEl = document.getElementById('editMessageModal');
+    if (!modalEl) {
+        const modalHtml = \`
+        <div class="modal fade" id="editMessageModal" tabindex="-1">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius:12px;">
+              <div class="modal-header border-bottom-0 pb-0">
+                <h6 class="modal-title fw-bold">Modifier le message</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body">
+                <textarea id="editMessageContent" class="form-control bg-light" rows="4" style="border-radius:10px;"></textarea>
+                <input type="hidden" id="editMessageId">
+              </div>
+              <div class="modal-footer border-top-0 pt-0">
+                <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary rounded-pill px-4 fw-bold" onclick="saveEditedMessage()">Enregistrer</button>
+              </div>
+            </div>
+          </div>
+        </div>\`;
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        modalEl = document.getElementById('editMessageModal');
+    }
+    document.getElementById('editMessageContent').value = oldContent;
+    document.getElementById('editMessageId').value = id;
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
+}
+
+window.saveEditedMessage = async function() {
+    const id = document.getElementById('editMessageId').value;
+    const newContent = document.getElementById('editMessageContent').value.trim();
+    if (!newContent) return;
+    
+    const { error } = await window.supabase.from('messages').update({ contenu: newContent }).eq('id', id);
+    if (error) {
+        if(window.showToast) window.showToast(error.message, 'danger');
+    } else {
+        if(window.showToast) window.showToast('Message modifié avec succès', 'success');
+        bootstrap.Modal.getInstance(document.getElementById('editMessageModal')).hide();
+        fetchAndRenderMessages();
+    }
 }
 
 window.sendMessage = async function() {
