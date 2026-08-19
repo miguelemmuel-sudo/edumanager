@@ -127,7 +127,7 @@ function showDashboard(data) {
             </div>
             
             <div class="d-flex gap-3 mt-3">
-                <span class="badge bg-light text-dark border">Rang: <strong class="text-primary">${b.rang || '-'}</strong></span>
+                <span class="badge bg-light text-dark border">Rang: <strong class="text-primary">${b.rang ? b.rang + (b.rang === 1 ? 'er' : 'ème') : '-'}</strong></span>
                 <button class="btn btn-sm btn-link text-decoration-none p-0 ms-auto" onclick="toggleBulletinDetails('${b.id}')">
                     Voir les détails <i class="fas fa-chevron-down ms-1" id="icon-${b.id}"></i>
                 </button>
@@ -192,6 +192,41 @@ function showDashboard(data) {
                             ${rowsHtml}
                         </tbody>
                     </table>
+                </div>
+                
+                <div class="bulletin-summary bg-light p-3 rounded-3 mt-4 border">
+                    <div class="row text-center mb-2">
+                        <div class="col">
+                            <div class="text-muted small fw-bold text-uppercase">Total Points</div>
+                            <div class="fs-5 fw-bold">${parseFloat(b.total_points || 0).toFixed(2)}</div>
+                        </div>
+                        <div class="col">
+                            <div class="text-muted small fw-bold text-uppercase">Total Coefs</div>
+                            <div class="fs-5 fw-bold">${parseFloat(b.total_coefs || 0).toFixed(2)}</div>
+                        </div>
+                        <div class="col border-start border-end">
+                            <div class="text-muted small fw-bold text-uppercase">Moyenne Générale</div>
+                            <div class="fs-3 fw-bold text-primary">${parseFloat(b.moyenne_generale || 0).toFixed(2)} <small class="text-muted" style="font-size:1rem">/20</small></div>
+                        </div>
+                        <div class="col border-end">
+                            <div class="text-muted small fw-bold text-uppercase">Mention</div>
+                            <div class="fs-5 fw-bold">${_e(b.mention || 'N/A')}</div>
+                        </div>
+                        <div class="col">
+                            <div class="text-muted small fw-bold text-uppercase">Décision du conseil</div>
+                            <div class="fs-5 fw-bold text-dark">${_e(b.decision || 'N/A')}</div>
+                        </div>
+                    </div>
+                    <div class="row text-center border-top pt-2 mt-2">
+                        <div class="col">
+                            <div class="text-muted small fw-bold text-uppercase">Rang de l'élève</div>
+                            <div class="fs-5 fw-bold text-primary">${b.rang ? b.rang + (b.rang === 1 ? 'er' : 'ème') : '-'} ${b.effectif_classe ? '/ ' + b.effectif_classe : ''}</div>
+                        </div>
+                        <div class="col">
+                            <div class="text-muted small fw-bold text-uppercase">Moyenne de la classe</div>
+                            <div class="fs-5 fw-bold">${b.moyenne_classe ? parseFloat(b.moyenne_classe).toFixed(2) : '-'} <small class="text-muted" style="font-size:0.9rem">/20</small></div>
+                        </div>
+                    </div>
                 </div>
             `;
         } else if (b.donnees_json && b.donnees_json.lignes) {

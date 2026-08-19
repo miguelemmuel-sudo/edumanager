@@ -27,17 +27,38 @@ BEGIN
     WHERE id = v_eleve.etablissement_id
     LIMIT 1;
 
-    -- 3. Récupérer les bulletins publiés de cet élève
+    -- 3. Récupérer les bulletins publiés avec tous les détails et rang dynamique
     SELECT json_agg(
         json_build_object(
             'id', b.id,
             'periode', p.nom,
             'moyenne_generale', b.moyenne_generale,
-            'rang', b.rang,
+            'total_points', b.total_points,
+            'total_coefs', b.total_coefs,
+            'decision', b.decision,
             'mention', b.mention,
             'donnees_json', b.donnees_json,
             'statut', b.statut,
-            'created_at', b.created_at
+            'created_at', b.created_at,
+            'rang', (
+                SELECT count(*) + 1 
+                FROM public.bulletins b2 
+                WHERE b2.classe_id = b.classe_id 
+                  AND b2.periode_id = b.periode_id 
+                  AND b2.moyenne_generale > b.moyenne_generale
+            ),
+            'moyenne_classe', (
+                SELECT avg(b3.moyenne_generale)
+                FROM public.bulletins b3
+                WHERE b3.classe_id = b.classe_id
+                  AND b3.periode_id = b.periode_id
+            ),
+            'effectif_classe', (
+                SELECT count(*)
+                FROM public.bulletins b4
+                WHERE b4.classe_id = b.classe_id
+                  AND b4.periode_id = b.periode_id
+            )
         ) ORDER BY b.created_at DESC
     ) INTO v_bulletins
     FROM public.bulletins b
