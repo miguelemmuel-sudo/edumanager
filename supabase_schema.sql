@@ -98,6 +98,10 @@ CREATE TABLE IF NOT EXISTS public.paiements (
     motif VARCHAR(200),
     methode VARCHAR(100),
     reference_transaction VARCHAR(150),
+    type_frais VARCHAR(100) DEFAULT 'Scolarité',
+    montant_attendu NUMERIC(12,2),
+    reste_a_payer NUMERIC(12,2),
+    caissier_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
