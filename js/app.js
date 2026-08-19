@@ -1183,7 +1183,7 @@ async function fetchAndRenderClasses() {
                                   ? `<a href="eleves.html" class="btn btn-sm flex-1 rounded-pill" style="background:rgba(37,99,235,.1);color:var(--primary);font-size:.78rem"><i class="fas fa-users me-1"></i>Élèves</a>`
                                   : `<button class="btn btn-sm flex-1 rounded-pill btn-outline-primary" style="font-size:.78rem" onclick="openJoinClasseModal('${c.id}')"><i class="fas fa-plus me-1"></i>S'ajouter</button>`
                                 }
-                                ${!isEnseignant ? `<button class="btn btn-sm btn-icon text-danger" onclick="deleteClasse('${c.id}')"><i class="fas fa-trash"></i></button>` : ''}
+                                ${!isEnseignant ? `<button class="btn btn-sm btn-icon text-primary me-1" onclick="openEditClasseModal('${c.id}')"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-icon text-danger" onclick="deleteClasse('${c.id}')"><i class="fas fa-trash"></i></button>` : ''}
                             </div>
                         </div>
                     </div>
@@ -1278,19 +1278,60 @@ function setupClassesModal() {
         const { data: etabData } = await window.supabase.from('etablissements').select('id').limit(1).maybeSingle();
         if (etabData) data.etablissement_id = etabData.id;
         
-        const { error } = await window.saveRecord('classes', data, 'insert');
+        let action = 'insert';
+        if (data.id) {
+            action = 'update';
+        } else {
+            delete data.id;
+        }
+        
+        const { error } = await window.saveRecord('classes', data, action);
         btn.disabled = false; btn.innerHTML = 'Enregistrer';
         
         if (error) {
             if(window.showToast) window.showToast(error.message, 'danger');
         } else {
-            if(window.showToast) window.showToast('Classe ajoutée', 'success');
+            if(window.showToast) window.showToast(data.id ? 'Classe modifiée' : 'Classe ajoutée', 'success');
             closeModal('addClasseModal');
             clearFormData('addClasseModal');
             fetchAndRenderClasses();
         }
     });
 }
+window.prepareAddClasseModal = function() {
+    clearFormData('addClasseModal');
+    const idInput = document.getElementById('classeIdInput');
+    if (idInput) idInput.value = '';
+    const modalTitle = document.querySelector('#addClasseModal .modal-title');
+    if (modalTitle) modalTitle.innerHTML = '<i class="fas fa-door-open text-primary me-2"></i>Créer une classe';
+    const btn = document.querySelector('#addClasseModal .btn-primary');
+    if (btn) btn.innerText = 'Créer la classe';
+};
+
+window.openEditClasseModal = function(id) {
+    const c = classes.find(c => c.id === id);
+    if(!c) return;
+    document.getElementById('classeIdInput').value = c.id;
+    document.querySelector('#addClasseModal input[name="nom"]').value = c.nom || '';
+    document.querySelector('#addClasseModal select[name="niveau"]').value = c.niveau || '';
+    
+    const faculteInput = document.querySelector('#addClasseModal input[name="faculte"]');
+    if(faculteInput) faculteInput.value = c.faculte || '';
+    const departementInput = document.querySelector('#addClasseModal input[name="departement"]');
+    if(departementInput) departementInput.value = c.departement || '';
+    const filiereInput = document.querySelector('#addClasseModal input[name="filiere"]');
+    if(filiereInput) filiereInput.value = c.filiere || '';
+    
+    document.querySelector('#addClasseModal input[name="salle"]').value = c.salle || '';
+    document.querySelector('#addClasseModal input[name="capacite"]').value = c.capacite || 48;
+    document.querySelector('#addClasseModal select[name="titulaire_id"]').value = c.titulaire_id || '';
+    
+    document.querySelector('#addClasseModal .modal-title').innerHTML = '<i class="fas fa-edit text-primary me-2"></i>Modifier la classe';
+    document.querySelector('#addClasseModal .btn-primary').innerText = 'Enregistrer les modifications';
+    
+    const modal = new bootstrap.Modal(document.getElementById('addClasseModal'));
+    modal.show();
+};
 window.deleteClasse = async function(id) {
     if(!confirm('Supprimer cette classe ?')) return;
     await window.saveRecord('classes', { id: id }, 'delete');
