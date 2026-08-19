@@ -145,7 +145,7 @@ async function initNotes() {
         (periodes||[]).map(p => `<option value="${p.id}">${p.nom}</option>`).join('');
         
     // Charger toutes les classes
-    let queryClasses = window.supabase.from('classes').select('id, nom, enseignant_principal_id').order('nom');
+    let queryClasses = window.supabase.from('classes').select('id, nom, titulaire_id').order('nom');
     const {data: allClasses} = await queryClasses;
     let classesAffichees = allClasses || [];
     
@@ -167,7 +167,7 @@ async function initNotes() {
             }
             
             // Garder uniquement les classes où il enseigne OU dont il est prof principal
-            classesAffichees = classesAffichees.filter(c => classeIdsOuIlEnseigne.has(c.id) || c.enseignant_principal_id === ens.id);
+            classesAffichees = classesAffichees.filter(c => classeIdsOuIlEnseigne.has(c.id) || c.titulaire_id === ens.id);
         }
     }
     

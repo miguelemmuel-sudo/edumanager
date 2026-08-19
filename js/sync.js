@@ -9,7 +9,7 @@ const db = new Dexie("EduManagerDB");
 db.version(2).stores({
     eleves: "id, matricule, nom, prenom, classe_id, etablissement_id, date_naissance, genre",
     enseignants: "id, matricule, nom, prenom, user_id, etablissement_id",
-    classes: "id, nom, niveau, etablissement_id",
+    classes: "id, nom, niveau, etablissement_id, titulaire_id",
     matieres: "id, nom, enseignant_id, coefficient_defaut",
     classes_matieres: "id, classe_id, matiere_id",
     notes: "id, eleve_id, matiere_id, periode_id, type_evaluation, valeur, statut",

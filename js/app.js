@@ -1108,7 +1108,7 @@ async function fetchAndRenderClasses() {
         
         classes = allClasses.map(c => {
             const elvs = allEleves.filter(e => e.classe_id === c.id);
-            const prof = allEnseignants.find(p => p.id === c.prof_principal_id);
+            const prof = allEnseignants.find(p => p.id === c.titulaire_id);
             return {
                 ...c,
                 _elevesCount: elvs.length,
@@ -1179,7 +1179,7 @@ async function fetchAndRenderClasses() {
                                 <div class="col-12"><div class="text-muted" style="font-size:.72rem">Salle</div><div style="font-size:.82rem;font-weight:600">${_e(c.salle || '-')}</div></div>
                             </div>
                             <div class="d-flex gap-2 mt-3">
-                                ${(!isEnseignant || classeIdsOuIlEnseigne.has(c.id) || c.enseignant_principal_id === currentEnsId) 
+                                ${(!isEnseignant || classeIdsOuIlEnseigne.has(c.id) || c.titulaire_id === currentEnsId) 
                                   ? `<a href="eleves.html" class="btn btn-sm flex-1 rounded-pill" style="background:rgba(37,99,235,.1);color:var(--primary);font-size:.78rem"><i class="fas fa-users me-1"></i>Élèves</a>`
                                   : `<button class="btn btn-sm flex-1 rounded-pill btn-outline-primary" style="font-size:.78rem" onclick="openJoinClasseModal('${c.id}')"><i class="fas fa-plus me-1"></i>S'ajouter</button>`
                                 }
