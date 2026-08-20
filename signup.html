@@ -19,7 +19,7 @@
     <div class="auth-left-content">
       <a href="index.html" class="brand mb-5"><i class="fas fa-graduation-cap me-2"></i>EduManager</a>
       <h2 class="text-white fw-bold mb-3">Rejoignez 200+ établissements qui font confiance à EduManager</h2>
-      <p class="text-white opacity-75 mb-4">Démarrez votre essai gratuit de 30 jours. Aucune carte bancaire requise.</p>
+      <p class="text-white opacity-75 mb-4">Démarrez votre essai gratuit de 14 jours. Aucune carte bancaire requise.</p>
       <div class="d-flex flex-column gap-3">
         <div class="d-flex align-items-center gap-3 text-white">
           <div class="auth-check"><i class="fas fa-check"></i></div>
@@ -27,7 +27,7 @@
         </div>
         <div class="d-flex align-items-center gap-3 text-white">
           <div class="auth-check"><i class="fas fa-check"></i></div>
-          <span>Toutes les fonctionnalités pendant 30 jours</span>
+          <span>Toutes les fonctionnalités pendant 14 jours</span>
         </div>
         <div class="d-flex align-items-center gap-3 text-white">
           <div class="auth-check"><i class="fas fa-check"></i></div>
@@ -60,7 +60,7 @@
         </a>
       </div>
       <h2 class="fw-bold mb-1">Créer votre école</h2>
-      <p class="text-muted mb-4">30 jours gratuits · Aucune carte bancaire</p>
+      <p class="text-muted mb-4">14 jours gratuits · Aucune carte bancaire</p>
 
       <!-- Stepper -->
       <div class="stepper mb-4">
@@ -211,21 +211,26 @@
             </div>
             <div class="col-12 mt-2">
               <label class="form-label fw-medium">Choisir votre plan</label>
-              <div class="plan-selector d-flex gap-2">
-                <label class="plan-opt flex-1 text-center p-2 rounded-3 border cursor-pointer active" data-plan="starter">
+              <div class="plan-selector d-flex flex-wrap gap-2">
+                <label class="plan-opt flex-1 text-center p-2 rounded-3 border cursor-pointer active" data-plan="starter" style="flex: 1 1 45%">
                   <input type="radio" name="plan" value="starter" class="d-none" checked/>
                   <div class="fw-bold text-primary">Starter</div>
-                  <div class="text-muted" style="font-size:11px">15€/mois</div>
+                  <div class="text-muted" style="font-size:11px">Gratuit</div>
                 </label>
-                <label class="plan-opt flex-1 text-center p-2 rounded-3 border cursor-pointer" data-plan="standard">
+                <label class="plan-opt flex-1 text-center p-2 rounded-3 border cursor-pointer" data-plan="standard" style="flex: 1 1 45%">
                   <input type="radio" name="plan" value="standard" class="d-none"/>
                   <div class="fw-bold text-primary">Standard</div>
-                  <div class="text-muted" style="font-size:11px">35€/mois</div>
+                  <div class="text-muted" style="font-size:11px">25k FCFA/mois</div>
                 </label>
-                <label class="plan-opt flex-1 text-center p-2 rounded-3 border cursor-pointer" data-plan="premium">
+                <label class="plan-opt flex-1 text-center p-2 rounded-3 border cursor-pointer" data-plan="premium" style="flex: 1 1 45%">
                   <input type="radio" name="plan" value="premium" class="d-none"/>
                   <div class="fw-bold text-primary">Premium</div>
-                  <div class="text-muted" style="font-size:11px">80€/mois</div>
+                  <div class="text-muted" style="font-size:11px">35k FCFA/mois</div>
+                </label>
+                <label class="plan-opt flex-1 text-center p-2 rounded-3 border cursor-pointer" data-plan="vip" style="flex: 1 1 45%">
+                  <input type="radio" name="plan" value="vip" class="d-none"/>
+                  <div class="fw-bold text-primary">VIP</div>
+                  <div class="text-muted" style="font-size:11px">Sur devis</div>
                 </label>
               </div>
             </div>
