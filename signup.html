@@ -397,7 +397,8 @@ document.getElementById('signupForm').addEventListener('submit', async function(
     // Étape 3
     const password = document.getElementById('pwd2')?.value || '';
     const confirm  = document.getElementById('confirmPwd')?.value || '';
-    const plan     = document.querySelector('input[name=plan]:checked')?.value || 'starter';
+    const activePlanOpt = document.querySelector('.plan-opt.active');
+    const plan = activePlanOpt ? activePlanOpt.getAttribute('data-plan') : (document.querySelector('input[name="plan"]:checked')?.value || 'starter');
     const terms    = document.getElementById('terms')?.checked;
 
     /* Validations */
