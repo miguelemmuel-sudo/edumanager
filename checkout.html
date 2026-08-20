@@ -167,29 +167,56 @@
   }
 
   // Gérer la soumission du formulaire
-  document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+  document.getElementById('checkoutForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     
     const gateway = document.querySelector('input[name="gateway"]:checked').value;
     const btn = this.querySelector('button[type="submit"]');
+    const errorDiv = document.getElementById('checkoutError');
+    const successDiv = document.getElementById('checkoutSuccess');
     const originalText = btn.innerHTML;
     
     btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Connexion sécurisée...';
     btn.disabled = true;
+    errorDiv.style.display = 'none';
+    successDiv.style.display = 'none';
 
-    // TODO: Appel réel à votre backend (Edge Function) pour générer l'URL de paiement
-    // Exemple simulé :
-    setTimeout(() => {
-      document.getElementById('checkoutSuccess').style.display = 'flex';
-      
+    // On récupère l'ID de l'établissement courant (par exemple depuis localStorage ou Supabase session)
+    // Ici on suppose qu'il a été stocké lors du signup ou on met un ID de test
+    const etablissement_id = localStorage.getItem('etablissement_id') || 'test_etab_id';
+
+    if (gateway === 'chariow') {
+      try {
+        const response = await fetch('/api/chariow/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ plan, etablissement_id })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) throw new Error(data.error || 'Erreur inconnue');
+        
+        successDiv.style.display = 'flex';
+        // Redirection vers l'URL de paiement Chariow
+        window.location.href = data.paymentUrl;
+      } catch (error) {
+        errorDiv.className = 'alert alert-danger mt-3';
+        errorDiv.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i> Erreur : ' + error.message;
+        errorDiv.style.display = 'block';
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
+    } else {
+      // Pour Fapshi ou autre (simulation en attendant l'API)
       setTimeout(() => {
-        // En attendant l'implémentation finale de l'API, on simule un succès
-        // et on redirige vers le dashboard.
-        localStorage.removeItem('pending_plan');
-        window.location.href = 'dashboard/index.html?payment=success';
-      }, 1500);
-      
-    }, 1200);
+        successDiv.style.display = 'flex';
+        setTimeout(() => {
+          localStorage.removeItem('pending_plan');
+          window.location.href = 'dashboard/index.html?payment=success';
+        }, 1500);
+      }, 1200);
+    }
   });
 </script>
 </body>
