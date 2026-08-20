@@ -4,7 +4,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { plan, etablissement_id } = req.body;
+    const { plan, etablissement_id, email, first_name, last_name, phone } = req.body;
 
     const chariowApiKey = process.env.CHARIOW_API_KEY;
     const merchantId = process.env.CHARIOW_MERCHANT_ID;
@@ -16,6 +16,14 @@ export default async function handler(req, res) {
 
     const origin = req.headers.origin || 'https://edumanager-ten.vercel.app';
 
+    // Parse phone number loosely to separate country code if starts with +
+    let country_code = "237";
+    let number = phone || "600000000";
+    if (number.startsWith("+")) {
+       country_code = number.substring(1, 4); // basic heuristic for +237
+       number = number.substring(4);
+    }
+
     // Appel à l'API Chariow pour créer une session de paiement (checkout)
     const chariowRes = await fetch('https://api.chariow.com/v1/checkout', {
       method: 'POST',
@@ -24,8 +32,15 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        product: productId,
+        product_id: productId,
         store: merchantId,
+        email: email || "admin@edumanager.com",
+        first_name: first_name || "Admin",
+        last_name: last_name || "Edu",
+        phone: {
+           number: number,
+           country_code: country_code
+        },
         metadata: {
           etablissement_id: etablissement_id,
           plan: plan

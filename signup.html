@@ -456,8 +456,14 @@ document.getElementById('signupForm').addEventListener('submit', async function(
       if (plan === 'starter') {
         window.location.href = 'dashboard/index.html';
       } else {
-        // Sauvegarde du plan sélectionné pour le checkout
+        // Sauvegarde des informations pour le checkout
         localStorage.setItem('pending_plan', plan);
+        localStorage.setItem('checkout_user', JSON.stringify({
+           email: email,
+           first_name: prenom || 'Admin',
+           last_name: nom || 'Ecole',
+           phone: tel || '600000000'
+        }));
         window.location.href = 'checkout.html';
       }
     }, 1200);

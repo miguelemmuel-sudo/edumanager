@@ -183,14 +183,32 @@
 
     // On récupère l'ID de l'établissement courant (par exemple depuis localStorage ou Supabase session)
     // Ici on suppose qu'il a été stocké lors du signup ou on met un ID de test
-    const etablissement_id = localStorage.getItem('etablissement_id') || 'test_etab_id';
+    let etablissement_id = localStorage.getItem('etablissement_id') || 'test_etab_id';
+    let email = "admin@edumanager.com", first_name = "Admin", last_name = "Edu", phone = "699999999";
+    
+    try {
+      const sessionStr = localStorage.getItem('edu_session');
+      if (sessionStr) {
+        const s = JSON.parse(sessionStr);
+        if (s.email) email = s.email;
+        if (s.etablissement_id) etablissement_id = s.etablissement_id;
+      }
+      const cuStr = localStorage.getItem('checkout_user');
+      if (cuStr) {
+        const cu = JSON.parse(cuStr);
+        email = cu.email || email;
+        first_name = cu.first_name || first_name;
+        last_name = cu.last_name || last_name;
+        phone = cu.phone || phone;
+      }
+    } catch(e) {}
 
     if (gateway === 'chariow') {
       try {
         const response = await fetch('/api/chariow/checkout', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ plan, etablissement_id })
+          body: JSON.stringify({ plan, etablissement_id, email, first_name, last_name, phone })
         });
         
         const data = await response.json();
