@@ -10,7 +10,7 @@ export default async function handler(req, res) {
     const payload = req.body;
     const signature = req.headers['chariow-signature'] || req.headers['x-chariow-signature'];
     
-    const webhookSecret = process.env.CHARIOW_WEBHOOK_SECRET || 'whsec_wQThxErjoFYwBOhUHAQICQxDY8Hv5FkRiCqOtkUs';
+    const webhookSecret = process.env.CHARIOW_WEBHOOK_SECRET;
 
     // Facultatif : Vérification de la signature HMAC si la documentation Chariow l'exige
     if (signature && webhookSecret) {

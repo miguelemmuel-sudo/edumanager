@@ -6,13 +6,13 @@ export default async function handler(req, res) {
   try {
     const { plan, etablissement_id } = req.body;
 
-    const chariowApiKey = process.env.CHARIOW_API_KEY || 'sk_w17ixj3d_04375e7636fd5c2a4bdca51aff89e615';
-    const merchantId = process.env.CHARIOW_MERCHANT_ID || 'store_zsekxnv8y2md';
+    const chariowApiKey = process.env.CHARIOW_API_KEY;
+    const merchantId = process.env.CHARIOW_MERCHANT_ID;
     
     // Sélection du produit en fonction du plan
     const productId = plan === 'premium' 
-      ? (process.env.CHARIOW_PREMIUM_PLAN_ID || 'prd_uohnb5p7') 
-      : (process.env.CHARIOW_STANDARD_PLAN_ID || 'prd_lpmicbgz');
+      ? process.env.CHARIOW_PREMIUM_PLAN_ID
+      : process.env.CHARIOW_STANDARD_PLAN_ID;
 
     const origin = req.headers.origin || 'https://edumanager-ten.vercel.app';
 
