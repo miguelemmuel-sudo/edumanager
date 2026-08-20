@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Paiement – EduManager</title>
+  <link rel="icon" type="image/png" href="/img/favicon.png"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="/css/vendor/bootstrap.min.css" rel="stylesheet"/>
+  <link href="/css/vendor/all.min.css" rel="stylesheet"/>
+  <link href="css/auth.css" rel="stylesheet"/>
+  <link rel="manifest" href="manifest.json" />
+  <style>
+    .payment-opt {
+      border: 1.5px solid var(--border);
+      border-radius: 0.625rem;
+      padding: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .payment-opt:hover {
+      border-color: #93C5FD;
+      background: #EFF6FF;
+    }
+    .payment-opt.active {
+      border-color: var(--primary);
+      background: #EFF6FF;
+    }
+    .aggregator-logo {
+      height: 30px;
+      object-fit: contain;
+    }
+    .plan-summary {
+      background: #F8FAFC;
+      border: 1px solid var(--border);
+      border-radius: 0.625rem;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+<div class="auth-wrapper">
+  <!-- Côté gauche -->
+  <div class="auth-left d-none d-lg-flex">
+    <div class="auth-left-content">
+      <a href="index.html" class="brand mb-5"><i class="fas fa-graduation-cap me-2"></i>EduManager</a>
+      <h2 class="text-white fw-bold mb-3">Sécurisez votre accès à EduManager</h2>
+      <p class="text-white opacity-75 mb-4">Choisissez votre méthode de paiement préférée via nos agrégateurs sécurisés.</p>
+      <div class="d-flex flex-column gap-3">
+        <div class="d-flex align-items-center gap-3 text-white">
+          <div class="auth-check"><i class="fas fa-shield-alt"></i></div>
+          <span>Paiements 100% sécurisés</span>
+        </div>
+        <div class="d-flex align-items-center gap-3 text-white">
+          <div class="auth-check"><i class="fas fa-mobile-alt"></i></div>
+          <span>Support Mobile Money & Cartes</span>
+        </div>
+        <div class="d-flex align-items-center gap-3 text-white">
+          <div class="auth-check"><i class="fas fa-bolt"></i></div>
+          <span>Activation instantanée</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Côté droit : formulaire -->
+  <div class="auth-right auth-right-scroll d-flex align-items-center justify-content-center py-5">
+    <div class="auth-form-wrap w-100" style="max-width: 450px;">
+      <div class="d-lg-none text-center mb-4">
+        <a href="index.html" class="text-decoration-none">
+          <i class="fas fa-graduation-cap text-primary me-1"></i>
+          <span class="fw-bold text-dark fs-5">EduManager</span>
+        </a>
+      </div>
+      
+      <div class="text-center mb-4">
+        <h3 class="fw-bold mb-1">Finalisez votre abonnement</h3>
+        <p class="text-muted small">Réglez votre abonnement mensuel pour activer votre compte.</p>
+      </div>
+
+      <!-- Récapitulatif de commande -->
+      <div class="plan-summary">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="text-muted small fw-medium">Forfait choisi</span>
+          <span class="badge bg-primary-soft text-primary" id="planBadge">Standard</span>
+        </div>
+        <div class="d-flex justify-content-between align-items-end">
+          <span class="fw-bold text-dark fs-5" id="planPrice">25 000 FCFA</span>
+          <span class="text-muted small">/ mois</span>
+        </div>
+      </div>
+
+      <form id="checkoutForm">
+        <label class="form-label fw-medium mb-3">Méthode de paiement</label>
+        
+        <div class="d-flex flex-column gap-3 mb-4">
+          <!-- Option Fapshi -->
+          <label class="payment-opt active d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-3">
+              <input class="form-check-input mt-0" type="radio" name="gateway" value="fapshi" checked>
+              <div>
+                <span class="d-block fw-semibold" style="color: var(--text)">Fapshi</span>
+                <span class="d-block text-muted small" style="font-size: 0.75rem;">Mobile Money (MTN, Orange...)</span>
+              </div>
+            </div>
+            <!-- Vous pourrez remplacer ceci par le logo de Fapshi -->
+            <div class="fw-bold" style="color: #FF5A5F; font-size: 1.2rem; font-style: italic;">Fapshi</div>
+          </label>
+
+          <!-- Option Chariow -->
+          <label class="payment-opt d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-3">
+              <input class="form-check-input mt-0" type="radio" name="gateway" value="chariow">
+              <div>
+                <span class="d-block fw-semibold" style="color: var(--text)">Chariow</span>
+                <span class="d-block text-muted small" style="font-size: 0.75rem;">Cartes bancaires, Crypto, MoMo</span>
+              </div>
+            </div>
+            <!-- Vous pourrez remplacer ceci par le logo de Chariow -->
+            <div class="fw-bold text-primary" style="font-size: 1.2rem;">Chariow</div>
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 fw-semibold">
+          <i class="fas fa-lock me-2"></i>Payer de manière sécurisée
+        </button>
+      </form>
+      
+      <div id="checkoutError" style="display:none;"></div>
+      <div id="checkoutSuccess" style="display:none;" class="alert alert-success d-flex align-items-center mt-3">
+        <i class="fas fa-check-circle me-2"></i> Redirection vers la passerelle de paiement...
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/js/vendor/bootstrap.bundle.min.js"></script>
+<script>
+  // Gérer la sélection visuelle des options
+  document.querySelectorAll('input[name="gateway"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+      document.querySelectorAll('.payment-opt').forEach(opt => opt.classList.remove('active'));
+      if(this.checked) {
+        this.closest('.payment-opt').classList.add('active');
+      }
+    });
+  });
+
+  // Afficher les infos du plan stockées
+  const plan = localStorage.getItem('pending_plan') || 'standard';
+  const planBadge = document.getElementById('planBadge');
+  const planPrice = document.getElementById('planPrice');
+  
+  if (plan === 'premium') {
+    planBadge.textContent = 'Premium';
+    planBadge.className = 'badge bg-warning-soft text-warning';
+    planPrice.textContent = '35 000 FCFA';
+  } else if (plan === 'vip') {
+    planBadge.textContent = 'VIP';
+    planBadge.className = 'badge bg-dark text-white';
+    planPrice.textContent = 'Sur devis';
+  } else {
+    planBadge.textContent = 'Standard';
+    planBadge.className = 'badge bg-primary-soft text-primary';
+    planPrice.textContent = '25 000 FCFA';
+  }
+
+  // Gérer la soumission du formulaire
+  document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const gateway = document.querySelector('input[name="gateway"]:checked').value;
+    const btn = this.querySelector('button[type="submit"]');
+    const originalText = btn.innerHTML;
+    
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Connexion sécurisée...';
+    btn.disabled = true;
+
+    // TODO: Appel réel à votre backend (Edge Function) pour générer l'URL de paiement
+    // Exemple simulé :
+    setTimeout(() => {
+      document.getElementById('checkoutSuccess').style.display = 'flex';
+      
+      setTimeout(() => {
+        // En attendant l'implémentation finale de l'API, on simule un succès
+        // et on redirige vers le dashboard.
+        localStorage.removeItem('pending_plan');
+        window.location.href = 'dashboard/index.html?payment=success';
+      }, 1500);
+      
+    }, 1200);
+  });
+</script>
+</body>
+</html>

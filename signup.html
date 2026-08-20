@@ -439,16 +439,26 @@ document.getElementById('signupForm').addEventListener('submit', async function(
       return;
     }
 
-    /* Succès → redirection dashboard */
-    const alertDiv = document.getElementById('step3-error'); // reusing the error div to show success
+    /* Succès → redirection dashboard ou paiement */
+    const alertDiv = document.getElementById('step3-error');
     if (alertDiv) {
       alertDiv.className = 'alert alert-success d-flex align-items-center mt-3';
-      alertDiv.innerHTML = '<i class="fas fa-check-circle me-2"></i>Compte créé avec succès ! Redirection vers votre tableau de bord...';
+      if (plan === 'starter') {
+        alertDiv.innerHTML = '<i class="fas fa-check-circle me-2"></i>Compte créé avec succès ! Redirection vers votre tableau de bord...';
+      } else {
+        alertDiv.innerHTML = '<i class="fas fa-check-circle me-2"></i>Compte créé avec succès ! Redirection vers la page de paiement...';
+      }
       alertDiv.classList.remove('d-none');
     }
     
     setTimeout(() => {
-      window.location.href = 'dashboard/index.html';
+      if (plan === 'starter') {
+        window.location.href = 'dashboard/index.html';
+      } else {
+        // Sauvegarde du plan sélectionné pour le checkout
+        localStorage.setItem('pending_plan', plan);
+        window.location.href = 'checkout.html';
+      }
     }, 1200);
 
   } catch(err) {
