@@ -322,6 +322,24 @@
                     btn.disabled = true;
                  }
               }
+              
+              // Upgrade buttons click listeners
+              ['standard', 'premium'].forEach(p => {
+                 const b = document.getElementById('btn-' + p);
+                 if (b && !b.disabled) {
+                    b.addEventListener('click', () => {
+                       localStorage.setItem('pending_plan', p);
+                       window.location.href = '../checkout.html';
+                    });
+                 }
+              });
+              
+              const bVip = document.getElementById('btn-vip');
+              if (bVip && !bVip.disabled) {
+                 bVip.addEventListener('click', () => {
+                    alert('Pour le plan VIP, veuillez nous contacter à contact@edumanager.com pour obtenir un devis personnalisé.');
+                 });
+              }
            }
         });
       </script>
