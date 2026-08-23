@@ -162,16 +162,28 @@
                 <tr style="background-color: #f8f9fa;">
                     <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Description</th>
                     <th style="padding: 12px; text-align: right; border: 1px solid #ddd;">Montant attendu</th>
-                    <th style="padding: 12px; text-align: right; border: 1px solid #ddd; background-color: #e9ecef;">Montant versé</th>
+                    <th style="padding: 12px; text-align: right; border: 1px solid #ddd; background-color: #e9ecef;">Montant versé cumulé</th>
                     <th style="padding: 12px; text-align: right; border: 1px solid #ddd;">Reste à payer</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold;"><span id="receiptItemDesc">-</span></td>
-                    <td style="padding: 12px; text-align: right; border: 1px solid #ddd;"><span id="receiptExpectedAmount">-</span></td>
-                    <td style="padding: 12px; text-align: right; border: 1px solid #ddd; font-weight: bold; font-size: 16px;"><span id="receiptPaidAmount">-</span></td>
-                    <td style="padding: 12px; text-align: right; border: 1px solid #ddd;"><span id="receiptRemainingAmount">-</span></td>
+                    <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold;">Frais d'inscription</td>
+                    <td style="padding: 12px; text-align: right; border: 1px solid #ddd;"><span id="receiptInscAttendu">-</span></td>
+                    <td style="padding: 12px; text-align: right; border: 1px solid #ddd; font-weight: bold;"><span id="receiptInscVerse">-</span></td>
+                    <td style="padding: 12px; text-align: right; border: 1px solid #ddd;"><span id="receiptInscReste">-</span></td>
+                </tr>
+                <tr>
+                    <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold;">Frais de scolarité</td>
+                    <td style="padding: 12px; text-align: right; border: 1px solid #ddd;"><span id="receiptScolAttendu">-</span></td>
+                    <td style="padding: 12px; text-align: right; border: 1px solid #ddd; font-weight: bold;"><span id="receiptScolVerse">-</span></td>
+                    <td style="padding: 12px; text-align: right; border: 1px solid #ddd;"><span id="receiptScolReste">-</span></td>
+                </tr>
+                <tr style="background-color: #f8f9fa;">
+                    <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold; text-transform: uppercase;">Total</td>
+                    <td style="padding: 12px; text-align: right; border: 1px solid #ddd; font-weight: bold;"><span id="receiptTotalAttendu">-</span></td>
+                    <td style="padding: 12px; text-align: right; border: 1px solid #ddd; font-weight: bold; font-size: 16px;"><span id="receiptTotalVerse">-</span></td>
+                    <td style="padding: 12px; text-align: right; border: 1px solid #ddd; font-weight: bold;"><span id="receiptTotalReste">-</span></td>
                 </tr>
             </tbody>
         </table>
