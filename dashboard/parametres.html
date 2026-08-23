@@ -103,9 +103,25 @@
       <!-- Année scolaire & Périodes -->
       <div id="tab-annee" class="settings-tab d-none">
         <div class="form-section">
-          <div class="form-section-title"><i class="fas fa-calendar text-success me-2"></i>Année scolaire en cours</div>
-          <div class="row g-3">
-            <div class="col-md-6"><label class="form-label">Année</label><input type="text" id="annee_scolaire" class="form-control" value=""/></div>
+          <div class="form-section-title d-flex justify-content-between align-items-center">
+            <span><i class="fas fa-calendar text-success me-2"></i>Années Académiques</span>
+            <button class="btn btn-sm btn-outline-success" onclick="window.openAnneeModal()"><i class="fas fa-plus me-1"></i>Nouvelle année</button>
+          </div>
+          <div class="table-responsive mt-3">
+            <table class="table table-hover align-middle">
+              <thead>
+                <tr>
+                  <th>Nom (ex: 2024-2025)</th>
+                  <th>Date de début</th>
+                  <th>Date de fin</th>
+                  <th>Statut</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="anneesTableBody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
           </div>
         </div>
         
@@ -784,6 +800,130 @@ function showTab(name, el) {
                 }
             }
         });
+        
+        // --- Academic Years Logic ---
+        async function loadAnnees() {
+            const tbody = document.getElementById('anneesTableBody');
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-3"><i class="fas fa-spinner fa-spin me-2"></i>Chargement...</td></tr>';
+            
+            const sessionStr = localStorage.getItem('edu_session');
+            const etabId = sessionStr ? JSON.parse(sessionStr).etablissement_id : null;
+            
+            if (window.supabase) {
+                const { data, error } = await window.supabase.from('annees_academiques')
+                    .select('*')
+                    .eq('etablissement_id', etabId)
+                    .order('nom', { ascending: false });
+                    
+                if (error || !data || data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-3 text-muted">Aucune année trouvée. Veuillez en créer une.</td></tr>';
+                    return;
+                }
+                
+                tbody.innerHTML = data.map(a => `
+                    <tr>
+                        <td class="fw-semibold">${a.nom}</td>
+                        <td>${a.date_debut ? new Date(a.date_debut).toLocaleDateString() : '-'}</td>
+                        <td>${a.date_fin ? new Date(a.date_fin).toLocaleDateString() : '-'}</td>
+                        <td>${a.est_active 
+                            ? '<span class="badge bg-success">Active</span>' 
+                            : `<button class="btn btn-sm btn-outline-success rounded-pill" onclick="window.activerAnnee('${a.id}')">Activer</button>`}
+                        </td>
+                        <td>
+                            <button class="btn btn-sm text-primary" onclick='window.openAnneeModal(${JSON.stringify(a).replace(/'/g, "&#39;")})'><i class="fas fa-edit"></i></button>
+                            ${!a.est_active ? `<button class="btn btn-sm text-danger" onclick="window.supprimerAnnee('${a.id}')"><i class="fas fa-trash"></i></button>` : ''}
+                        </td>
+                    </tr>
+                `).join('');
+            }
+        }
+        
+        window.openAnneeModal = function(annee = null) {
+            document.getElementById('annee_id').value = annee ? annee.id : '';
+            document.getElementById('annee_nom').value = annee ? annee.nom : '';
+            document.getElementById('annee_date_debut').value = annee && annee.date_debut ? annee.date_debut : '';
+            document.getElementById('annee_date_fin').value = annee && annee.date_fin ? annee.date_fin : '';
+            document.getElementById('anneeModalTitle').textContent = annee ? 'Modifier l\'année' : 'Nouvelle année académique';
+            new bootstrap.Modal(document.getElementById('anneeModal')).show();
+        };
+        
+        document.getElementById('btnSaveAnnee').addEventListener('click', async () => {
+            const btnSave = document.getElementById('btnSaveAnnee');
+            btnSave.disabled = true;
+            btnSave.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>...';
+            
+            try {
+                const sessionStr = localStorage.getItem('edu_session');
+                const etabId = sessionStr ? JSON.parse(sessionStr).etablissement_id : null;
+                const id = document.getElementById('annee_id').value;
+                const data = {
+                    nom: document.getElementById('annee_nom').value,
+                    date_debut: document.getElementById('annee_date_debut').value || null,
+                    date_fin: document.getElementById('annee_date_fin').value || null,
+                    etablissement_id: etabId
+                };
+                
+                if (!data.nom) {
+                    alert("Le nom est obligatoire.");
+                    return;
+                }
+                
+                let res;
+                if (id) {
+                    res = await window.supabase.from('annees_academiques').update(data).eq('id', id);
+                } else {
+                    res = await window.supabase.from('annees_academiques').insert([data]);
+                }
+                
+                if (res.error) {
+                    alert("Erreur: " + res.error.message);
+                } else {
+                    bootstrap.Modal.getInstance(document.getElementById('anneeModal')).hide();
+                    loadAnnees();
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Une erreur est survenue.");
+            } finally {
+                btnSave.disabled = false;
+                btnSave.innerHTML = 'Enregistrer';
+            }
+        });
+        
+        window.activerAnnee = async function(id) {
+            if (!confirm("Voulez-vous vraiment activer cette année ? L'année actuellement active sera désactivée.")) return;
+            
+            const sessionStr = localStorage.getItem('edu_session');
+            const etabId = sessionStr ? JSON.parse(sessionStr).etablissement_id : null;
+            
+            // Disable all years
+            await window.supabase.from('annees_academiques').update({ est_active: false }).eq('etablissement_id', etabId);
+            // Enable the selected one
+            const res = await window.supabase.from('annees_academiques').update({ est_active: true }).eq('id', id);
+            
+            if (res.error) {
+                alert("Erreur lors de l'activation.");
+            } else {
+                if(window.showToast) window.showToast('Année académique activée avec succès.', 'success');
+                loadAnnees();
+            }
+        };
+        
+        window.supprimerAnnee = async function(id) {
+            if (!confirm("Voulez-vous supprimer cette année ? Cette action est irréversible.")) return;
+            const res = await window.supabase.from('annees_academiques').delete().eq('id', id);
+            if (res.error) {
+                alert("Erreur: impossible de supprimer (vérifiez si elle est utilisée).");
+            } else {
+                loadAnnees();
+            }
+        };
+        
+        // Load on start
+        setTimeout(() => {
+            loadAnnees();
+        }, 1000);
+        
     });
   </script>
 </body>
