@@ -1769,7 +1769,8 @@ async function fetchAndRenderPaiements() {
     if(eleves) eleves.forEach(e => {
         const c = classNiveau[e.classe_id];
         const expected = getExpectedFraisForClass(c);
-        eleveExpected[e.id] = expected;
+        const vId = e.eleve_id || e.id;
+        eleveExpected[vId] = expected;
         totalAttenduGlobal += expected;
     });
 
@@ -1791,8 +1792,9 @@ async function fetchAndRenderPaiements() {
     
     if (eleves) {
         eleves.forEach(e => {
-            const exp = eleveExpected[e.id] || 0;
-            const pd = elevePaid[e.id] || 0;
+            const vId = e.eleve_id || e.id;
+            const exp = eleveExpected[vId] || 0;
+            const pd = elevePaid[vId] || 0;
             if (exp > 0) {
                 if (pd >= exp) nbSoldes++;
                 else if (pd > 0) nbPartiels++;
