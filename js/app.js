@@ -1683,6 +1683,9 @@ async function fetchAndRenderPaiements() {
 
     if (navigator.onLine && window.supabase) {
         try {
+            // Auto-heal orphaned payments that were inserted during the bug (missing annee_academique_id)
+            await window.supabase.from('paiements').update({ annee_academique_id: window.currentAcademicYearId }).is('annee_academique_id', null);
+            
             const [resEleves, resClasses, resFrais, resEtab, resPaiements] = await Promise.all([
                 window.supabase.from('inscriptions_annuelles').select('id, eleve_id, eleves(nom, prenom, matricule), classe_id').eq('annee_academique_id', window.currentAcademicYearId),
                 window.supabase.from('classes').select('id, niveau, etablissement_id'),
@@ -1977,7 +1980,8 @@ function setupPaiementsModal() {
         const { data: pastPaiements } = await window.supabase.from('paiements')
             .select('montant')
             .eq('eleve_id', eleve_id)
-            .eq('type_frais', type_frais);
+            .eq('type_frais', type_frais)
+            .eq('annee_academique_id', window.currentAcademicYearId);
             
         let totalPaye = 0;
         if (pastPaiements) {
