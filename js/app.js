@@ -1893,8 +1893,12 @@ async function fetchAndRenderPaiements() {
             </tr>
         `;
     });
-}
 
+    const pageInfo = document.getElementById('paiementsPaginationInfo');
+    if (pageInfo) {
+        pageInfo.textContent = `Affichage de ${filtered.length > 0 ? 1 : 0} à ${filtered.length} sur ${filtered.length} paiements`;
+    }
+}
 function setupPaiementsModal() {
     const btnSavePaiement = document.getElementById('btnSavePaiement');
     const eleveSelect = document.getElementById('paiementEleveSelect');
@@ -2023,13 +2027,12 @@ function setupPaiementsModal() {
         if (session.data.session) data.caissier_id = session.data.session.user.id;
         
         btnSavePaiement.disabled = true; btnSavePaiement.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-        const { error } = await window.saveRecord('paiements', data, 'insert');
+        const { error, data: savedData } = await window.saveRecord('paiements', data, 'insert');
         
         if (!error) {
             // Update financial status in eleves
             let finalStatut = 'À jour';
             if (resteApres > 0) finalStatut = 'Paiement partiel';
-            // Technically this only checks one fee type, but it's a good approximation
             await window.supabase.from('inscriptions_annuelles').update({ statut_paiement: finalStatut }).eq('eleve_id', data.eleve_id).eq('annee_academique_id', window.currentAcademicYearId);
         }
 
@@ -2040,8 +2043,14 @@ function setupPaiementsModal() {
         } else {
             if(window.showToast) window.showToast('Paiement enregistré', 'success');
             
-            if (data.id) {
-                printReceipt(data.id);
+            // Auto-print
+            let insertedId = data.id;
+            if (savedData) {
+                if (Array.isArray(savedData) && savedData.length > 0) insertedId = savedData[0].id;
+                else if (savedData.id) insertedId = savedData.id;
+            }
+            if (insertedId) {
+                printReceipt(insertedId);
             }
             
             closeModal('addPaiementModal');
@@ -2055,8 +2064,8 @@ window.printReceipt = async function(id) {
     let p = null, error = null;
     for(let i=0; i<4; i++) {
         const res = await window.supabase.from('paiements')
-            .select('*, eleves(nom, prenom, matricule, classes(nom))')
-            .eq('id', id).single();
+            .select('*, eleves(nom, prenom, matricule)')
+            .eq('id', id).maybeSingle();
         if (res.data) { p = res.data; error = null; break; }
         error = res.error;
         await new Promise(r => setTimeout(r, 1000));
@@ -2068,7 +2077,67 @@ window.printReceipt = async function(id) {
         return;
     }
     
-    const { data: etab } = await window.supabase.from('etablissements').select('*').limit(1).single();
+    // We need the student's inscription to get the classe_id for the current year
+    const { data: insc } = await window.supabase.from('inscriptions_annuelles')
+        .select('classe_id, classes(nom, niveau, etablissement_id)')
+        .eq('eleve_id', p.eleve_id)
+        .eq('annee_academique_id', window.currentAcademicYearId || p.annee_academique_id)
+        .maybeSingle();
+        
+    const classeNom = insc?.classes?.nom || '-';
+    const targetEtabId = insc?.classes?.etablissement_id || p.etablissement_id;
+
+    // Get the expected fees for this class niveau
+    const { data: allFrais } = await window.supabase.from('frais_scolaires')
+        .select('niveau, type_frais, montant')
+        .eq('etablissement_id', targetEtabId);
+        
+    let inscAttendu = 0;
+    let scolAttendu = 0;
+
+    function normalizeString(str) {
+        return (str || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+    }
+    const normClass = normalizeString(insc?.classes?.niveau || '');
+    const classWord = normClass.split(' ')[0];
+
+    if (allFrais) {
+        allFrais.forEach(f => {
+            const normFrais = normalizeString(f.niveau);
+            const match = normFrais === normClass || 
+                   normFrais.includes(normClass) || 
+                   normClass.includes(normFrais) ||
+                   (normFrais.split(' ')[0] === classWord && classWord !== '');
+            if (match) {
+                if (f.type_frais === 'Inscription') inscAttendu = parseFloat(f.montant);
+                if (f.type_frais === 'Scolarité') scolAttendu = parseFloat(f.montant);
+            }
+        });
+    }
+
+    // Get all payments for this student this year
+    const { data: allPaiements } = await window.supabase.from('paiements')
+        .select('type_frais, montant')
+        .eq('eleve_id', p.eleve_id)
+        .eq('annee_academique_id', window.currentAcademicYearId || p.annee_academique_id);
+
+    let inscVerse = 0;
+    let scolVerse = 0;
+    
+    if (allPaiements) {
+        allPaiements.forEach(pay => {
+            if (pay.type_frais === 'Inscription') inscVerse += parseFloat(pay.montant || 0);
+            if (pay.type_frais === 'Scolarité') scolVerse += parseFloat(pay.montant || 0);
+        });
+    }
+    
+    const inscReste = Math.max(0, inscAttendu - inscVerse);
+    const scolReste = Math.max(0, scolAttendu - scolVerse);
+    const totalAttendu = inscAttendu + scolAttendu;
+    const totalVerse = inscVerse + scolVerse;
+    const totalReste = inscReste + scolReste;
+    
+    const { data: etab } = await window.supabase.from('etablissements').select('*').limit(1).maybeSingle();
     
     // Fill receipt template
     document.getElementById('receiptEtabNom').textContent = etab?.nom || 'EduManager';
@@ -2091,25 +2160,36 @@ window.printReceipt = async function(id) {
     const el = p.eleves || {};
     document.getElementById('receiptStudentName').textContent = `${el.prenom || ''} ${el.nom || ''}`;
     document.getElementById('receiptStudentMatricule').textContent = el.matricule || '-';
-    document.getElementById('receiptStudentClass').textContent = el.classes?.nom || '-';
+    document.getElementById('receiptStudentClass').textContent = classeNom;
     
-    document.getElementById('receiptType').textContent = p.type_frais || p.motif || 'Scolarité';
+    document.getElementById('receiptType').textContent = `Versement ${p.type_frais || 'Scolarité'} (${p.montant} FCFA)`;
     document.getElementById('receiptMethod').textContent = p.methode || 'Espèces';
-    document.getElementById('receiptCaissier').textContent = p.auth_users?.email || '-';
-    
-    document.getElementById('receiptItemDesc').textContent = `Versement - ${p.type_frais || p.motif || 'Scolarité'} (${p.statut || 'Payé'})`;
+    document.getElementById('receiptCaissier').textContent = p.caissier_id ? 'Caissier Principal' : '-'; // Placeholder to avoid auth.users join error
     
     const ccy = window.EduSettings?.currency || 'FCFA';
-    document.getElementById('receiptExpectedAmount').textContent = p.montant_attendu ? `${p.montant_attendu} ${ccy}` : '-';
-    document.getElementById('receiptPaidAmount').textContent = `${p.montant} ${ccy}`;
-    document.getElementById('receiptRemainingAmount').textContent = p.reste_a_payer ? `${p.reste_a_payer} ${ccy}` : `0 ${ccy}`;
+    
+    // Helper function to format cell
+    const fmt = (val) => `${val} ${ccy}`;
+    const fmtReste = (val) => val === 0 ? 'Soldé' : fmt(val);
+    
+    document.getElementById('receiptInscAttendu').textContent = fmt(inscAttendu);
+    document.getElementById('receiptInscVerse').textContent = fmt(inscVerse);
+    document.getElementById('receiptInscReste').textContent = fmtReste(inscReste);
+    
+    document.getElementById('receiptScolAttendu').textContent = fmt(scolAttendu);
+    document.getElementById('receiptScolVerse').textContent = fmt(scolVerse);
+    document.getElementById('receiptScolReste').textContent = fmtReste(scolReste);
+    
+    document.getElementById('receiptTotalAttendu').textContent = fmt(totalAttendu);
+    document.getElementById('receiptTotalVerse').textContent = fmt(totalVerse);
+    document.getElementById('receiptTotalReste').textContent = fmtReste(totalReste);
     
     // QR Code
     const qrContainer = document.getElementById('qrcode');
     qrContainer.innerHTML = '';
     if (typeof QRCode !== 'undefined') {
         new QRCode(qrContainer, {
-            text: `Reçu: ${recNumber}\nÉlève: ${el.prenom} ${el.nom}\nMatricule: ${el.matricule}\nMontant: ${p.montant} ${ccy}\nStatut: ${p.statut}`,
+            text: `Reçu: ${recNumber}\nÉlève: ${el.prenom} ${el.nom}\nVersement: ${p.montant} ${ccy}\nReste Total: ${totalReste} ${ccy}`,
             width: 100,
             height: 100
         });

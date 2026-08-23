@@ -269,13 +269,10 @@
         </tbody>
           </table>
         </div>
-        <div class="d-flex align-items-center justify-content-between p-3 border-top">
-          <span style="font-size:.8rem;color:var(--muted)">Affichage 1-4 sur 1 248</span>
-          <nav><ul class="pagination pagination-sm mb-0 gap-1">
-            <li class="page-item disabled"><a class="page-link" href="#" style="border-radius:6px">«</a></li>
+        <div class="d-flex align-items-center justify-content-between p-3 border-top flex-wrap gap-2">
+          <span id="paiementsPaginationInfo" style="font-size:.8rem;color:var(--muted)">Affichage des paiements</span>
+          <nav><ul class="pagination pagination-sm mb-0 gap-1" id="paiementsPaginationControls">
             <li class="page-item active"><a class="page-link" href="#" style="border-radius:6px;background:var(--primary);border-color:var(--primary)">1</a></li>
-            <li class="page-item"><a class="page-link" href="#" style="border-radius:6px">2</a></li>
-            <li class="page-item"><a class="page-link" href="#" style="border-radius:6px">»</a></li>
           </ul></nav>
         </div>
       </div>
@@ -307,9 +304,22 @@
     <div class="modal-footer"><button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Annuler</button><button type="button" class="btn btn-primary rounded-pill px-4 fw-semibold" id="btnSavePaiement">Enregistrer &amp; Générer reçu</button></div>
   </div></div>
 </div>
-
 <!-- Receipt Template (Hidden by default, used for printing) -->
-<div id="receiptTemplate" style="display:none;">
+<style>
+@media print {
+    body * { visibility: hidden; }
+    #receiptTemplate, #receiptTemplate * { visibility: visible; }
+    #receiptTemplate {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        display: block !important;
+    }
+    @page { margin: 0; }
+}
+</style>
+<div id="receiptTemplate" style="display:none; background: #fff;">
     <div style="font-family: 'Inter', system-ui, -apple-system, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; border: 1px solid #ddd;">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #000; padding-bottom: 10px; mb-4">
             <div style="flex: 1;">
@@ -336,7 +346,7 @@
             <div style="width: 45%;">
                 <div style="font-weight: bold; font-size: 16px; margin-bottom: 5px; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 5px;">Détails de la transaction</div>
                 <div style="font-size: 15px; line-height: 1.5;">
-                    <div><strong>Type de paiement :</strong> <span id="receiptType">-</span></div>
+                    <div><strong>Opération en cours :</strong> <span id="receiptType">-</span></div>
                     <div><strong>Mode de paiement :</strong> <span id="receiptMethod">-</span></div>
                     <div><strong>Caissier :</strong> <span id="receiptCaissier">-</span></div>
                 </div>
@@ -348,37 +358,41 @@
                 <tr style="background-color: #f8f9fa;">
                     <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Description</th>
                     <th style="padding: 12px; text-align: right; border: 1px solid #ddd;">Montant attendu</th>
-                    <th style="padding: 12px; text-align: right; border: 1px solid #ddd; background-color: #e9ecef;">Montant versé</th>
+                    <th style="padding: 12px; text-align: right; border: 1px solid #ddd;">Montant versé (Cumul)</th>
                     <th style="padding: 12px; text-align: right; border: 1px solid #ddd;">Reste à payer</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold;"><span id="receiptItemDesc">-</span></td>
-                    <td style="padding: 12px; text-align: right; border: 1px solid #ddd;"><span id="receiptExpectedAmount">-</span></td>
-                    <td style="padding: 12px; text-align: right; border: 1px solid #ddd; font-weight: bold; font-size: 16px;"><span id="receiptPaidAmount">-</span></td>
-                    <td style="padding: 12px; text-align: right; border: 1px solid #ddd;"><span id="receiptRemainingAmount">-</span></td>
+                    <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold;">Inscription</td>
+                    <td style="padding: 12px; text-align: right; border: 1px solid #ddd;"><span id="receiptInscAttendu">-</span></td>
+                    <td style="padding: 12px; text-align: right; border: 1px solid #ddd;"><span id="receiptInscVerse">-</span></td>
+                    <td style="padding: 12px; text-align: right; border: 1px solid #ddd; font-weight: bold;"><span id="receiptInscReste">-</span></td>
+                </tr>
+                <tr>
+                    <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold;">Scolarité</td>
+                    <td style="padding: 12px; text-align: right; border: 1px solid #ddd;"><span id="receiptScolAttendu">-</span></td>
+                    <td style="padding: 12px; text-align: right; border: 1px solid #ddd;"><span id="receiptScolVerse">-</span></td>
+                    <td style="padding: 12px; text-align: right; border: 1px solid #ddd; font-weight: bold;"><span id="receiptScolReste">-</span></td>
+                </tr>
+                <tr style="background-color: #e9ecef;">
+                    <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold; text-align: right;">TOTAL GLOBAL</td>
+                    <td style="padding: 12px; text-align: right; border: 1px solid #ddd; font-weight: bold;"><span id="receiptTotalAttendu">-</span></td>
+                    <td style="padding: 12px; text-align: right; border: 1px solid #ddd; font-weight: bold; font-size: 16px;"><span id="receiptTotalVerse">-</span></td>
+                    <td style="padding: 12px; text-align: right; border: 1px solid #ddd; font-weight: bold; font-size: 16px; color: #d9534f;"><span id="receiptTotalReste">-</span></td>
                 </tr>
             </tbody>
         </table>
 
         <div style="margin-top: 40px; display: flex; justify-content: space-between; align-items: flex-end;">
             <div id="qrcode" style="width: 100px; height: 100px;"></div>
-            <div style="text-align: center; width: 200px;">
-                <div style="margin-bottom: 40px;"><strong>Signature (Cachet)</strong></div>
-                <div style="border-bottom: 1px solid #000;"></div>
+            <div style="text-align: center;">
+                <div style="font-weight: bold; margin-bottom: 50px;">Signature (Cachet)</div>
+                <div style="border-bottom: 1px solid #000; width: 200px;"></div>
             </div>
         </div>
     </div>
 </div>
-
-<style>
-@media print {
-    body * { visibility: hidden; }
-    #receiptTemplate, #receiptTemplate * { visibility: visible; }
-    #receiptTemplate { display: block !important; position: absolute; left: 0; top: 0; width: 100%; padding: 0; margin: 0; border: none !important; }
-}
-</style>
 
 <script src="/js/vendor/bootstrap.bundle.min.js"></script>
 <script src="../js/dashboard.js"></script>
