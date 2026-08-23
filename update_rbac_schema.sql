@@ -243,14 +243,14 @@ DECLARE
     v_new_user_id UUID;
     v_group_id UUID;
 BEGIN
-    -- Vérification admin
+    -- Vérification admin (Accepter admin, Directeur, Proviseur, etc.)
     SELECT etablissement_id INTO v_admin_etab_id 
     FROM public.profiles 
-    WHERE id = auth.uid() AND role = 'admin'
+    WHERE id = auth.uid() AND role IN ('admin', 'Directeur', 'directeur', 'Proviseur', 'proviseur')
     LIMIT 1;
     
     IF v_admin_etab_id IS NULL THEN
-        RETURN json_build_object('success', false, 'error', 'Permission denied: Not an administrator');
+        RETURN json_build_object('success', false, 'error', 'Permission denied: Not an administrator (role must be admin or Directeur)');
     END IF;
 
     v_new_user_id := gen_random_uuid();
