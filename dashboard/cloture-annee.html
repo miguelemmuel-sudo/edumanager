@@ -140,21 +140,41 @@
         // Récupérer l'année passée (l'année précédant celle qui est active, ou toutes les inscriptions de cette classe)
         // Simplification: on prend toutes les inscriptions pour cette classe qui ne sont pas de l'année courante
         let inscriptions = [];
+        let allCurrentInscriptions = [];
         if (window.supabase) {
+             // 1. Récupérer toutes les inscriptions passées pour cette classe
              const { data, error } = await window.supabase.from('inscriptions_annuelles')
                 .select('*, eleves(nom, prenom, matricule), annees_academiques(nom)')
                 .eq('classe_id', classeId)
-                // Idéalement, exclure window.currentAcademicYearId mais on veut simplifier pour la démo
                 .order('created_at', { ascending: false });
              if (!error) inscriptions = data || [];
+             
+             // 2. Récupérer les ID des élèves DÉJÀ inscrits pour la nouvelle année active
+             const sessionStr = localStorage.getItem('edu_session');
+             const etabId = sessionStr ? JSON.parse(sessionStr).etablissement_id : null;
+             const { data: currentInsc } = await window.supabase.from('inscriptions_annuelles')
+                .select('eleve_id')
+                .eq('annee_academique_id', window.currentAcademicYearId);
+             if (currentInsc) allCurrentInscriptions = currentInsc.map(i => i.eleve_id);
         }
 
-        // On filtre pour ne garder que ceux qui n'ont pas encore été réinscrits pour currentAcademicYearId
-        // et on simule une moyenne
-        studentsToPromote = inscriptions.filter(i => i.annee_academique_id !== window.currentAcademicYearId);
+        // 3. Déduire les élèves à promouvoir
+        let elevesMap = {};
+        inscriptions.forEach(i => {
+            // Ne considérer que les inscriptions des années précédentes
+            if (i.annee_academique_id !== window.currentAcademicYearId) {
+                // Garder la plus récente pour chaque élève
+                if (!elevesMap[i.eleve_id]) {
+                    elevesMap[i.eleve_id] = i;
+                }
+            }
+        });
+
+        // Filtrer pour exclure ceux qui ont DÉJÀ été promus / inscrits dans l'année active
+        studentsToPromote = Object.values(elevesMap).filter(i => !allCurrentInscriptions.includes(i.eleve_id));
 
         if (studentsToPromote.length === 0) {
-             tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">Aucun élève trouvé ou tous sont déjà inscrits pour l\'année sélectionnée.</td></tr>';
+             tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">Aucun élève à promouvoir. Soit la classe est vide, soit ils sont déjà inscrits pour l\'année active.</td></tr>';
              return;
         }
 
