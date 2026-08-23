@@ -8,15 +8,10 @@
    PLANS
 ========================================== */
 const PLANS = {
-  starter: {
-    label: 'Starter', price: '15€/mois', maxEleves: 300
-  },
-  standard: {
-    label: 'Standard', price: '35€/mois', maxEleves: 1000
-  },
-  premium: {
-    label: 'Premium', price: '80€/mois', maxEleves: Infinity
-  }
+  starter: { label: 'Starter', price: 'Gratuit', maxEleves: 300 },
+  standard: { label: 'Standard', price: '25 000 FCFA/mois', maxEleves: 1000 },
+  premium: { label: 'Premium', price: '35 000 FCFA/mois', maxEleves: 1500 },
+  vip: { label: 'VIP', price: 'Sur devis', maxEleves: Infinity }
 };
 
 /* ==========================================

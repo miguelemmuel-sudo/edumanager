@@ -45,7 +45,7 @@
        if (!sessionStr) return;
        const session = JSON.parse(sessionStr);
        const plan = session.plan || 'starter';
-       const maxEleves = plan === 'starter' ? 300 : (plan === 'standard' ? 1000 : Infinity);
+       const maxEleves = plan === 'starter' ? 300 : (plan === 'standard' ? 1000 : (plan === 'premium' ? 1500 : Infinity));
        
        if (maxEleves !== Infinity) {
           try {
