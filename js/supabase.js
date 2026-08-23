@@ -160,15 +160,42 @@ async function supabaseRegister(data) {
     if (authError) throw authError;
     const userId = authData.user?.id;
     if (!userId) throw new Error('Utilisateur non cree.');
-    const { error: profileError } = await supabase.from('profiles').insert({
-      id:         userId,
-      role:       cleanData.role,
-      first_name: cleanData.prenom,
-      last_name:  cleanData.nom,
-      phone:      cleanData.tel,
-      address:    cleanData.adresse,
-    });
-    if (profileError) throw profileError;
+    
+    // Si c'est une création d'établissement (inscription depuis signup.html)
+    if (data.ecole) {
+        const { data: rpcData, error: rpcError } = await supabase.rpc('register_etablissement_and_user', {
+            p_admin_id: userId,
+            p_nom: _sanitize(data.ecole),
+            p_type: _sanitize(data.typeEcole) || 'Collège/Lycée',
+            p_pays: _sanitize(data.pays) || '',
+            p_ville: _sanitize(data.ville) || '',
+            p_tel: cleanData.tel || '',
+            p_plan: _sanitize(data.plan) || 'starter'
+        });
+        
+        if (rpcError) throw rpcError;
+        if (rpcData && !rpcData.success) throw new Error(rpcData.error || "Erreur création établissement");
+        
+        // Mettre à jour les infos supplémentaires du profil si nécessaire
+        await supabase.from('profiles').update({
+            first_name: cleanData.prenom,
+            last_name:  cleanData.nom,
+            phone:      cleanData.tel,
+            address:    cleanData.adresse
+        }).eq('id', userId);
+        
+    } else {
+        // Simple utilisateur
+        const { error: profileError } = await supabase.from('profiles').insert({
+          id:         userId,
+          role:       cleanData.role,
+          first_name: cleanData.prenom,
+          last_name:  cleanData.nom,
+          phone:      cleanData.tel,
+          address:    cleanData.adresse,
+        });
+        if (profileError) throw profileError;
+    }
 
     // Log d'audit
     await _logSecurityEvent('USER_REGISTERED', { user_id: userId, email: cleanData.email });
