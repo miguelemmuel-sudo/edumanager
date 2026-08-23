@@ -71,8 +71,8 @@
       <div class="dash-card">
         <div class="dash-card-header flex-wrap gap-2">
           <span class="dash-card-title"><i class="fas fa-list text-primary me-2"></i>Historique des paiements</span>
-          <select class="form-select form-select-sm ms-auto" style="width:140px">
-            <option>Tous les statuts</option><option>Soldé</option><option>Partiel</option><option>Impayé</option>
+          <select id="filterStatut" onchange="window.filterTable()" class="form-select form-select-sm ms-auto" style="width:140px">
+            <option value="">Tous les statuts</option><option value="payé">Soldé (Payé)</option><option value="partiel">Partiel</option><option value="non payé">Impayé</option>
           </select>
         </div>
         <div class="dash-card-body p-0" style="overflow-x:auto">

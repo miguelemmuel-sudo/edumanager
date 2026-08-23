@@ -2066,7 +2066,9 @@ function setupPaiementsModal() {
                 else if (savedData.id) insertedId = savedData.id;
             }
             if (insertedId) {
-                printReceipt(insertedId);
+                let fData = savedData;
+                if (Array.isArray(savedData) && savedData.length > 0) fData = savedData[0];
+                printReceipt(insertedId, fData);
             }
             
             closeModal('addPaiementModal');
@@ -2076,7 +2078,7 @@ function setupPaiementsModal() {
     });
 }
 
-window.printReceipt = async function(id) {
+window.printReceipt = async function(id, fallbackData = null) {
     let p = null, error = null;
     
     if (navigator.onLine && window.supabase) {
@@ -2103,6 +2105,16 @@ window.printReceipt = async function(id) {
         } catch (e) {
             console.error("Local DB fetch error:", e);
         }
+    }
+    
+    // Final fallback: use the provided fallbackData if all DB reads fail
+    if (!p && fallbackData) {
+        p = { ...fallbackData };
+        if (!p.eleves && window.edumanagerDB) {
+            const eleve = await window.edumanagerDB.eleves.get(p.eleve_id);
+            p.eleves = eleve || {};
+        }
+        error = null;
     }
         
     if (error || !p) {
