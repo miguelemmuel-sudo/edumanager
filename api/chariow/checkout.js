@@ -16,11 +16,14 @@ export default async function handler(req, res) {
 
     const origin = req.headers.origin || 'https://edumanager-ten.vercel.app';
 
-    // Parse phone number loosely to separate country code if starts with +
-    let country_code = "237";
-    let number = phone || "600000000";
-    if (number.startsWith("+")) {
-       country_code = number.substring(1, 4); // basic heuristic for +237
+    // Parse phone number loosely to separate country code if starts with + or 237
+    let country_code = "CM"; // Chariow API expects an ISO alpha-2 country code like "CM"
+    let number = phone ? phone.replace(/\s+/g, '') : "600000000";
+    if (number.startsWith("+237")) {
+       number = number.substring(4);
+    } else if (number.startsWith("237") && number.length > 9) {
+       number = number.substring(3);
+    } else if (number.startsWith("+")) {
        number = number.substring(4);
     }
 
