@@ -61,7 +61,17 @@ export default async function handler(req, res) {
     }
 
     // On s'attend à recevoir une URL de paiement de Chariow (checkout_url)
-    return res.status(200).json({ paymentUrl: data.checkout_url || data.url });
+    let finalUrl = data.checkout_url || data.url || data.payment_url;
+    if (!finalUrl && data.data) {
+      finalUrl = data.data.checkout_url || data.data.url || data.data.payment_url;
+    }
+
+    if (!finalUrl) {
+      console.error("URL de paiement introuvable dans la réponse:", data);
+      return res.status(400).json({ error: "L'URL de paiement n'a pas pu être générée par Chariow. Vérifiez les identifiants ou le format des données." });
+    }
+
+    return res.status(200).json({ paymentUrl: finalUrl });
 
   } catch (error) {
     console.error("Internal Server Error:", error);
