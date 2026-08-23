@@ -338,10 +338,10 @@ async function fetchAndRenderAdminDashboard() {
         
         if (navigator.onLine && window.supabase) {
             try {
-                let queryEleves = window.supabase.from('eleves').select('id');
+                let queryEleves = window.supabase.from('inscriptions_annuelles').select('id').eq('annee_academique_id', window.currentAcademicYearId);
                 let queryEnseignants = window.supabase.from('enseignants').select('id');
-                let queryClasses = window.supabase.from('classes').select('id');
-                let queryPaiements = window.supabase.from('paiements').select('montant');
+                let queryClasses = window.supabase.from('classes').select('id').eq('annee_academique_id', window.currentAcademicYearId);
+                let queryPaiements = window.supabase.from('paiements').select('montant').eq('annee_academique_id', window.currentAcademicYearId);
                 
                 const [resEleves, resEnseignants, resClasses, resPaiements] = await Promise.all([
                     queryEleves, queryEnseignants, queryClasses, queryPaiements
@@ -369,11 +369,14 @@ async function fetchAndRenderAdminDashboard() {
         
         // Mode Hors-ligne / Fallback via Dexie
         if (!dataFetched && window.edumanagerDB) {
-            nbEleves = await window.edumanagerDB.eleves.count();
+            const localInsc = await window.edumanagerDB.inscriptions_annuelles.where('annee_academique_id').equals(window.currentAcademicYearId).toArray();
+            nbEleves = localInsc.length;
             nbEnseignants = await window.edumanagerDB.enseignants.count();
-            nbClasses = await window.edumanagerDB.classes.count();
+            const localClasses = await window.edumanagerDB.classes.where('annee_academique_id').equals(window.currentAcademicYearId).toArray();
+            nbClasses = localClasses.length;
             
-            const paiements = await window.edumanagerDB.paiements.toArray();
+            let paiements = await window.edumanagerDB.paiements.toArray();
+            paiements = paiements.filter(p => p.annee_academique_id === window.currentAcademicYearId);
             revenus = paiements.reduce((acc, p) => acc + parseFloat(p.montant || 0), 0);
             
             // Pour recentEleves en hors ligne
