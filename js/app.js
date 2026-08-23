@@ -2068,7 +2068,7 @@ function setupPaiementsModal() {
             if (insertedId) {
                 let fData = savedData;
                 if (Array.isArray(savedData) && savedData.length > 0) fData = savedData[0];
-                printReceipt(insertedId, fData);
+                await printReceipt(insertedId, fData);
             }
             
             closeModal('addPaiementModal');
@@ -2295,10 +2295,9 @@ window.printReceipt = async function(id, fallbackData = null) {
         });
     }
     
-    // Print
-    setTimeout(() => {
-        window.print();
-    }, 500);
+    // Print (wait for DOM to update, then print, then resolve)
+    await new Promise(r => setTimeout(r, 300));
+    window.print();
 };
 
 window.deletePaiement = async function(id) {
