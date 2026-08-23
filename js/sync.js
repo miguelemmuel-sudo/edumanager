@@ -6,16 +6,18 @@
 const db = new Dexie("EduManagerDB");
 
 // Définition du schéma
-db.version(2).stores({
+db.version(3).stores({
     eleves: "id, matricule, nom, prenom, classe_id, etablissement_id, date_naissance, genre",
     enseignants: "id, matricule, nom, prenom, user_id, etablissement_id",
-    classes: "id, nom, niveau, etablissement_id, titulaire_id",
+    classes: "id, nom, niveau, etablissement_id, titulaire_id, annee_academique_id",
     matieres: "id, nom, enseignant_id, coefficient_defaut",
     classes_matieres: "id, classe_id, matiere_id",
-    notes: "id, eleve_id, matiere_id, periode_id, type_evaluation, valeur, statut",
-    paiements: "id, eleve_id, montant, motif, date_paiement, statut, caissier_id",
-    emplois_temps: "id, classe_id, matiere_id, enseignant_id, jour, heure_debut, heure_fin",
+    notes: "id, eleve_id, matiere_id, periode_id, type_evaluation, valeur, statut, annee_academique_id",
+    paiements: "id, eleve_id, montant, motif, date_paiement, statut, caissier_id, annee_academique_id",
+    emplois_temps: "id, classe_id, matiere_id, enseignant_id, jour, heure_debut, heure_fin, annee_academique_id",
     periodes_evaluation: "id, nom, type, ordre, actif",
+    annees_academiques: "id, etablissement_id, nom, date_debut, date_fin, statut",
+    inscriptions_annuelles: "id, etablissement_id, eleve_id, annee_academique_id, classe_id, statut, decision_fin_annee",
     offline_queue: "++id, action, table, data, timestamp" // action: 'insert', 'update', 'delete'
 });
 
@@ -64,6 +66,20 @@ async function pullDataFromSupabase() {
             // Fallback s'il manque dans le localStorage, on essaye depuis profiles
             const { data: prof } = await window.supabase.from('profiles').select('etablissement_id').maybeSingle();
             if (prof && prof.etablissement_id) etabId = prof.etablissement_id;
+        }
+
+        // 0. Années Académiques
+        let qAnnees = window.supabase.from('annees_academiques').select('*'); if(etabId) qAnnees = qAnnees.eq('etablissement_id', etabId); const { data: annees } = await qAnnees;
+        if (annees) {
+            await db.annees_academiques.clear();
+            if (annees.length > 0) await db.annees_academiques.bulkPut(annees);
+        }
+
+        // 0.1 Inscriptions Annuelles
+        let qInscriptions = window.supabase.from('inscriptions_annuelles').select('*'); if(etabId) qInscriptions = qInscriptions.eq('etablissement_id', etabId); const { data: inscriptions } = await qInscriptions;
+        if (inscriptions) {
+            await db.inscriptions_annuelles.clear();
+            if (inscriptions.length > 0) await db.inscriptions_annuelles.bulkPut(inscriptions);
         }
 
         // 1. Classes

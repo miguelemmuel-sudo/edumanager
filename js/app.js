@@ -358,7 +358,7 @@ async function fetchAndRenderAdminDashboard() {
                     dataFetched = true;
                 }
                 
-                let queryRecent = window.supabase.from('eleves').select('id, prenom, nom, created_at, statut, classes(nom)').order('created_at', { ascending: false }).limit(5);
+                let queryRecent = window.supabase.from('inscriptions_annuelles').select('id, statut, eleves(prenom, nom, created_at), classes(nom)').eq('annee_academique_id', window.currentAcademicYearId).order('created_at', { ascending: false }).limit(5);
                 if (etabId) queryRecent = queryRecent.eq('etablissement_id', etabId);
                 const { data: recents } = await queryRecent;
                 if (recents) recentEleves = recents;
@@ -671,11 +671,23 @@ async function fetchAndRenderEleves() {
     let eleves = [];
     let dataFetched = false;
     
-    if (navigator.onLine && window.supabase) {
+    if (navigator.onLine && window.supabase && window.currentAcademicYearId) {
         try {
-            const { data, error } = await window.supabase.from('eleves').select('*, classes(nom)');
+            const { data, error } = await window.supabase.from('inscriptions_annuelles')
+                .select('*, eleves(*), classes(nom)')
+                .eq('annee_academique_id', window.currentAcademicYearId);
+                
             if (!error) {
-                eleves = data || [];
+                eleves = (data || []).map(insc => ({
+                    ...insc.eleves,
+                    inscription_id: insc.id,
+                    classe_id: insc.classe_id,
+                    statut: insc.statut,
+                    statut_paiement: insc.statut_paiement,
+                    decision_fin_annee: insc.decision_fin_annee,
+                    moyenne_annuelle: insc.moyenne_annuelle,
+                    classes: insc.classes
+                }));
                 dataFetched = true;
             } else {
                 console.error(error);
@@ -685,12 +697,24 @@ async function fetchAndRenderEleves() {
         }
     }
     
-    if (!dataFetched && window.edumanagerDB) {
+    if (!dataFetched && window.edumanagerDB && window.currentAcademicYearId) {
+        const inscriptions = await window.edumanagerDB.inscriptions_annuelles.where('annee_academique_id').equals(window.currentAcademicYearId).toArray();
         const allEleves = await window.edumanagerDB.eleves.toArray();
         const allClasses = await window.edumanagerDB.classes.toArray();
-        eleves = allEleves.map(e => {
-            const classe = allClasses.find(c => c.id === e.classe_id);
-            return { ...e, classes: { nom: classe ? classe.nom : 'Non assigné' } };
+        
+        eleves = inscriptions.map(insc => {
+            const el = allEleves.find(e => e.id === insc.eleve_id) || {};
+            const classe = allClasses.find(c => c.id === insc.classe_id);
+            return {
+                ...el,
+                inscription_id: insc.id,
+                classe_id: insc.classe_id,
+                statut: insc.statut,
+                statut_paiement: insc.statut_paiement,
+                decision_fin_annee: insc.decision_fin_annee,
+                moyenne_annuelle: insc.moyenne_annuelle,
+                classes: { nom: classe ? classe.nom : 'Non assigné' }
+            };
         });
     }
 
@@ -806,17 +830,36 @@ function setupElevesModal() {
         }
         data.code_acces = code;
         
-        btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-        const { error } = await window.saveRecord('eleves', data, 'insert');
-        btn.disabled = false; btn.innerHTML = 'Enregistrer';
+        const classe_id = data.classe_id;
+        // Pour compatibilité descendante (temporaire), on laisse classe_id dans eleves
         
-        if (error) {
-            if(window.showToast) window.showToast(error.message, 'danger');
+        btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        const resEleve = await window.saveRecord('eleves', data, 'insert');
+        
+        if (resEleve.error) {
+            btn.disabled = false; btn.innerHTML = 'Enregistrer';
+            if(window.showToast) window.showToast(resEleve.error.message, 'danger');
         } else {
-            if(window.showToast) window.showToast('Élève ajouté', 'success');
-            closeModal('addEleveModal');
-            clearFormData('addEleveModal');
-            fetchAndRenderEleves();
+            // Créer l'inscription annuelle
+            const inscData = {
+                eleve_id: resEleve.data.id,
+                annee_academique_id: window.currentAcademicYearId,
+                classe_id: classe_id,
+                statut: 'Actif',
+                statut_paiement: 'Inconnu'
+            };
+            const resInsc = await window.saveRecord('inscriptions_annuelles', inscData, 'insert');
+            
+            btn.disabled = false; btn.innerHTML = 'Enregistrer';
+            
+            if (resInsc.error) {
+                if(window.showToast) window.showToast("Erreur lors de l'inscription annuelle", 'danger');
+            } else {
+                if(window.showToast) window.showToast('Élève ajouté avec succès', 'success');
+                closeModal('addEleveModal');
+                clearFormData('addEleveModal');
+                fetchAndRenderEleves();
+            }
         }
     });
 }
@@ -1057,7 +1100,7 @@ async function fetchAndRenderClasses() {
         }
     }
 
-    let query = window.supabase.from('classes').select('*, enseignants(nom, prenom), eleves(count)');
+    let query = window.supabase.from('classes').select('*, enseignants(nom, prenom), inscriptions_annuelles(count)').eq('annee_academique_id', window.currentAcademicYearId);
     // RBAC: Check role
     const sessionStr = localStorage.getItem('edu_session');
     let isEnseignant = false;
@@ -1529,11 +1572,11 @@ async function fetchAndRenderPaiements() {
     if (navigator.onLine && window.supabase) {
         try {
             const [resEleves, resClasses, resFrais, resEtab, resPaiements] = await Promise.all([
-                window.supabase.from('eleves').select('id, nom, prenom, matricule, classe_id'),
+                window.supabase.from('inscriptions_annuelles').select('id, eleves(nom, prenom, matricule), classe_id').eq('annee_academique_id', window.currentAcademicYearId),
                 window.supabase.from('classes').select('id, niveau, etablissement_id'),
                 window.supabase.from('frais_scolaires').select('*'),
                 window.supabase.from('etablissements').select('id, pays').limit(1).maybeSingle(),
-                window.supabase.from('paiements').select('*, eleves(nom, prenom, matricule, classes(nom))').order('created_at', { ascending: false })
+                window.supabase.from('paiements').select('*, eleves(nom, prenom, matricule, classes(nom))').eq('annee_academique_id', window.currentAcademicYearId).order('created_at', { ascending: false })
             ]);
             if (!resEleves.error && !resPaiements.error) {
                 eleves = resEleves.data || [];
@@ -1769,7 +1812,7 @@ function setupPaiementsModal() {
         }
 
         // 1. Get the student's class
-        const { data: eleve } = await window.supabase.from('eleves').select('classe_id').eq('id', eleve_id).single();
+        const { data: eleve } = await window.supabase.from('inscriptions_annuelles').select('classe_id').eq('eleve_id', eleve_id).eq('annee_academique_id', window.currentAcademicYearId).single();
         if (!eleve || !eleve.classe_id) return;
         
         // 2. Get the class's niveau
@@ -1878,7 +1921,7 @@ function setupPaiementsModal() {
             let finalStatut = 'À jour';
             if (resteApres > 0) finalStatut = 'Paiement partiel';
             // Technically this only checks one fee type, but it's a good approximation
-            await window.supabase.from('eleves').update({ statut_financier: finalStatut }).eq('id', data.eleve_id);
+            await window.supabase.from('inscriptions_annuelles').update({ statut_paiement: finalStatut }).eq('eleve_id', data.eleve_id).eq('annee_academique_id', window.currentAcademicYearId);
         }
 
         btnSavePaiement.disabled = false; btnSavePaiement.innerHTML = 'Enregistrer & Générer reçu';
@@ -3120,3 +3163,75 @@ async function initParametres() {
         };
     }
 }
+
+// --- ACADEMIC YEAR SELECTOR ---
+window.currentAcademicYearId = localStorage.getItem('current_academic_year_id');
+
+async function setupAcademicYearSelector() {
+    const topbarActions = document.querySelector('.topbar-actions');
+    if (!topbarActions) return;
+
+    // Create dropdown container
+    const yearSelectContainer = document.createElement('div');
+    yearSelectContainer.className = 'd-flex align-items-center me-3';
+    yearSelectContainer.innerHTML = `
+        <i class="fas fa-calendar-alt text-primary me-2"></i>
+        <select id="globalAcademicYearSelect" class="form-select form-select-sm" style="width: auto; font-weight: bold; background-color: var(--light); border: 1px solid var(--border-color);">
+            <option value="">Chargement...</option>
+        </select>
+    `;
+    
+    // Insert before the sync status indicator or at the beginning of topbar-actions
+    topbarActions.insertBefore(yearSelectContainer, topbarActions.firstChild);
+    
+    const selectEl = document.getElementById('globalAcademicYearSelect');
+    
+    // Load years from IndexedDB
+    const loadYears = async () => {
+        try {
+            const years = await window.edumanagerDB.annees_academiques.toArray();
+            if (years.length === 0) return;
+            
+            // Sort by name descending (e.g., 2027-2028 before 2026-2027)
+            years.sort((a, b) => b.nom.localeCompare(a.nom));
+            
+            selectEl.innerHTML = '';
+            let hasCurrent = false;
+            
+            years.forEach(y => {
+                const opt = document.createElement('option');
+                opt.value = y.id;
+                opt.textContent = y.nom + (y.statut === 'Active' ? ' (Active)' : '');
+                if (window.currentAcademicYearId === y.id) hasCurrent = true;
+                selectEl.appendChild(opt);
+            });
+            
+            // If no year selected, or selected year not found, pick the active one
+            if (!window.currentAcademicYearId || !hasCurrent) {
+                const activeYear = years.find(y => y.statut === 'Active') || years[0];
+                window.currentAcademicYearId = activeYear.id;
+                localStorage.setItem('current_academic_year_id', activeYear.id);
+            }
+            
+            selectEl.value = window.currentAcademicYearId;
+        } catch (e) {
+            console.error("Erreur chargement annees:", e);
+        }
+    };
+
+    await loadYears();
+
+    // Listen to changes
+    selectEl.addEventListener('change', (e) => {
+        window.currentAcademicYearId = e.target.value;
+        localStorage.setItem('current_academic_year_id', e.target.value);
+        // Reload page to refresh all data for the new year
+        window.location.reload();
+    });
+    
+    // Update when sync completes
+    window.addEventListener('edumanager:sync-complete', loadYears);
+}
+
+// Call on load
+document.addEventListener('DOMContentLoaded', setupAcademicYearSelector);
