@@ -87,6 +87,11 @@ const menuItems = [];
         menuItems.push({ label: 'Rapports', icon: 'fa-chart-line', link: 'rapports.html', section: 'Administration' });
         menuItems.push({ label: 'Paramètres', icon: 'fa-cog', link: 'parametres.html', section: 'Administration' });
     }
+    
+    // Only Admin
+    if (['admin'].includes(role)) {
+        menuItems.push({ label: 'Clôture d\'année', icon: 'fa-calendar-check', link: 'cloture-annee.html', section: 'Administration' });
+    }
 
     let menuHTML = `<div class="sidebar-nav">`;
     let currentSection = '';
