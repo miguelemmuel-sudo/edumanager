@@ -126,11 +126,34 @@
     <div class="modal-content">
       <div class="modal-header"><h5 class="modal-title fw-bold"><i class="fas fa-user-plus text-primary me-2"></i>Ajouter un élève</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
       <div class="modal-body">
-        <div class="row g-3">
+        <!-- Toggle Type d'Élève -->
+        <div class="row mb-3">
+          <div class="col-12">
+            <div class="btn-group w-100" role="group">
+              <input type="radio" class="btn-check" name="eleve_type" id="typeNew" value="new" autocomplete="off" checked onchange="toggleEleveType()">
+              <label class="btn btn-outline-primary" for="typeNew">Nouvel élève (Création)</label>
+
+              <input type="radio" class="btn-check" name="eleve_type" id="typeExisting" value="existing" autocomplete="off" onchange="toggleEleveType()">
+              <label class="btn btn-outline-primary" for="typeExisting">Ancien élève (Réinscription)</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section de recherche (cachée par défaut) -->
+        <div class="row mb-3" id="searchExistingEleveRow" style="display: none;">
+          <div class="col-12 position-relative">
+            <label class="form-label text-primary fw-bold"><i class="fas fa-search me-1"></i>Rechercher un ancien élève *</label>
+            <input type="text" id="searchOldEleveInput" class="form-control" placeholder="Tapez le nom, prénom ou matricule...">
+            <div id="searchOldEleveResults" class="list-group position-absolute w-100 shadow-sm mt-1" style="z-index: 1000; max-height: 200px; overflow-y: auto; display: none;"></div>
+            <input type="hidden" name="existing_eleve_id" id="existing_eleve_id">
+          </div>
+        </div>
+
+        <div class="row g-3" id="eleveFormFields">
           <div class="col-md-3"><label class="form-label text-muted" style="font-size:0.85rem">Matricule</label><input type="text" name="matricule" class="form-control bg-light text-muted" placeholder="Généré auto" readonly/></div>
           <div class="col-md-3"><label class="form-label">Prénom *</label><input type="text" name="prenom" class="form-control" placeholder="Prénom"/></div>
           <div class="col-md-3"><label class="form-label">Nom *</label><input type="text" name="nom" class="form-control" placeholder="Nom"/></div>
-          <div class="col-md-3"><label class="form-label">Classe *</label><select name="classe_id" id="eleveClasseSelect" class="form-select"><option value="">Sélectionner une classe</option></select></div>
+          <div class="col-md-3"><label class="form-label">Classe (Nouvelle) *</label><select name="classe_id" id="eleveClasseSelect" class="form-select"><option value="">Sélectionner une classe</option></select></div>
           <div class="col-md-4"><label class="form-label">Date de naissance</label><input type="date" name="date_naissance" class="form-control"/></div>
           <div class="col-md-4"><label class="form-label">Sexe</label><select name="sexe" class="form-select"><option value="Masculin">Masculin</option><option>Féminin</option></select></div>
           <div class="col-md-4"><label class="form-label">Nationalité</label><input type="text" name="nationalite" class="form-control" placeholder="Ex: Ivoirienne"/></div>

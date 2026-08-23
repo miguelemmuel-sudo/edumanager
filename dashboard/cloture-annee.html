@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Clôture Académique – EduManager</title>
+  <link rel="icon" type="image/png" href="..//img/favicon.png"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="/css/vendor/bootstrap.min.css" rel="stylesheet"/>
+  <link href="/css/vendor/all.min.css" rel="stylesheet"/>
+  <link href="../css/dashboard.css" rel="stylesheet"/>
+  <link rel="manifest" href="../manifest.json" />
+</head>
+<body>
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar"></aside>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<!-- TOPBAR -->
+<header class="topbar" id="topbar">
+  <button class="topbar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+  <div class="topbar-search"><i class="fas fa-search"></i><input type="text" placeholder="Rechercher un élève…" id="searchInput" oninput="filterTable()"/></div>
+  <div class="topbar-actions">
+    <!-- Le sélecteur d'année académique sera injecté ici par app.js -->
+    <div class="dropdown">
+      <button class="topbar-btn" data-bs-toggle="dropdown"><i class="fas fa-bell"></i><span class="badge bg-danger rounded-circle position-absolute" style="top:4px;right:4px;padding:3px 4px;font-size:0.6rem">2</span></button>
+      <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="width:300px">
+        <li><h6 class="dropdown-header fw-bold">Notifications</h6></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item py-2" href="#"><div class="d-flex align-items-start"><i class="fas fa-money-bill-wave text-success mt-1 me-2"></i><div><div class="fw-semibold" style="font-size:0.85rem">Nouveau paiement</div><div class="text-muted" style="font-size:0.75rem">Il y a 10 min</div></div></div></a></li>
+        <li><a class="dropdown-item text-center text-primary fw-bold py-2" href="#" style="font-size:0.8rem">Tout voir</a></li>
+      </ul>
+    </div>
+    <div class="dropdown">
+      <button class="topbar-btn" data-bs-toggle="dropdown" style="width:35px;height:35px;padding:0;overflow:hidden"><img src="https://ui-avatars.com/api/?name=Admin&background=2563EB&color=fff" alt="Admin" style="width:100%;height:100%;object-fit:cover"></button>
+      <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+        <li><a class="dropdown-item" href="parametres.html"><i class="fas fa-cog me-2 text-muted"></i>Paramètres</a></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item text-danger" href="#" onclick="window.logout()"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a></li>
+      </ul>
+    </div>
+  </div>
+</header>
+
+<main class="main-content" id="mainContent">
+  <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+    <div>
+      <h3 class="fw-bold mb-1">Clôture de l'Année Académique</h3>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0" style="font-size: 0.85rem;">
+          <li class="breadcrumb-item"><a href="index.html" class="text-decoration-none text-muted">Tableau de bord</a></li>
+          <li class="breadcrumb-item active fw-semibold" aria-current="page">Clôture de l'année</li>
+        </ol>
+      </nav>
+    </div>
+    <div class="d-flex gap-2">
+       const sessionStr = localStorage.getItem('edu_session');
+       if (!sessionStr) return;
+       const session = JSON.parse(sessionStr);
+       const plan = session.plan || 'starter';
+       const maxEleves = plan === 'starter' ? 300 : (plan === 'standard' ? 1000 : (plan === 'premium' ? 1500 : Infinity));
+       
+       if (maxEleves !== Infinity) {
+          try {
+             // Query Supabase for total number of students
+             const { count, error } = await window.supabase
+                .from('eleves')
+                .select('*', { count: 'exact', head: true })
+                .eq('etablissement_id', session.etablissement_id);
+                
+             if (!error && count !== null && count >= maxEleves) {
+                alert(`Vous avez atteint la limite de ${maxEleves} élèves pour le plan ${plan.toUpperCase()}. Veuillez mettre à niveau votre abonnement pour ajouter plus d'élèves.`);
+                window.location.href = 'paiements.html';
+                return;
+             }
+          } catch(e) { console.error('Erreur vérification limites:', e); }
+       }
+       
+       // Si tout est ok, ouvrir le modal
+       const addModal = new bootstrap.Modal(document.getElementById('addEleveModal'));
+       addModal.show();
+    }
+  </script>
+
+  <!-- Filters + Table -->
+  <div class="dash-card">
+    <div class="dash-card-header flex-wrap gap-2">
+      <span class="dash-card-title"><i class="fas fa-user-graduate text-primary me-2"></i>Anciennes inscriptions (Année précédente)</span>
+      <div class="d-flex gap-2 ms-auto flex-wrap">
+        <select class="form-select form-select-sm" style="width:200px" id="filterClassePrecedente" onchange="fetchAndRenderCloture()">
+          <option value="">Sélectionnez une classe...</option>
+        </select>
+      </div>
+    </div>
+    <div class="dash-card-body p-0" style="overflow-x:auto">
+      <table class="dash-table" id="clotureTable">
+        <thead><tr>
+          <th><input type="checkbox" id="checkAll" onchange="toggleAll(this)"/></th>
+          <th>Élève</th><th>Matricule</th><th>Ancienne Classe</th>
+          <th>Moyenne Annuelle</th>
+          <th>Décision</th>
+          <th>Classe Suivante (Si Admis/Redoublant)</th>
+        </tr></thead>
+        <tbody id="elevesBody">
+          <!-- Données dynamiques insérées ici -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+
+<script src="/js/vendor/bootstrap.bundle.min.js"></script>
+<script src="../js/dashboard.js"></script>
+<script src="/js/vendor/bootstrap.bundle.min.js"></script>
+<script src="../js/dashboard.js"></script>
+<script src="../js/vendor/supabase.js"></script>
+<script src="../js/config.js"></script>
+<script src="../js/vendor/dexie.min.js"></script>
+<script src="../js/sync.js"></script>
+<script src="../js/supabase.js"></script>
+<script src="../js/app.js"></script>
+  <script src="../js/sidebar.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Attendre que la base et les variables globales soient prêtes
+      setTimeout(async () => {
+        await loadClassesForCloture();
+      }, 500);
+    });
+
+    let currentClasses = [];
+    let studentsToPromote = [];
+
+    async function loadClassesForCloture() {
+        const sel = document.getElementById('filterClassePrecedente');
+        if (!sel) return;
+        
+        // On récupère toutes les classes pour générer les options
+        const sessionStr = localStorage.getItem('edu_session');
+        const etabId = sessionStr ? JSON.parse(sessionStr).etablissement_id : null;
+        
+        if (window.edumanagerDB) {
+            currentClasses = await window.edumanagerDB.classes.toArray();
+        } else if (window.supabase) {
+            const { data } = await window.supabase.from('classes').select('*').eq('etablissement_id', etabId);
+            currentClasses = data || [];
+        }
+        
+        sel.innerHTML = '<option value="">Sélectionnez une ancienne classe...</option>';
+        currentClasses.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.id;
+            opt.textContent = c.nom;
+            sel.appendChild(opt);
+        });
+    }
+
+    async function fetchAndRenderCloture() {
+        const classeId = document.getElementById('filterClassePrecedente').value;
+        const tbody = document.getElementById('elevesBody');
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4"><i class="fas fa-spinner fa-spin me-2"></i>Chargement...</td></tr>';
+        
+        if (!classeId) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4">Veuillez sélectionner une classe.</td></tr>';
+            return;
+        }
+
+        // Récupérer l'année passée (l'année précédant celle qui est active, ou toutes les inscriptions de cette classe)
+        // Simplification: on prend toutes les inscriptions pour cette classe qui ne sont pas de l'année courante
+        let inscriptions = [];
+        if (window.supabase) {
+             const { data, error } = await window.supabase.from('inscriptions_annuelles')
+                .select('*, eleves(nom, prenom, matricule), annees_academiques(nom)')
+                .eq('classe_id', classeId)
+                // Idéalement, exclure window.currentAcademicYearId mais on veut simplifier pour la démo
+                .order('created_at', { ascending: false });
+             if (!error) inscriptions = data || [];
+        }
+
+        // On filtre pour ne garder que ceux qui n'ont pas encore été réinscrits pour currentAcademicYearId
+        // et on simule une moyenne
+        studentsToPromote = inscriptions.filter(i => i.annee_academique_id !== window.currentAcademicYearId);
+
+        if (studentsToPromote.length === 0) {
+             tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">Aucun élève trouvé ou tous sont déjà inscrits pour l\'année sélectionnée.</td></tr>';
+             return;
+        }
+
+        tbody.innerHTML = '';
+        studentsToPromote.forEach((insc, idx) => {
+             // Simuler moyenne si non présente
+             const moy = insc.moyenne_annuelle || (Math.random() * (18 - 8) + 8).toFixed(2);
+             const decisionAuto = moy >= 10 ? 'Admis' : 'Redoublant';
+             
+             const tr = document.createElement('tr');
+             tr.innerHTML = `
+                <td><input class="form-check-input cloture-check" type="checkbox" value="${idx}" checked></td>
+                <td><span class="fw-semibold">${insc.eleves.prenom} ${insc.eleves.nom}</span></td>
+                <td>${insc.eleves.matricule || '-'}</td>
+                <td><span class="status-badge secondary">${insc.annees_academiques?.nom || '-'}</span></td>
+                <td><span class="fw-bold ${moy >= 10 ? 'text-success' : 'text-danger'}">${moy}</span></td>
+                <td>
+                    <select class="form-select form-select-sm select-decision" data-idx="${idx}">
+                        <option value="Admis" ${decisionAuto==='Admis'?'selected':''}>Admis</option>
+                        <option value="Redoublant" ${decisionAuto==='Redoublant'?'selected':''}>Redoublant</option>
+                        <option value="Exclu">Exclu</option>
+                    </select>
+                </td>
+                <td>
+                    <select class="form-select form-select-sm select-next-class" data-idx="${idx}">
+                        <option value="">-- Choisir la classe --</option>
+                        ${currentClasses.map(c => `<option value="${c.id}" ${decisionAuto==='Redoublant' && c.id===insc.classe_id ? 'selected' : ''}>${c.nom}</option>`).join('')}
+                    </select>
+                </td>
+             `;
+             tbody.appendChild(tr);
+        });
+    }
+
+    async function promouvoirSelection() {
+        const checkboxes = document.querySelectorAll('.cloture-check:checked');
+        if (checkboxes.length === 0) {
+            if(window.showToast) window.showToast('Veuillez sélectionner au moins un élève', 'warning');
+            return;
+        }
+
+        const btn = document.querySelector('button[onclick="promouvoirSelection()"]');
+        btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Traitement...';
+
+        let successCount = 0;
+        let errorsCount = 0;
+
+        for (const chk of checkboxes) {
+            const idx = chk.value;
+            const insc = studentsToPromote[idx];
+            
+            const tr = chk.closest('tr');
+            const decision = tr.querySelector('.select-decision').value;
+            const nextClass = tr.querySelector('.select-next-class').value;
+
+            if (decision === 'Exclu') continue; // Ne pas réinscrire
+            
+            if (!nextClass) {
+                errorsCount++;
+                continue;
+            }
+
+            const newInsc = {
+                eleve_id: insc.eleve_id,
+                annee_academique_id: window.currentAcademicYearId,
+                classe_id: nextClass,
+                statut: 'Actif',
+                statut_paiement: 'Inconnu'
+            };
+
+            const { error } = await window.saveRecord('inscriptions_annuelles', newInsc, 'insert');
+            if (error) {
+                errorsCount++;
+            } else {
+                successCount++;
+            }
+        }
+
+        btn.disabled = false; btn.innerHTML = '<i class="fas fa-check-double me-2"></i>Promouvoir la sélection';
+
+        if (errorsCount > 0) {
+            if(window.showToast) window.showToast(`${successCount} promus, ${errorsCount} erreurs (Vérifiez les classes affectées).`, 'warning');
+        } else {
+            if(window.showToast) window.showToast(`${successCount} élèves promus avec succès !`, 'success');
+            fetchAndRenderCloture(); // Rafraîchir
+        }
+    }
+  </script>
+</body>
+</html>
+

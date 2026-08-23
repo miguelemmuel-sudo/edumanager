@@ -811,55 +811,164 @@ async function fetchAndRenderEleves() {
     
     if (window.applyUrlSearch) window.applyUrlSearch();
 }
+window.toggleEleveType = function() {
+    const isNew = document.getElementById('typeNew').checked;
+    document.getElementById('searchExistingEleveRow').style.display = isNew ? 'none' : 'block';
+    
+    // Si c'est un ancien élève, on rend les champs d'identité readonly
+    const identityFields = ['prenom', 'nom', 'date_naissance', 'sexe', 'nationalite', 'parent_nom', 'parent_tel', 'parent_email'];
+    identityFields.forEach(f => {
+        const input = document.querySelector(`#addEleveModal [name="${f}"]`);
+        if (input) {
+            input.readOnly = !isNew;
+            if (input.tagName === 'SELECT') {
+                input.disabled = !isNew;
+            }
+        }
+    });
+
+    if (isNew) {
+        document.getElementById('existing_eleve_id').value = '';
+        clearFormData('addEleveModal', ['eleve_type']);
+    }
+};
+
 function setupElevesModal() {
     const btn = document.querySelector('#addEleveModal .btn-primary');
     if (!btn) return;
+    
+    // Recherche dynamique
+    const searchInput = document.getElementById('searchOldEleveInput');
+    const searchResults = document.getElementById('searchOldEleveResults');
+    if (searchInput) {
+        searchInput.addEventListener('input', async (e) => {
+            const val = e.target.value.trim().toLowerCase();
+            if (val.length < 2) {
+                searchResults.style.display = 'none';
+                return;
+            }
+            // Fetch depuis Dexie
+            let allEleves = [];
+            if (window.edumanagerDB) {
+                allEleves = await window.edumanagerDB.eleves.toArray();
+            } else if (navigator.onLine && window.supabase) {
+                const { data } = await window.supabase.from('eleves').select('*');
+                allEleves = data || [];
+            }
+            
+            const filtered = allEleves.filter(el => 
+                (el.nom && el.nom.toLowerCase().includes(val)) || 
+                (el.prenom && el.prenom.toLowerCase().includes(val)) || 
+                (el.matricule && el.matricule.toLowerCase().includes(val))
+            ).slice(0, 5);
+            
+            searchResults.innerHTML = '';
+            if (filtered.length > 0) {
+                filtered.forEach(el => {
+                    const a = document.createElement('a');
+                    a.href = '#';
+                    a.className = 'list-group-item list-group-item-action';
+                    a.innerHTML = `<strong>${el.prenom} ${el.nom}</strong> <small class="text-muted">(${el.matricule})</small>`;
+                    a.addEventListener('click', (ev) => {
+                        ev.preventDefault();
+                        document.querySelector('#addEleveModal [name="prenom"]').value = el.prenom || '';
+                        document.querySelector('#addEleveModal [name="nom"]').value = el.nom || '';
+                        document.querySelector('#addEleveModal [name="date_naissance"]').value = el.date_naissance || '';
+                        if(document.querySelector('#addEleveModal [name="sexe"]')) document.querySelector('#addEleveModal [name="sexe"]').value = el.sexe || 'Masculin';
+                        document.querySelector('#addEleveModal [name="nationalite"]').value = el.nationalite || '';
+                        document.querySelector('#addEleveModal [name="parent_nom"]').value = el.parent_nom || '';
+                        document.querySelector('#addEleveModal [name="parent_tel"]').value = el.parent_tel || '';
+                        document.querySelector('#addEleveModal [name="parent_email"]').value = el.parent_email || '';
+                        document.getElementById('existing_eleve_id').value = el.id;
+                        
+                        searchInput.value = `${el.prenom} ${el.nom} (${el.matricule})`;
+                        searchResults.style.display = 'none';
+                    });
+                    searchResults.appendChild(a);
+                });
+                searchResults.style.display = 'block';
+            } else {
+                searchResults.style.display = 'none';
+            }
+        });
+        
+        // Cacher les résultats au clic extérieur
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                searchResults.style.display = 'none';
+            }
+        });
+    }
+    
     btn.addEventListener('click', async () => {
+        const isNew = document.getElementById('typeNew').checked;
+        const existingId = document.getElementById('existing_eleve_id').value;
         const data = getFormData('addEleveModal');
-        if (!data.prenom || !data.nom || !data.classe_id) {
-            if(window.showToast) window.showToast('Prénom, nom et classe requis', 'warning');
+        
+        if (!data.classe_id) {
+            if(window.showToast) window.showToast('Classe requise', 'warning');
             return;
         }
-        delete data.matricule;
-        
-        // Generate random access code
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        let code = '';
-        for (let i = 0; i < 6; i++) {
-            code += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        data.code_acces = code;
-        
-        const classe_id = data.classe_id;
-        // Pour compatibilité descendante (temporaire), on laisse classe_id dans eleves
         
         btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-        const resEleve = await window.saveRecord('eleves', data, 'insert');
         
-        if (resEleve.error) {
-            btn.disabled = false; btn.innerHTML = 'Enregistrer';
-            if(window.showToast) window.showToast(resEleve.error.message, 'danger');
-        } else {
-            // Créer l'inscription annuelle
-            const inscData = {
-                eleve_id: resEleve.data.id,
-                annee_academique_id: window.currentAcademicYearId,
-                classe_id: classe_id,
-                statut: 'Actif',
-                statut_paiement: 'Inconnu'
-            };
-            const resInsc = await window.saveRecord('inscriptions_annuelles', inscData, 'insert');
-            
-            btn.disabled = false; btn.innerHTML = 'Enregistrer';
-            
-            if (resInsc.error) {
-                if(window.showToast) window.showToast("Erreur lors de l'inscription annuelle", 'danger');
-            } else {
-                if(window.showToast) window.showToast('Élève ajouté avec succès', 'success');
-                closeModal('addEleveModal');
-                clearFormData('addEleveModal');
-                fetchAndRenderEleves();
+        let eleveId = existingId;
+        
+        if (isNew) {
+            if (!data.prenom || !data.nom) {
+                if(window.showToast) window.showToast('Prénom et nom requis', 'warning');
+                btn.disabled = false; btn.innerHTML = 'Enregistrer';
+                return;
             }
+            delete data.matricule;
+            delete data.existing_eleve_id;
+            delete data.eleve_type;
+            
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let code = '';
+            for (let i = 0; i < 6; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            data.code_acces = code;
+            
+            const resEleve = await window.saveRecord('eleves', data, 'insert');
+            if (resEleve.error) {
+                btn.disabled = false; btn.innerHTML = 'Enregistrer';
+                if(window.showToast) window.showToast(resEleve.error.message, 'danger');
+                return;
+            }
+            eleveId = resEleve.data.id;
+        } else {
+            if (!eleveId) {
+                if(window.showToast) window.showToast('Veuillez sélectionner un élève existant', 'warning');
+                btn.disabled = false; btn.innerHTML = 'Enregistrer';
+                return;
+            }
+        }
+        
+        // Créer l'inscription annuelle
+        const inscData = {
+            eleve_id: eleveId,
+            annee_academique_id: window.currentAcademicYearId,
+            classe_id: data.classe_id,
+            statut: 'Actif',
+            statut_paiement: 'Inconnu'
+        };
+        const resInsc = await window.saveRecord('inscriptions_annuelles', inscData, 'insert');
+        
+        btn.disabled = false; btn.innerHTML = 'Enregistrer';
+        
+        if (resInsc.error) {
+            if(window.showToast) window.showToast("Erreur lors de l'inscription annuelle: " + resInsc.error.message, 'danger');
+        } else {
+            if(window.showToast) window.showToast('Élève inscrit avec succès', 'success');
+            closeModal('addEleveModal');
+            clearFormData('addEleveModal');
+            if(searchInput) searchInput.value = '';
+            document.getElementById('existing_eleve_id').value = '';
+            document.getElementById('typeNew').checked = true;
+            window.toggleEleveType();
+            fetchAndRenderEleves();
         }
     });
 }
