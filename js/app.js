@@ -2214,32 +2214,41 @@ window.printReceipt = async function(id, fallbackData = null) {
     
     const { data: etab } = await window.supabase.from('etablissements').select('*').limit(1).maybeSingle();
     
+    const setElem = (id, val, isHtml = false) => {
+        const el = document.getElementById(id);
+        if (el) {
+            if (isHtml) el.innerHTML = val;
+            else el.textContent = val;
+        }
+    };
+
     // Fill receipt template
-    document.getElementById('receiptEtabNom').textContent = etab?.nom || 'EduManager';
-    document.getElementById('receiptEtabInfos').innerHTML = `
+    setElem('receiptEtabNom', etab?.nom || 'EduManager');
+    setElem('receiptEtabInfos', `
         ${etab?.adresse || ''}<br>
         Tél: ${etab?.tel || ''} | Email: ${etab?.email || ''}
-    `;
+    `, true);
     
-    if (etab?.logo_url) {
-        document.getElementById('receiptLogo').src = etab.logo_url;
-        document.getElementById('receiptLogo').style.display = 'block';
+    const logoEl = document.getElementById('receiptLogo');
+    if (logoEl && etab?.logo_url) {
+        logoEl.src = etab.logo_url;
+        logoEl.style.display = 'block';
     }
     
-    const d = new Date(p.created_at || p.date_paiement);
+    const d = new Date(p.created_at || p.date_paiement || Date.now());
     const recNumber = 'REC-' + d.getFullYear() + (d.getMonth()+1).toString().padStart(2, '0') + d.getDate().toString().padStart(2, '0') + '-' + p.id.substring(0, 5).toUpperCase();
     
-    document.getElementById('receiptNumber').textContent = recNumber;
-    document.getElementById('receiptDate').textContent = window.formatDateLocal(p.created_at || p.date_paiement);
+    setElem('receiptNumber', recNumber);
+    setElem('receiptDate', window.formatDateLocal(p.created_at || p.date_paiement));
     
     const el = p.eleves || {};
-    document.getElementById('receiptStudentName').textContent = `${el.prenom || ''} ${el.nom || ''}`;
-    document.getElementById('receiptStudentMatricule').textContent = el.matricule || '-';
-    document.getElementById('receiptStudentClass').textContent = classeNom;
+    setElem('receiptStudentName', `${el.prenom || ''} ${el.nom || ''}`);
+    setElem('receiptStudentMatricule', el.matricule || '-');
+    setElem('receiptStudentClass', classeNom);
     
-    document.getElementById('receiptType').textContent = `Versement ${p.type_frais || 'Scolarité'} (${p.montant} FCFA)`;
-    document.getElementById('receiptMethod').textContent = p.methode || 'Espèces';
-    document.getElementById('receiptCaissier').textContent = p.caissier_id ? 'Caissier Principal' : '-'; // Placeholder to avoid auth.users join error
+    setElem('receiptType', `Versement ${p.type_frais || 'Scolarité'} (${p.montant} FCFA)`);
+    setElem('receiptMethod', p.methode || 'Espèces');
+    setElem('receiptCaissier', p.caissier_id ? 'Caissier Principal' : '-'); 
     
     const ccy = window.EduSettings?.currency || 'FCFA';
     
@@ -2247,17 +2256,23 @@ window.printReceipt = async function(id, fallbackData = null) {
     const fmt = (val) => `${val} ${ccy}`;
     const fmtReste = (val) => val === 0 ? 'Soldé' : fmt(val);
     
-    document.getElementById('receiptInscAttendu').textContent = fmt(inscAttendu);
-    document.getElementById('receiptInscVerse').textContent = fmt(inscVerse);
-    document.getElementById('receiptInscReste').textContent = fmtReste(inscReste);
+    setElem('receiptInscAttendu', fmt(inscAttendu));
+    setElem('receiptInscVerse', fmt(inscVerse));
+    setElem('receiptInscReste', fmtReste(inscReste));
     
-    document.getElementById('receiptScolAttendu').textContent = fmt(scolAttendu);
-    document.getElementById('receiptScolVerse').textContent = fmt(scolVerse);
-    document.getElementById('receiptScolReste').textContent = fmtReste(scolReste);
+    setElem('receiptScolAttendu', fmt(scolAttendu));
+    setElem('receiptScolVerse', fmt(scolVerse));
+    setElem('receiptScolReste', fmtReste(scolReste));
     
-    document.getElementById('receiptTotalAttendu').textContent = fmt(totalAttendu);
-    document.getElementById('receiptTotalVerse').textContent = fmt(totalVerse);
-    document.getElementById('receiptTotalReste').textContent = fmtReste(totalReste);
+    setElem('receiptTotalAttendu', fmt(totalAttendu));
+    setElem('receiptTotalVerse', fmt(totalVerse));
+    setElem('receiptTotalReste', fmtReste(totalReste));
+    
+    // Fallbacks for the OLD template in case browser cache is stubborn
+    setElem('receiptItemDesc', `Frais Scolaires (${p.type_frais})`);
+    setElem('receiptExpectedAmount', fmt(totalAttendu));
+    setElem('receiptPaidAmount', fmt(p.montant));
+    setElem('receiptRemainingAmount', fmtReste(totalReste));
     
     // QR Code
     const qrContainer = document.getElementById('qrcode');
