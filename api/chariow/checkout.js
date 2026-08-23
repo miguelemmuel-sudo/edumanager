@@ -68,7 +68,7 @@ export default async function handler(req, res) {
 
     if (!finalUrl) {
       console.error("URL de paiement introuvable dans la réponse:", data);
-      return res.status(400).json({ error: "L'URL de paiement n'a pas pu être générée par Chariow. Vérifiez les identifiants ou le format des données." });
+      return res.status(400).json({ error: "L'URL de paiement n'a pas pu être générée par Chariow. Détails: " + JSON.stringify(data) });
     }
 
     return res.status(200).json({ paymentUrl: finalUrl });
