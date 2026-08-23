@@ -2087,6 +2087,7 @@ function setupPaiementsModal() {
 
 window.printReceipt = async function(id, fallbackData = null) {
     let p = null, error = null, etab = null;
+    let insc = null, classe = null;
     
     try {
         if (navigator.onLine && window.supabase) {
