@@ -858,13 +858,13 @@ function showTab(name, el) {
                         <td class="fw-semibold">${a.nom}</td>
                         <td>${a.date_debut ? new Date(a.date_debut).toLocaleDateString() : '-'}</td>
                         <td>${a.date_fin ? new Date(a.date_fin).toLocaleDateString() : '-'}</td>
-                        <td>${a.est_active 
+                        <td>${a.statut === 'Active'
                             ? '<span class="badge bg-success">Active</span>' 
                             : `<button class="btn btn-sm btn-outline-success rounded-pill" onclick="window.activerAnnee('${a.id}')">Activer</button>`}
                         </td>
                         <td>
                             <button class="btn btn-sm text-primary" onclick='window.openAnneeModal(${JSON.stringify(a).replace(/'/g, "&#39;")})'><i class="fas fa-edit"></i></button>
-                            ${!a.est_active ? `<button class="btn btn-sm text-danger" onclick="window.supprimerAnnee('${a.id}')"><i class="fas fa-trash"></i></button>` : ''}
+                            ${a.statut !== 'Active' ? `<button class="btn btn-sm text-danger" onclick="window.supprimerAnnee('${a.id}')"><i class="fas fa-trash"></i></button>` : ''}
                         </td>
                     </tr>
                 `).join('');
@@ -930,12 +930,12 @@ function showTab(name, el) {
             const etabId = sessionStr ? JSON.parse(sessionStr).etablissement_id : null;
             
             // Disable all years
-            await window.supabase.from('annees_academiques').update({ est_active: false }).eq('etablissement_id', etabId);
+            await window.supabase.from('annees_academiques').update({ statut: 'Clôturée' }).eq('etablissement_id', etabId);
             // Enable the selected one
-            const res = await window.supabase.from('annees_academiques').update({ est_active: true }).eq('id', id);
+            const res = await window.supabase.from('annees_academiques').update({ statut: 'Active' }).eq('id', id);
             
             if (res.error) {
-                alert("Erreur lors de l'activation.");
+                alert("Erreur lors de l'activation: " + res.error.message);
             } else {
                 if(window.showToast) window.showToast('Année académique activée avec succès.', 'success');
                 loadAnnees();
