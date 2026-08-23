@@ -2068,7 +2068,11 @@ function setupPaiementsModal() {
             if (insertedId) {
                 let fData = savedData;
                 if (Array.isArray(savedData) && savedData.length > 0) fData = savedData[0];
-                await printReceipt(insertedId, fData);
+                try {
+                    await printReceipt(insertedId, fData);
+                } catch (printErr) {
+                    console.error("Print generation error:", printErr);
+                }
             }
             
             closeModal('addPaiementModal');
@@ -2079,84 +2083,87 @@ function setupPaiementsModal() {
 }
 
 window.printReceipt = async function(id, fallbackData = null) {
-    let p = null, error = null;
+    let p = null, error = null, etab = null;
     
-    if (navigator.onLine && window.supabase) {
-        for(let i=0; i<4; i++) {
-            const res = await window.supabase.from('paiements')
-                .select('*, eleves(nom, prenom, matricule)')
-                .eq('id', id).maybeSingle();
-            if (res.data) { p = res.data; error = null; break; }
-            error = res.error;
-            await new Promise(r => setTimeout(r, 1000));
-        }
-    }
-
-    // Fallback to IndexedDB if offline or Supabase fails
-    if (!p && window.edumanagerDB) {
-        try {
-            const localP = await window.edumanagerDB.paiements.get(id);
-            if (localP) {
-                // Fetch student details locally
-                const eleve = await window.edumanagerDB.eleves.get(localP.eleve_id);
-                p = { ...localP, eleves: eleve || {} };
-                error = null;
+    try {
+        if (navigator.onLine && window.supabase) {
+            // Get Etablissement to ensure we have a valid targetEtabId
+            const { data: etabData } = await window.supabase.from('etablissements').select('*').limit(1).maybeSingle();
+            if (etabData) etab = etabData;
+            
+            for(let i=0; i<4; i++) {
+                const res = await window.supabase.from('paiements')
+                    .select('*, eleves(nom, prenom, matricule)')
+                    .eq('id', id).maybeSingle();
+                if (res.data) { p = res.data; error = null; break; }
+                error = res.error;
+                await new Promise(r => setTimeout(r, 1000));
             }
-        } catch (e) {
-            console.error("Local DB fetch error:", e);
         }
-    }
     
-    // Final fallback: use the provided fallbackData if all DB reads fail
-    if (!p && fallbackData) {
-        p = { ...fallbackData };
-        if (!p.eleves && window.edumanagerDB) {
-            const eleve = await window.edumanagerDB.eleves.get(p.eleve_id);
-            p.eleves = eleve || {};
+        // Fallback to IndexedDB if offline or Supabase fails
+        if (!p && window.edumanagerDB) {
+            try {
+                const localP = await window.edumanagerDB.paiements.get(id);
+                if (localP) {
+                    // Fetch student details locally
+                    const eleve = await window.edumanagerDB.eleves.get(localP.eleve_id);
+                    p = { ...localP, eleves: eleve || {} };
+                    error = null;
+                }
+            } catch (e) {
+                console.error("Local DB fetch error:", e);
+            }
         }
-        error = null;
-    }
         
-    if (error || !p) {
-        console.error("Error fetching receipt:", error);
-        if(window.showToast) window.showToast("Impossible de générer le reçu.", "danger");
-        return;
-    }
-    
-    // We need the student's inscription to get the classe_id for the current year
-    let insc = null;
-    let classe = null;
-    if (navigator.onLine && window.supabase) {
-        const resInsc = await window.supabase.from('inscriptions_annuelles')
-            .select('*')
-            .eq('eleve_id', p.eleve_id)
-            .eq('annee_academique_id', window.currentAcademicYearId || p.annee_academique_id)
-            .maybeSingle();
-        insc = resInsc.data;
+        // Final fallback: use the provided fallbackData if all DB reads fail
+        if (!p && fallbackData) {
+            p = { ...fallbackData };
+            if (!p.eleves && window.edumanagerDB) {
+                const eleve = await window.edumanagerDB.eleves.get(p.eleve_id);
+                p.eleves = eleve || {};
+            }
+            error = null;
+        }
+            
+        if (error || !p) {
+            console.error("Error fetching receipt:", error);
+            if(window.showToast) window.showToast("Impossible de générer le reçu.", "danger");
+            return;
+        }
         
-        if (insc && insc.classe_id) {
-            const resClass = await window.supabase.from('classes')
+        // We need the student's inscription to get the classe_id for the current year
+        if (navigator.onLine && window.supabase) {
+            const resInsc = await window.supabase.from('inscriptions_annuelles')
                 .select('*')
-                .eq('id', insc.classe_id)
+                .eq('eleve_id', p.eleve_id)
+                .eq('annee_academique_id', window.currentAcademicYearId || p.annee_academique_id)
                 .maybeSingle();
-            classe = resClass.data;
+            insc = resInsc.data;
+            
+            if (insc && insc.classe_id) {
+                const resClass = await window.supabase.from('classes')
+                    .select('*')
+                    .eq('id', insc.classe_id)
+                    .maybeSingle();
+                classe = resClass.data;
+            }
         }
-    }
-    if (!insc && window.edumanagerDB) {
-        const localInscs = await window.edumanagerDB.inscriptions_annuelles
-            .where('eleve_id').equals(p.eleve_id).toArray();
-        const localInsc = localInscs.find(i => i.annee_academique_id === (window.currentAcademicYearId || p.annee_academique_id));
-        if (localInsc) {
-            insc = localInsc;
-            classe = await window.edumanagerDB.classes.get(localInsc.classe_id);
+        if (!insc && window.edumanagerDB) {
+            const localInscs = await window.edumanagerDB.inscriptions_annuelles
+                .where('eleve_id').equals(p.eleve_id).toArray();
+            const localInsc = localInscs.find(i => i.annee_academique_id === (window.currentAcademicYearId || p.annee_academique_id));
+            if (localInsc) {
+                insc = localInsc;
+                classe = await window.edumanagerDB.classes.get(localInsc.classe_id);
+            }
         }
+    } catch(err) {
+        console.error("Error in printReceipt fetch block:", err);
     }
         
     const classeNom = classe?.nom || '-';
-    
-    // Get Etablissement to ensure we have a valid targetEtabId
-    const { data: etab } = await window.supabase.from('etablissements').select('*').limit(1).maybeSingle();
-    const targetEtabId = classe?.etablissement_id || p.etablissement_id || etab?.id;
+    const targetEtabId = classe?.etablissement_id || p?.etablissement_id || etab?.id;
 
     // Get the expected fees for this class niveau
     let allFrais = [];
@@ -2295,8 +2302,7 @@ window.printReceipt = async function(id, fallbackData = null) {
         });
     }
     
-    // Print (wait for DOM to update, then print, then resolve)
-    await new Promise(r => setTimeout(r, 300));
+    // Print (synchronous to avoid browser popup blocks)
     window.print();
 };
 
