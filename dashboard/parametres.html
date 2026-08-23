@@ -410,6 +410,39 @@
   </div>
 </div>
 
+  <!-- Academic Year Modal -->
+  <div class="modal fade" id="anneeModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="anneeModalTitle">Nouvelle année académique</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="anneeForm">
+            <input type="hidden" id="annee_id">
+            <div class="mb-3">
+              <label class="form-label">Nom (ex: 2024-2025) <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="annee_nom" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Date de début</label>
+              <input type="date" class="form-control" id="annee_date_debut">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Date de fin</label>
+              <input type="date" class="form-control" id="annee_date_fin">
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="button" class="btn btn-primary" id="btnSaveAnnee">Enregistrer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 <style>
 .settings-nav { display:flex; flex-direction:column; gap:2px; }
 .sn-item { display:flex; align-items:center; padding:.6rem .75rem; border-radius:.5rem; color:var(--muted); text-decoration:none; font-size:.875rem; font-weight:500; transition:background .2s, color .2s; }
