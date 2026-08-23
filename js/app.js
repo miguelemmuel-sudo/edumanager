@@ -2125,26 +2125,38 @@ window.printReceipt = async function(id, fallbackData = null) {
     
     // We need the student's inscription to get the classe_id for the current year
     let insc = null;
+    let classe = null;
     if (navigator.onLine && window.supabase) {
         const resInsc = await window.supabase.from('inscriptions_annuelles')
-            .select('classe_id, classes(nom, niveau, etablissement_id)')
+            .select('*')
             .eq('eleve_id', p.eleve_id)
             .eq('annee_academique_id', window.currentAcademicYearId || p.annee_academique_id)
             .maybeSingle();
         insc = resInsc.data;
+        
+        if (insc && insc.classe_id) {
+            const resClass = await window.supabase.from('classes')
+                .select('*')
+                .eq('id', insc.classe_id)
+                .maybeSingle();
+            classe = resClass.data;
+        }
     }
     if (!insc && window.edumanagerDB) {
         const localInscs = await window.edumanagerDB.inscriptions_annuelles
             .where('eleve_id').equals(p.eleve_id).toArray();
         const localInsc = localInscs.find(i => i.annee_academique_id === (window.currentAcademicYearId || p.annee_academique_id));
         if (localInsc) {
-            const cls = await window.edumanagerDB.classes.get(localInsc.classe_id);
-            insc = { classe_id: localInsc.classe_id, classes: cls || {} };
+            insc = localInsc;
+            classe = await window.edumanagerDB.classes.get(localInsc.classe_id);
         }
     }
         
-    const classeNom = insc?.classes?.nom || '-';
-    const targetEtabId = insc?.classes?.etablissement_id || p.etablissement_id;
+    const classeNom = classe?.nom || '-';
+    
+    // Get Etablissement to ensure we have a valid targetEtabId
+    const { data: etab } = await window.supabase.from('etablissements').select('*').limit(1).maybeSingle();
+    const targetEtabId = classe?.etablissement_id || p.etablissement_id || etab?.id;
 
     // Get the expected fees for this class niveau
     let allFrais = [];
@@ -2165,7 +2177,7 @@ window.printReceipt = async function(id, fallbackData = null) {
     function normalizeString(str) {
         return (str || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
     }
-    const normClass = normalizeString(insc?.classes?.niveau || '');
+    const normClass = normalizeString(classe?.niveau || '');
     const classWord = normClass.split(' ')[0];
 
     if (allFrais) {
@@ -2211,8 +2223,6 @@ window.printReceipt = async function(id, fallbackData = null) {
     const totalAttendu = inscAttendu + scolAttendu;
     const totalVerse = inscVerse + scolVerse;
     const totalReste = inscReste + scolReste;
-    
-    const { data: etab } = await window.supabase.from('etablissements').select('*').limit(1).maybeSingle();
     
     const setElem = (id, val, isHtml = false) => {
         const el = document.getElementById(id);
