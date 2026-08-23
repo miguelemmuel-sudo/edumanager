@@ -64,6 +64,9 @@ export default async function handler(req, res) {
     let finalUrl = data.checkout_url || data.url || data.payment_url;
     if (!finalUrl && data.data) {
       finalUrl = data.data.checkout_url || data.data.url || data.data.payment_url;
+      if (!finalUrl && data.data.payment) {
+        finalUrl = data.data.payment.checkout_url || data.data.payment.url;
+      }
     }
 
     if (!finalUrl) {
