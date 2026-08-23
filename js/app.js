@@ -36,6 +36,9 @@ window.filterTable = function() {
     // Select all table rows in the main body
     const rows = document.querySelectorAll('table tbody tr');
     rows.forEach(tr => {
+        // Do not filter print templates
+        if (tr.closest('#receiptTemplate')) return;
+        
         // Ignore empty state rows
         if (tr.querySelector('td') && tr.querySelector('td').colSpan > 2 && tr.textContent.includes('Aucun')) return;
         const text = window.normalizeText(tr.textContent);
