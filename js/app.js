@@ -1888,10 +1888,8 @@ function setupPaiementsModal() {
         } else {
             if(window.showToast) window.showToast('Paiement enregistré', 'success');
             
-            // Re-fetch the paiement to get all related data (eleve, classe, etc) before printing
-            const { data: newP } = await window.supabase.from('paiements').select('id').eq('eleve_id', data.eleve_id).eq('type_frais', data.type_frais).order('created_at', { ascending: false }).limit(1).single();
-            if (newP) {
-                printReceipt(newP.id);
+            if (data.id) {
+                printReceipt(data.id);
             }
             
             closeModal('addPaiementModal');
@@ -1902,9 +1900,15 @@ function setupPaiementsModal() {
 }
 
 window.printReceipt = async function(id) {
-    const { data: p, error } = await window.supabase.from('paiements')
-        .select('*, eleves(nom, prenom, matricule, classes(nom))')
-        .eq('id', id).single();
+    let p = null, error = null;
+    for(let i=0; i<4; i++) {
+        const res = await window.supabase.from('paiements')
+            .select('*, eleves(nom, prenom, matricule, classes(nom))')
+            .eq('id', id).single();
+        if (res.data) { p = res.data; error = null; break; }
+        error = res.error;
+        await new Promise(r => setTimeout(r, 1000));
+    }
         
     if (error || !p) {
         console.error("Error fetching receipt:", error);
