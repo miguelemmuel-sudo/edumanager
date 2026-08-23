@@ -229,39 +229,102 @@
           <div class="form-section-title"><i class="fas fa-crown text-warning me-2"></i>Mon abonnement actuel</div>
           <div class="d-flex align-items-center justify-content-between p-3 rounded-3 mb-4" style="background:rgba(37,99,235,.06);border:1.5px solid rgba(37,99,235,.2)">
             <div>
-              <div class="fw-bold text-primary fs-5">Plan Standard</div>
-              <div class="text-muted small">35€/mois · Renouvellement le 01/02/2026</div>
+              <div class="fw-bold text-primary fs-5" id="currentPlanTitle">Chargement...</div>
+              <div class="text-muted small" id="currentPlanDesc">Récupération des informations d'abonnement...</div>
             </div>
-            <span class="status-badge success">Actif</span>
+            <span class="status-badge success" id="currentPlanStatus">...</span>
           </div>
           <div class="row g-3">
-            <div class="col-md-4">
-              <div class="p-3 rounded-3 border text-center">
+            <div class="col-md-3">
+              <div class="p-3 rounded-3 text-center" id="card-starter">
                 <div class="fw-bold mb-1">Starter</div>
-                <div class="display-6 fw-bold text-dark">Gratuit</div>
-                <div class="text-muted small mb-3">100 élèves max</div>
-                <button class="btn btn-outline-secondary btn-sm rounded-pill w-100" disabled>Plan inférieur</button>
+                <div class="display-6 fw-bold text-dark fs-3">Gratuit</div>
+                <div class="text-muted small mb-3">300 élèves max<br>14 jours d'essai</div>
+                <button class="btn btn-outline-secondary btn-sm rounded-pill w-100" disabled id="btn-starter">Plan inférieur</button>
               </div>
             </div>
-            <div class="col-md-4">
-              <div class="p-3 rounded-3 text-center" style="background:rgba(37,99,235,.08);border:2px solid var(--primary)">
-                <div class="fw-bold mb-1 text-primary">Standard <span class="badge bg-primary ms-1" style="font-size:.65rem">Actuel</span></div>
-                <div class="display-6 fw-bold text-primary">15000<span class="fs-6 text-muted">/mois</span></div>
-                <div class="text-muted small mb-3">1 000 élèves</div>
-                <button class="btn btn-primary btn-sm rounded-pill w-100" disabled>Plan actuel</button>
+            <div class="col-md-3">
+              <div class="p-3 rounded-3 text-center" id="card-standard">
+                <div class="fw-bold mb-1 text-primary">Standard</div>
+                <div class="display-6 fw-bold text-primary fs-3">25 000<span class="fs-6 text-muted">/mois</span></div>
+                <div class="text-muted small mb-3">1 000 élèves max<br>Support email</div>
+                <button class="btn btn-outline-primary btn-sm rounded-pill w-100" id="btn-standard">Mettre à niveau</button>
               </div>
             </div>
-            <div class="col-md-4">
-              <div class="p-3 rounded-3 border text-center">
-                <div class="fw-bold mb-1">Premium / VIP</div>
-                <div class="display-6 fw-bold text-dark">50000<span class="fs-6 text-muted">/mois</span></div>
-                <div class="text-muted small mb-3">Illimité + App mobile</div>
-                <button class="btn btn-outline-primary btn-sm rounded-pill w-100">Passer au VIP</button>
+            <div class="col-md-3">
+              <div class="p-3 rounded-3 text-center" id="card-premium">
+                <div class="fw-bold mb-1 text-primary">Premium</div>
+                <div class="display-6 fw-bold text-primary fs-3">35 000<span class="fs-6 text-muted">/mois</span></div>
+                <div class="text-muted small mb-3">Illimité<br>Support prioritaire</div>
+                <button class="btn btn-outline-primary btn-sm rounded-pill w-100" id="btn-premium">Mettre à niveau</button>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="p-3 rounded-3 text-center" id="card-vip">
+                <div class="fw-bold mb-1 text-primary">VIP</div>
+                <div class="display-6 fw-bold text-primary fs-3">Sur devis</div>
+                <div class="text-muted small mb-3">Illimité + App mobile<br>Déploiement sur site</div>
+                <button class="btn btn-outline-primary btn-sm rounded-pill w-100" id="btn-vip">Passer au VIP</button>
               </div>
             </div>
           </div>
         </div>
       </div>
+      
+      <script>
+        document.addEventListener('DOMContentLoaded', () => {
+           const sessionStr = localStorage.getItem('edu_session');
+           if(sessionStr) {
+              const session = JSON.parse(sessionStr);
+              const plan = session.plan || 'starter';
+              const trialExp = session.trialExpired;
+              
+              const titles = {
+                 'starter': 'Plan Starter',
+                 'standard': 'Plan Standard',
+                 'premium': 'Plan Premium',
+                 'vip': 'Plan VIP'
+              };
+              const desc = {
+                 'starter': 'Jusqu\'à 300 élèves. Essai gratuit de 14 jours.',
+                 'standard': 'Jusqu\'à 1000 élèves. Abonnement mensuel de 25 000 FCFA.',
+                 'premium': 'Élèves illimités. Abonnement mensuel de 35 000 FCFA.',
+                 'vip': 'Solution personnalisée avec Application mobile.'
+              };
+              
+              const elTitle = document.getElementById('currentPlanTitle');
+              if(elTitle) elTitle.textContent = titles[plan] || 'Plan inconnu';
+              
+              const elDesc = document.getElementById('currentPlanDesc');
+              if(elDesc) elDesc.textContent = desc[plan] || '';
+              
+              const elStatus = document.getElementById('currentPlanStatus');
+              if(elStatus) {
+                 if (trialExp) {
+                    elStatus.textContent = 'Expiré';
+                    elStatus.className = 'status-badge danger';
+                 } else {
+                    elStatus.textContent = 'Actif';
+                    elStatus.className = 'status-badge success';
+                 }
+              }
+              
+              // Style the current plan card
+              const card = document.getElementById('card-' + plan);
+              if (card) {
+                 card.style.background = 'rgba(37,99,235,.08)';
+                 card.style.border = '2px solid var(--primary)';
+                 card.querySelector('.fw-bold').innerHTML += ' <span class="badge bg-primary ms-1" style="font-size:.65rem">Actuel</span>';
+                 const btn = document.getElementById('btn-' + plan);
+                 if (btn) {
+                    btn.className = 'btn btn-primary btn-sm rounded-pill w-100';
+                    btn.textContent = 'Plan actuel';
+                    btn.disabled = true;
+                 }
+              }
+           }
+        });
+      </script>
     </div>
   </div>
 </main>
