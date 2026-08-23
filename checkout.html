@@ -184,7 +184,7 @@
     // On récupère l'ID de l'établissement courant (par exemple depuis localStorage ou Supabase session)
     // Ici on suppose qu'il a été stocké lors du signup ou on met un ID de test
     let etablissement_id = localStorage.getItem('etablissement_id') || 'test_etab_id';
-    let email = "admin@edumanager.com", first_name = "Admin", last_name = "Edu", phone = "699999999";
+    let email = "admin@edumanager.com", first_name = "Admin", last_name = "Edu", phone = "";
     
     try {
       const sessionStr = localStorage.getItem('edu_session');
@@ -192,6 +192,12 @@
         const s = JSON.parse(sessionStr);
         if (s.email) email = s.email;
         if (s.etablissement_id) etablissement_id = s.etablissement_id;
+        
+        // Fetch phone number from Supabase if authenticated
+        if (window.supabase && s.userId) {
+          const { data: prof } = await window.supabase.from('profiles').select('tel').eq('id', s.userId).single();
+          if (prof && prof.tel) phone = prof.tel;
+        }
       }
       const cuStr = localStorage.getItem('checkout_user');
       if (cuStr) {
@@ -201,7 +207,9 @@
         last_name = cu.last_name || last_name;
         phone = cu.phone || phone;
       }
-    } catch(e) {}
+    } catch(e) {
+      console.error("Erreur récupération session checkout:", e);
+    }
 
     if (gateway === 'chariow') {
       try {

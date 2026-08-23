@@ -18,13 +18,36 @@ export default async function handler(req, res) {
 
     // Parse phone number loosely to separate country code if starts with + or 237
     let country_code = "CM"; // Chariow API expects an ISO alpha-2 country code like "CM"
-    let number = phone ? phone.replace(/\s+/g, '') : "600000000";
-    if (number.startsWith("+237")) {
-       number = number.substring(4);
-    } else if (number.startsWith("237") && number.length > 9) {
-       number = number.substring(3);
-    } else if (number.startsWith("+")) {
-       number = number.substring(4);
+    let number = phone ? phone.replace(/\s+/g, '') : "";
+    if (number) {
+      if (number.startsWith("+237")) {
+         number = number.substring(4);
+      } else if (number.startsWith("237") && number.length > 9) {
+         number = number.substring(3);
+      } else if (number.startsWith("+")) {
+         number = number.substring(4);
+      }
+    }
+
+    const payload = {
+      product_id: productId,
+      store: merchantId,
+      email: email || "admin@edumanager.com",
+      first_name: first_name || "Admin",
+      last_name: last_name || "Edu",
+      metadata: {
+        etablissement_id: etablissement_id,
+        plan: plan
+      },
+      success_url: `${origin}/dashboard/index.html?payment=success`,
+      cancel_url: `${origin}/checkout.html`
+    };
+
+    if (number) {
+      payload.phone = {
+        number: number,
+        country_code: country_code
+      };
     }
 
     // Appel à l'API Chariow pour créer une session de paiement (checkout)
@@ -34,23 +57,7 @@ export default async function handler(req, res) {
         'Authorization': `Bearer ${chariowApiKey}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        product_id: productId,
-        store: merchantId,
-        email: email || "admin@edumanager.com",
-        first_name: first_name || "Admin",
-        last_name: last_name || "Edu",
-        phone: {
-           number: number,
-           country_code: country_code
-        },
-        metadata: {
-          etablissement_id: etablissement_id,
-          plan: plan
-        },
-        success_url: `${origin}/dashboard/index.html?payment=success`,
-        cancel_url: `${origin}/checkout.html`
-      })
+      body: JSON.stringify(payload)
     });
 
     const data = await chariowRes.json();
