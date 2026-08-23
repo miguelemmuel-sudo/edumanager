@@ -2029,6 +2029,7 @@ function setupPaiementsModal() {
         data.type_frais = typeSelect ? typeSelect.value : 'Scolarité';
         data.montant_attendu = currentMontantAttendu;
         data.reste_a_payer = resteApres;
+        data.annee_academique_id = window.currentAcademicYearId;
         
         // Add caissier
         const session = await window.supabase.auth.getSession();
@@ -2070,13 +2071,31 @@ function setupPaiementsModal() {
 
 window.printReceipt = async function(id) {
     let p = null, error = null;
-    for(let i=0; i<4; i++) {
-        const res = await window.supabase.from('paiements')
-            .select('*, eleves(nom, prenom, matricule)')
-            .eq('id', id).maybeSingle();
-        if (res.data) { p = res.data; error = null; break; }
-        error = res.error;
-        await new Promise(r => setTimeout(r, 1000));
+    
+    if (navigator.onLine && window.supabase) {
+        for(let i=0; i<4; i++) {
+            const res = await window.supabase.from('paiements')
+                .select('*, eleves(nom, prenom, matricule)')
+                .eq('id', id).maybeSingle();
+            if (res.data) { p = res.data; error = null; break; }
+            error = res.error;
+            await new Promise(r => setTimeout(r, 1000));
+        }
+    }
+
+    // Fallback to IndexedDB if offline or Supabase fails
+    if (!p && window.edumanagerDB) {
+        try {
+            const localP = await window.edumanagerDB.paiements.get(id);
+            if (localP) {
+                // Fetch student details locally
+                const eleve = await window.edumanagerDB.eleves.get(localP.eleve_id);
+                p = { ...localP, eleves: eleve || {} };
+                error = null;
+            }
+        } catch (e) {
+            console.error("Local DB fetch error:", e);
+        }
     }
         
     if (error || !p) {
@@ -2086,19 +2105,40 @@ window.printReceipt = async function(id) {
     }
     
     // We need the student's inscription to get the classe_id for the current year
-    const { data: insc } = await window.supabase.from('inscriptions_annuelles')
-        .select('classe_id, classes(nom, niveau, etablissement_id)')
-        .eq('eleve_id', p.eleve_id)
-        .eq('annee_academique_id', window.currentAcademicYearId || p.annee_academique_id)
-        .maybeSingle();
+    let insc = null;
+    if (navigator.onLine && window.supabase) {
+        const resInsc = await window.supabase.from('inscriptions_annuelles')
+            .select('classe_id, classes(nom, niveau, etablissement_id)')
+            .eq('eleve_id', p.eleve_id)
+            .eq('annee_academique_id', window.currentAcademicYearId || p.annee_academique_id)
+            .maybeSingle();
+        insc = resInsc.data;
+    }
+    if (!insc && window.edumanagerDB) {
+        const localInscs = await window.edumanagerDB.inscriptions_annuelles
+            .where('eleve_id').equals(p.eleve_id).toArray();
+        const localInsc = localInscs.find(i => i.annee_academique_id === (window.currentAcademicYearId || p.annee_academique_id));
+        if (localInsc) {
+            const cls = await window.edumanagerDB.classes.get(localInsc.classe_id);
+            insc = { classe_id: localInsc.classe_id, classes: cls || {} };
+        }
+    }
         
     const classeNom = insc?.classes?.nom || '-';
     const targetEtabId = insc?.classes?.etablissement_id || p.etablissement_id;
 
     // Get the expected fees for this class niveau
-    const { data: allFrais } = await window.supabase.from('frais_scolaires')
-        .select('niveau, type_frais, montant')
-        .eq('etablissement_id', targetEtabId);
+    let allFrais = [];
+    if (navigator.onLine && window.supabase) {
+        const resFrais = await window.supabase.from('frais_scolaires')
+            .select('niveau, type_frais, montant')
+            .eq('etablissement_id', targetEtabId);
+        allFrais = resFrais.data || [];
+    }
+    if (allFrais.length === 0 && window.edumanagerDB) {
+        allFrais = await window.edumanagerDB.frais_scolaires.toArray();
+        allFrais = allFrais.filter(f => f.etablissement_id === targetEtabId);
+    }
         
     let inscAttendu = 0;
     let scolAttendu = 0;
@@ -2124,10 +2164,18 @@ window.printReceipt = async function(id) {
     }
 
     // Get all payments for this student this year
-    const { data: allPaiements } = await window.supabase.from('paiements')
-        .select('type_frais, montant')
-        .eq('eleve_id', p.eleve_id)
-        .eq('annee_academique_id', window.currentAcademicYearId || p.annee_academique_id);
+    let allPaiements = [];
+    if (navigator.onLine && window.supabase) {
+        const resAllP = await window.supabase.from('paiements')
+            .select('type_frais, montant')
+            .eq('eleve_id', p.eleve_id)
+            .eq('annee_academique_id', window.currentAcademicYearId || p.annee_academique_id);
+        allPaiements = resAllP.data || [];
+    }
+    if (allPaiements.length === 0 && window.edumanagerDB) {
+        allPaiements = await window.edumanagerDB.paiements.where('eleve_id').equals(p.eleve_id).toArray();
+        allPaiements = allPaiements.filter(x => x.annee_academique_id === (window.currentAcademicYearId || p.annee_academique_id));
+    }
 
     let inscVerse = 0;
     let scolVerse = 0;
