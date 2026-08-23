@@ -1681,7 +1681,7 @@ async function fetchAndRenderPaiements() {
     if (navigator.onLine && window.supabase) {
         try {
             const [resEleves, resClasses, resFrais, resEtab, resPaiements] = await Promise.all([
-                window.supabase.from('inscriptions_annuelles').select('id, eleves(nom, prenom, matricule), classe_id').eq('annee_academique_id', window.currentAcademicYearId),
+                window.supabase.from('inscriptions_annuelles').select('id, eleve_id, eleves(nom, prenom, matricule), classe_id').eq('annee_academique_id', window.currentAcademicYearId),
                 window.supabase.from('classes').select('id, niveau, etablissement_id'),
                 window.supabase.from('frais_scolaires').select('*'),
                 window.supabase.from('etablissements').select('id, pays').limit(1).maybeSingle(),
@@ -1719,7 +1719,13 @@ async function fetchAndRenderPaiements() {
 
     const pEleveSelect = document.getElementById('paiementEleveSelect');
     if (pEleveSelect && pEleveSelect.children.length <= 1 && eleves.length) {
-        pEleveSelect.innerHTML = '<option value="">Sélectionner un élève...</option>' + eleves.map(e => `<option value="${e.id}">${_e(e.matricule || '-')} - ${_e(e.prenom)} ${_e(e.nom)}</option>`).join('');
+        pEleveSelect.innerHTML = '<option value="">Sélectionner un élève...</option>' + eleves.map(e => {
+            const vId = e.eleve_id || e.id;
+            const mat = e.eleves ? e.eleves.matricule : e.matricule;
+            const pre = e.eleves ? e.eleves.prenom : e.prenom;
+            const nom = e.eleves ? e.eleves.nom : e.nom;
+            return `<option value="${vId}">${_e(mat || '-')} - ${_e(pre)} ${_e(nom)}</option>`;
+        }).join('');
     }
 
     const currentEtabId = etabData ? etabData.id : null;
