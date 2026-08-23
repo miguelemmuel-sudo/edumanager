@@ -43,6 +43,13 @@ function checkAccess() {
         
         const path = window.location.pathname.toLowerCase();
         
+        // Check Trial expiration
+        if (session.trialExpired && !path.includes('paiements.html')) {
+            alert('Votre période d\'essai de 14 jours est terminée. Veuillez mettre à niveau votre abonnement pour continuer à utiliser EduManager.');
+            window.location.href = 'paiements.html';
+            return;
+        }
+        
         // Redirect index.html to specific dashboards if needed
         if (path.endsWith('/dashboard/') || path.endsWith('index.html')) {
             if (groups.includes('Enseignants') || role === 'enseignant') {

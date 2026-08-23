@@ -164,23 +164,36 @@ async function supabaseLogin(email, password) {
   }
 
   let plan = 'starter';
+  let trialExpired = false;
   if (profile.etablissement_id) {
     const { data: etabs, error: etabError } = await window.supabase
       .from('etablissements')
-      .select('plan')
+      .select('plan, date_fin_essai')
       .eq('id', profile.etablissement_id)
       .limit(1);
-    if (etabs && etabs.length > 0) plan = etabs[0].plan;
+    if (etabs && etabs.length > 0) {
+      plan = etabs[0].plan;
+      if (plan === 'starter' && etabs[0].date_fin_essai) {
+        if (new Date() > new Date(etabs[0].date_fin_essai)) {
+          trialExpired = true;
+        }
+      }
+    }
   } else if (profile.role === 'admin') {
      // Fallback for older admin accounts without profiles table properly set up
      const { data: etabs, error: etabError } = await window.supabase
       .from('etablissements')
-      .select('id, plan')
+      .select('id, plan, date_fin_essai')
       .eq('admin_id', data.user.id)
       .limit(1);
      if (etabs && etabs.length > 0) {
        plan = etabs[0].plan;
        profile.etablissement_id = etabs[0].id;
+       if (plan === 'starter' && etabs[0].date_fin_essai) {
+         if (new Date() > new Date(etabs[0].date_fin_essai)) {
+           trialExpired = true;
+         }
+       }
      }
   }
 
@@ -221,6 +234,7 @@ async function supabaseLogin(email, password) {
     userId: data.user.id, 
     email: data.user.email, 
     plan: plan, 
+    trialExpired: trialExpired,
     role: profile.role,
     etablissement_id: profile.etablissement_id,
     groups: groups,

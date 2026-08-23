@@ -185,11 +185,21 @@ RETURNS JSON AS $body$
 DECLARE
   new_etab_id UUID;
   v_admin_group UUID;
+  v_date_fin_essai TIMESTAMPTZ;
+  v_statut_abonnement VARCHAR(50);
 BEGIN
   IF p_role = 'admin' THEN
+    IF p_plan = 'starter' THEN
+      v_date_fin_essai := NOW() + INTERVAL '14 days';
+      v_statut_abonnement := 'trial';
+    ELSE
+      v_date_fin_essai := NULL;
+      v_statut_abonnement := 'pending_payment';
+    END IF;
+
     -- Créer l'établissement
-    INSERT INTO public.etablissements (admin_id, nom, type, pays, ville, tel, plan)
-    VALUES (p_admin_id, p_nom, p_type, p_pays, p_ville, p_tel, p_plan)
+    INSERT INTO public.etablissements (admin_id, nom, type, pays, ville, tel, plan, date_fin_essai, statut_abonnement)
+    VALUES (p_admin_id, p_nom, p_type, p_pays, p_ville, p_tel, p_plan, v_date_fin_essai, v_statut_abonnement)
     RETURNING id INTO new_etab_id;
     
     -- Créer le profil

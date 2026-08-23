@@ -35,9 +35,39 @@
     <div class="d-flex gap-2">
       <button class="btn btn-outline-secondary btn-sm rounded-pill px-3"><i class="fas fa-file-export me-1"></i>Exporter</button>
       <button class="btn btn-outline-secondary btn-sm rounded-pill px-3"><i class="fas fa-filter me-1"></i>Filtrer</button>
-      <button class="btn btn-primary btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#addEleveModal"><i class="fas fa-plus me-1"></i>Ajouter un élève</button>
+      <button class="btn btn-primary btn-sm rounded-pill px-3" onclick="checkPlanLimitsAndAdd()"><i class="fas fa-plus me-1"></i>Ajouter un élève</button>
     </div>
   </div>
+  
+  <script>
+    async function checkPlanLimitsAndAdd() {
+       const sessionStr = localStorage.getItem('edu_session');
+       if (!sessionStr) return;
+       const session = JSON.parse(sessionStr);
+       const plan = session.plan || 'starter';
+       const maxEleves = plan === 'starter' ? 300 : (plan === 'standard' ? 1000 : Infinity);
+       
+       if (maxEleves !== Infinity) {
+          try {
+             // Query Supabase for total number of students
+             const { count, error } = await window.supabase
+                .from('eleves')
+                .select('*', { count: 'exact', head: true })
+                .eq('etablissement_id', session.etablissement_id);
+                
+             if (!error && count !== null && count >= maxEleves) {
+                alert(`Vous avez atteint la limite de ${maxEleves} élèves pour le plan ${plan.toUpperCase()}. Veuillez mettre à niveau votre abonnement pour ajouter plus d'élèves.`);
+                window.location.href = 'paiements.html';
+                return;
+             }
+          } catch(e) { console.error('Erreur vérification limites:', e); }
+       }
+       
+       // Si tout est ok, ouvrir le modal
+       const addModal = new bootstrap.Modal(document.getElementById('addEleveModal'));
+       addModal.show();
+    }
+  </script>
 
   <!-- KPIs -->
   <div class="row g-3 mb-4">

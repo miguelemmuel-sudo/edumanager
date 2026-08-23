@@ -24,6 +24,8 @@ CREATE TABLE IF NOT EXISTS public.etablissements (
     ville VARCHAR(100),
     tel VARCHAR(50),
     plan VARCHAR(50) DEFAULT 'starter',
+    date_fin_essai TIMESTAMPTZ,
+    statut_abonnement VARCHAR(50) DEFAULT 'Actif',
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
