@@ -210,6 +210,18 @@ let periodesDict = {};
 async function initBulletins() {
     if(!window.supabase) return;
     
+    // Charger l'année académique active
+    const { data: anneeActive } = await window.supabase
+        .from('annees_academiques')
+        .select('id')
+        .eq('statut', 'Active')
+        .maybeSingle();
+    window.currentAcademicYearId = anneeActive ? anneeActive.id : null;
+    
+    if(!window.currentAcademicYearId) {
+        console.warn("Aucune année académique active trouvée.");
+    }
+    
     // Charger en parallèle pour plus de rapidité
     const [etabRes, periodesRes, classesRes] = await Promise.all([
         window.supabase.from('etablissements').select('*').limit(1).maybeSingle(),

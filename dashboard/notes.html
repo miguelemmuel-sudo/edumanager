@@ -131,6 +131,18 @@ let role = 'admin';
 async function initNotes() {
     if(!window.supabase) return;
     
+    // Charger l'année académique active
+    const { data: anneeActive } = await window.supabase
+        .from('annees_academiques')
+        .select('id')
+        .eq('statut', 'Active')
+        .maybeSingle();
+    window.currentAcademicYearId = anneeActive ? anneeActive.id : null;
+    
+    if(!window.currentAcademicYearId) {
+        console.warn("Aucune année académique active trouvée.");
+    }
+    
     // Déterminer le rôle
     const session = await window.supabase.auth.getSession();
     if (session.data.session) {
