@@ -250,6 +250,25 @@ async function loadEleves() {
 
 
 
+function getNextClassName(currentClassName) {
+    if (!currentClassName) return null;
+    const str = currentClassName.toUpperCase();
+    const matchDigit = str.match(/(\d+)(E|ÈME|EME)?/);
+    if (matchDigit) {
+        const num = parseInt(matchDigit[1]);
+        if (num > 1) { 
+            return currentClassName.replace(matchDigit[1], num - 1);
+        }
+    }
+    const parcours = ["SIL", "CP", "CE1", "CE2", "CM1", "CM2"];
+    for (let i = 0; i < parcours.length - 1; i++) {
+        if (str.includes(parcours[i])) {
+            return currentClassName.replace(parcours[i], parcours[i+1]);
+        }
+    }
+    return null;
+}
+
 async function genererBulletin() {
     const cid = document.getElementById('selClasse').value;
     const pid = document.getElementById('selPeriode').value;
@@ -434,6 +453,18 @@ async function genererBulletin() {
         
         let decision = moyenneGenerale >= 10 ? 'Admis' : 'Échec';
         
+        let decisionHtml = '';
+        if (pNom.toLowerCase().includes('annuel')) {
+            let currentClassName = eData.classes?.nom || '';
+            let nextClass = getNextClassName(currentClassName) || 'Classe Supérieure';
+            let decisionText = moyenneGenerale >= 10 ? `Promu(e) en ${nextClass}` : `Redouble la ${currentClassName}`;
+            decisionHtml = `
+                    <div class="col border-end">
+                        <div class="text-muted small fw-bold text-uppercase">Décision du Conseil</div>
+                        <div class="fs-6 fw-bold ${moyenneGenerale >= 10 ? 'text-success' : 'text-danger'}">${decisionText}</div>
+                    </div>`;
+        }
+        
         let studentRankStr = 'N/A';
         const rankIdx = classNotes.indexOf(parseFloat(moyenneGenerale.toFixed(2)));
         if (rankIdx !== -1) {
@@ -594,10 +625,7 @@ async function genererBulletin() {
                         <div class="text-muted small fw-bold text-uppercase">Mention</div>
                         <div class="fs-5 fw-bold">${mention}</div>
                     </div>
-                    <div class="col border-end">
-                        <div class="text-muted small fw-bold text-uppercase">Décision du Conseil</div>
-                        <div class="fs-5 fw-bold ${moyenneGenerale >= 10 ? 'text-success' : 'text-danger'}">${decision}</div>
-                    </div>
+                    ${decisionHtml}
                     <div class="col border-end">
                         <div class="text-muted small fw-bold text-uppercase">Rang de l'élève</div>
                         <div class="fs-4 fw-bold text-primary">${studentRankStr}</div>
