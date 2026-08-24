@@ -144,7 +144,7 @@
         if (window.supabase) {
              // 1. Récupérer toutes les inscriptions passées pour cette classe
              const { data, error } = await window.supabase.from('inscriptions_annuelles')
-                .select('*, eleves(nom, prenom, matricule), annees_academiques(nom)')
+                .select('*, eleves(nom, prenom, matricule), annees_academiques(nom), classes(nom)')
                 .eq('classe_id', classeId)
                 .order('created_at', { ascending: false });
              if (!error) inscriptions = data || [];
@@ -178,11 +178,86 @@
              return;
         }
 
+        // Fonction pour deviner la classe suivante
+        function getNextClassId(currentClassName) {
+            if (!currentClassName) return null;
+            const str = currentClassName.toUpperCase();
+            
+            // Logique Collège/Lycée (ex: 6ème -> 5ème)
+            const matchDigit = str.match(/(\d+)(E|ÈME|EME)?/);
+            if (matchDigit) {
+                const num = parseInt(matchDigit[1]);
+                if (num > 1) { 
+                    const nextNum = num - 1;
+                    const nextStr = str.replace(matchDigit[1], nextNum);
+                    const found = currentClasses.find(c => c.nom.toUpperCase() === nextStr);
+                    if(found) return found.id;
+                }
+            }
+            
+            // Logique Primaire (ex: CM1 -> CM2)
+            const parcours = ["SIL", "CP", "CE1", "CE2", "CM1", "CM2"];
+            for (let i = 0; i < parcours.length - 1; i++) {
+                if (str.includes(parcours[i])) {
+                    const nextStr = str.replace(parcours[i], parcours[i+1]);
+                    const found = currentClasses.find(c => c.nom.toUpperCase() === nextStr);
+                    if (found) return found.id;
+                }
+            }
+            return null;
+        }
+
+        // 4. Calcul de la moyenne annuelle réelle
+        if (window.supabase && studentsToPromote.length > 0) {
+            const eleveIds = studentsToPromote.map(s => s.eleve_id);
+            const { data: bulletinsData } = await window.supabase
+                .from('bulletins')
+                .select('eleve_id, moyenne_generale, periodes_evaluation!inner(annee_academique_id)')
+                .in('eleve_id', eleveIds)
+                .eq('statut', 'Publié');
+                
+            if (bulletinsData) {
+                let moyMap = {};
+                bulletinsData.forEach(b => {
+                    const eId = b.eleve_id;
+                    const aId = b.periodes_evaluation?.annee_academique_id;
+                    if (!aId || b.moyenne_generale === null) return;
+                    const key = `${eId}_${aId}`;
+                    if (!moyMap[key]) moyMap[key] = { sum: 0, count: 0 };
+                    moyMap[key].sum += parseFloat(b.moyenne_generale) || 0;
+                    moyMap[key].count += 1;
+                });
+                
+                studentsToPromote.forEach(insc => {
+                    const key = `${insc.eleve_id}_${insc.annee_academique_id}`;
+                    if (moyMap[key] && moyMap[key].count > 0) {
+                        insc.moyenne_annuelle_calculee = (moyMap[key].sum / moyMap[key].count).toFixed(2);
+                    } else {
+                        insc.moyenne_annuelle_calculee = "N/A";
+                    }
+                });
+            } else {
+                studentsToPromote.forEach(insc => insc.moyenne_annuelle_calculee = "N/A");
+            }
+        }
+
         tbody.innerHTML = '';
         studentsToPromote.forEach((insc, idx) => {
-             // Simuler moyenne si non présente
-             const moy = insc.moyenne_annuelle || (Math.random() * (18 - 8) + 8).toFixed(2);
-             const decisionAuto = moy >= 10 ? 'Admis' : 'Redoublant';
+             const moyStr = insc.moyenne_annuelle_calculee || "N/A";
+             const moyNum = parseFloat(moyStr);
+             const decisionAuto = isNaN(moyNum) ? 'Redoublant' : (moyNum >= 10 ? 'Admis' : 'Redoublant');
+             
+             let autoNextClassId = '';
+             if (decisionAuto === 'Redoublant') {
+                 // Cherche la classe correspondante dans l'année active
+                 const classFound = currentClasses.find(c => c.nom === (insc.classes?.nom || ''));
+                 autoNextClassId = classFound ? classFound.id : '';
+             } else {
+                 autoNextClassId = getNextClassId(insc.classes?.nom || '') || '';
+             }
+             
+             const isAdmis = decisionAuto === 'Admis';
+             const textColor = isNaN(moyNum) ? 'text-muted' : (isAdmis ? 'text-success' : 'text-danger');
              
              const tr = document.createElement('tr');
              tr.innerHTML = `
@@ -190,18 +265,18 @@
                 <td><span class="fw-semibold">${insc.eleves.prenom} ${insc.eleves.nom}</span></td>
                 <td>${insc.eleves.matricule || '-'}</td>
                 <td><span class="status-badge secondary">${insc.annees_academiques?.nom || '-'}</span></td>
-                <td><span class="fw-bold ${moy >= 10 ? 'text-success' : 'text-danger'}">${moy}</span></td>
+                <td><span class="fw-bold ${textColor}">${moyStr}</span></td>
                 <td>
                     <select class="form-select form-select-sm select-decision" data-idx="${idx}">
-                        <option value="Admis" ${decisionAuto==='Admis'?'selected':''}>Admis</option>
-                        <option value="Redoublant" ${decisionAuto==='Redoublant'?'selected':''}>Redoublant</option>
+                        <option value="Admis" ${isAdmis?'selected':''}>Admis</option>
+                        <option value="Redoublant" ${!isAdmis?'selected':''}>Redoublant</option>
                         <option value="Exclu">Exclu</option>
                     </select>
                 </td>
                 <td>
                     <select class="form-select form-select-sm select-next-class" data-idx="${idx}">
                         <option value="">-- Choisir la classe --</option>
-                        ${currentClasses.map(c => `<option value="${c.id}" ${decisionAuto==='Redoublant' && c.id===insc.classe_id ? 'selected' : ''}>${c.nom}</option>`).join('')}
+                        ${currentClasses.map(c => `<option value="${c.id}" ${autoNextClassId===c.id ? 'selected' : ''}>${c.nom}</option>`).join('')}
                     </select>
                 </td>
              `;
