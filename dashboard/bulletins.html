@@ -167,15 +167,13 @@ let currentEleveData = null;
 let generatedData = null;
 let generatedDataBatch = [];
 let isMassGeneration = false;
-let generatedDataBatch = [];
-let isMassGeneration = false;
 let periodesDict = {};
 
 async function initBulletins() {
     if(!window.supabase) return;
     
     // Charger infos Etablissement
-    const {data: etab} = await window.supabase.from('etablissements').select('*').limit(1).single();
+    const {data: etab} = await window.supabase.from('etablissements').select('*').limit(1).maybeSingle();
     currentEtab = etab || { nom: "Mon Établissement", adresse: "", tel: "", email: "" };
     
     // Charger Périodes
