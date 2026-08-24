@@ -467,7 +467,9 @@ async function genererBulletin() {
         mention: mention,
         decision: decision,
         donnees_json: matieresStats,
-        statut: 'Brouillon'
+        statut: 'Brouillon',
+        rang: rankIdx !== -1 ? rankIdx + 1 : null,
+        rang_str: studentRankStr
     };
     
     // Génération des en-têtes de colonnes dynamiques
@@ -787,26 +789,9 @@ window.envoyerWhatsApp = async function() {
         return;
     }
     
-    // Calcul du rang
-    let studentRank = 'Non classé';
+    // Calcul du rang (Utiliser la valeur UI générée)
+    let studentRank = generatedData ? (generatedData.rang_str || 'Non classé') : 'Non classé';
     let studentAverage = generatedData ? generatedData.moyenne_generale : 'N/A';
-    
-    if (generatedData && generatedData.classe_id && generatedData.periode_id) {
-        const { data: allBulls } = await window.supabase
-            .from('bulletins')
-            .select('eleve_id, moyenne_generale')
-            .eq('classe_id', generatedData.classe_id)
-            .eq('periode_id', generatedData.periode_id);
-            
-        if (allBulls && allBulls.length > 0) {
-            // Trier décroissant pour avoir le rang
-            const ranked = allBulls.sort((a, b) => parseFloat(b.moyenne_generale) - parseFloat(a.moyenne_generale));
-            const idx = ranked.findIndex(b => b.eleve_id === currentEleveData.id);
-            if (idx !== -1) {
-                studentRank = (idx + 1) + (idx === 0 ? 'er' : 'ème') + ` sur ${ranked.length}`;
-            }
-        }
-    }
     
     let phone = currentEleveData.parent_tel.replace(/[^\d+]/g, '');
     if (!phone) return;
