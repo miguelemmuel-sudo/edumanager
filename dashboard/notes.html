@@ -273,7 +273,7 @@ window.chargerGrille = async function() {
     
     // 2. Charger les notes existantes pour cette matière, classe, période ET année académique
     const {data: currentAnneeInfo} = await window.supabase.from('annees_academiques').select('statut').eq('id', window.currentAcademicYearId).maybeSingle();
-    const isCloturee = currentAnneeInfo && currentAnneeInfo.statut === 'Clôturée';
+    const isCloturee = currentAnneeInfo && currentAnneeInfo.statut !== 'Active';
 
     let queryNotes = window.supabase
         .from('notes')
