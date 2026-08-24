@@ -1229,7 +1229,7 @@ async function fetchAndRenderClasses() {
         }
     }
 
-    let query = window.supabase.from('classes').select('*, enseignants(nom, prenom), inscriptions_annuelles(count)').eq('annee_academique_id', window.currentAcademicYearId);
+    let query = window.supabase.from('classes').select('*, enseignants(nom, prenom)');
     // RBAC: Check role
     const sessionStr = localStorage.getItem('edu_session');
     let isEnseignant = false;
@@ -1241,12 +1241,10 @@ async function fetchAndRenderClasses() {
         if ((session.role || '').toLowerCase() === 'enseignant') {
             isEnseignant = true;
             
-            // Bouton + Nouvelle classe laissé visible selon la demande.
             // Find teacher profile and their linked classes
             const { data: ensData } = await window.supabase.from('enseignants').select('id').eq('user_id', session.userId).single();
             if (ensData) {
                 currentEnsId = ensData.id;
-                // Trouver ses matières pour savoir à quelles classes il est lié
                 const {data: matieres} = await window.supabase.from('matieres').select('id').eq('enseignant_id', currentEnsId);
                 const matIds = (matieres||[]).map(m => m.id);
                 if(matIds.length > 0) {
@@ -1261,6 +1259,7 @@ async function fetchAndRenderClasses() {
     }
 
     let classes = [];
+    let currentInscriptions = [];
     let dataFetched = false;
     
     if (navigator.onLine && window.supabase) {
@@ -1270,33 +1269,44 @@ async function fetchAndRenderClasses() {
                 classes = c || [];
                 window.currentClassesData = classes;
                 dataFetched = true;
+                
+                // Fetch inscriptions for current year to calculate counts
+                if (window.currentAcademicYearId) {
+                    const { data: ins } = await window.supabase.from('inscriptions_annuelles')
+                        .select('classe_id')
+                        .eq('annee_academique_id', window.currentAcademicYearId);
+                    currentInscriptions = ins || [];
+                }
             } else { console.error(error); }
         } catch(e) { console.error(e); }
     }
     
     if (!dataFetched && window.edumanagerDB) {
-        const allClasses = await window.edumanagerDB.classes.toArray();
-        const allEleves = await window.edumanagerDB.eleves.toArray();
+        classes = await window.edumanagerDB.classes.toArray();
         const allEnseignants = await window.edumanagerDB.enseignants.toArray();
         
-        classes = allClasses.map(c => {
-            const elvs = allEleves.filter(e => e.classe_id === c.id);
+        if (window.currentAcademicYearId) {
+            currentInscriptions = await window.edumanagerDB.inscriptions_annuelles
+                .where('annee_academique_id')
+                .equals(window.currentAcademicYearId)
+                .toArray();
+        }
+        
+        classes = classes.map(c => {
             const prof = allEnseignants.find(p => p.id === c.titulaire_id);
             return {
                 ...c,
-                _elevesCount: elvs.length,
                 enseignants: prof ? { nom: prof.nom, prenom: prof.prenom } : null
             };
         });
         window.currentClassesData = classes;
-    } else {
-        classes.forEach(c => {
-            let count = 0;
-            if(c.eleves && c.eleves.length > 0 && c.eleves[0].count !== undefined) count = c.eleves[0].count;
-            else if (c.eleves && !Array.isArray(c.eleves) && c.eleves.count !== undefined) count = c.eleves.count;
-            c._elevesCount = count;
-        });
     }
+    
+    // Calculate counts for current year
+    classes.forEach(c => {
+        const inscForClass = currentInscriptions.filter(i => i.classe_id === c.id);
+        c._elevesCount = inscForClass.length;
+    });
 
     if (classes.length === 0) {
         container.innerHTML = '<div class="text-center py-5 text-muted">Aucune classe disponible</div>';
@@ -1354,7 +1364,7 @@ async function fetchAndRenderClasses() {
                             </div>
                             <div class="d-flex gap-2 mt-3">
                                 ${(!isEnseignant || classeIdsOuIlEnseigne.has(c.id) || c.titulaire_id === currentEnsId) 
-                                  ? `<a href="eleves.html" class="btn btn-sm flex-1 rounded-pill" style="background:rgba(37,99,235,.1);color:var(--primary);font-size:.78rem"><i class="fas fa-users me-1"></i>Élèves</a>`
+                                  ? `<a href="eleves.html?search=${encodeURIComponent(c.nom)}" class="btn btn-sm flex-1 rounded-pill" style="background:rgba(37,99,235,.1);color:var(--primary);font-size:.78rem"><i class="fas fa-users me-1"></i>Élèves</a>`
                                   : `<button class="btn btn-sm flex-1 rounded-pill btn-outline-primary" style="font-size:.78rem" onclick="openJoinClasseModal('${c.id}')"><i class="fas fa-plus me-1"></i>S'ajouter</button>`
                                 }
                                 ${!isEnseignant ? `<button class="btn btn-sm btn-icon text-primary me-1" onclick="openEditClasseModal('${c.id}')"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-icon text-danger" onclick="deleteClasse('${c.id}')"><i class="fas fa-trash"></i></button>` : ''}
