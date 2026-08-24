@@ -210,29 +210,34 @@
         // 4. Calcul de la moyenne annuelle réelle
         if (window.supabase && studentsToPromote.length > 0) {
             const eleveIds = studentsToPromote.map(s => s.eleve_id);
-            const { data: bulletinsData } = await window.supabase
+            const { data: bulletinsData, error: errBul } = await window.supabase
                 .from('bulletins')
-                .select('eleve_id, moyenne_generale, periodes_evaluation!inner(annee_academique_id)')
+                .select('eleve_id, moyenne_generale, periodes_evaluation(nom, type)')
                 .in('eleve_id', eleveIds)
                 .eq('statut', 'Publié');
                 
+            if (errBul) console.error("Erreur lors de la récupération des bulletins:", errBul);
+                
             if (bulletinsData) {
+                // Créer une map des moyennes annuelles par élève
                 let moyMap = {};
                 bulletinsData.forEach(b => {
-                    const eId = b.eleve_id;
-                    const aId = b.periodes_evaluation?.annee_academique_id;
-                    if (!aId || b.moyenne_generale === null) return;
-                    const key = `${eId}_${aId}`;
-                    if (!moyMap[key]) moyMap[key] = { sum: 0, count: 0 };
-                    moyMap[key].sum += parseFloat(b.moyenne_generale) || 0;
-                    moyMap[key].count += 1;
+                    const p = b.periodes_evaluation;
+                    if (!p) return;
+                    const pNom = (p.nom || '').toLowerCase();
+                    const pType = (p.type || '').toLowerCase();
+                    
+                    // Si c'est un bulletin annuel (bilan annuel, etc)
+                    if (pNom.includes('annuel') || pType.includes('annuel') || pNom.includes('fin d\'année')) {
+                        moyMap[b.eleve_id] = parseFloat(b.moyenne_generale) || 0;
+                    }
                 });
                 
                 studentsToPromote.forEach(insc => {
-                    const key = `${insc.eleve_id}_${insc.annee_academique_id}`;
-                    if (moyMap[key] && moyMap[key].count > 0) {
-                        insc.moyenne_annuelle_calculee = (moyMap[key].sum / moyMap[key].count).toFixed(2);
+                    if (moyMap[insc.eleve_id] !== undefined) {
+                        insc.moyenne_annuelle_calculee = moyMap[insc.eleve_id].toFixed(2);
                     } else {
+                        // Pas de bulletin annuel trouvé
                         insc.moyenne_annuelle_calculee = "N/A";
                     }
                 });
