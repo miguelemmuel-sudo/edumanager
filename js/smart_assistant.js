@@ -13,28 +13,28 @@ const SmartAssistant = {
             id: 'enseignants',
             title: 'Ajouter un enseignant',
             check: async () => await SmartAssistant.hasData('enseignants'),
-            action: { label: '➕ Nouvel enseignant', url: 'enseignants.html', isModal: true, target: '#enseignantModal' },
+            action: { label: '➕ Nouvel enseignant', url: 'enseignants.html?action=new' },
             message: 'Votre établissement est créé ! Commencez par enregistrer votre équipe pédagogique.'
         },
         {
             id: 'classes',
             title: 'Créer les classes',
             check: async () => await SmartAssistant.hasData('classes'),
-            action: { label: '➕ Créer une classe', url: 'classes.html' },
+            action: { label: '➕ Créer une classe', url: 'classes.html?action=new' },
             message: 'Les enseignants sont prêts. Définissez maintenant les classes (ex: 6ème A, CM1).'
         },
         {
             id: 'matieres',
             title: 'Configurer les matières',
             check: async () => await SmartAssistant.hasData('matieres'),
-            action: { label: '➕ Ajouter une matière', url: 'classes.html' },
+            action: { label: '➕ Ajouter une matière', url: 'matieres.html?action=new' },
             message: 'Associez des matières et des coefficients à vos classes pour préparer les bulletins.'
         },
         {
             id: 'eleves',
             title: 'Inscrire les élèves',
             check: async () => await SmartAssistant.hasData('eleves'),
-            action: { label: '➕ Nouvel élève', url: 'eleves.html' },
+            action: { label: '➕ Nouvel élève', url: 'eleves.html?action=new' },
             message: 'La structure pédagogique est en place. Vous pouvez commencer les inscriptions !'
         }
     ],
@@ -95,17 +95,9 @@ const SmartAssistant = {
 
         container.classList.remove('d-none');
         
-        // Bouton d'action (lien ou modale)
-        let btnHtml = '';
-        if (nextAction.action.isModal) {
-            btnHtml = `<button onclick="window.location.href='${nextAction.action.url}'" class="btn btn-primary rounded-pill px-4 py-2 smart-pulse shadow-sm fw-bold">
-                        ${nextAction.action.label}
-                       </button>`;
-        } else {
-            btnHtml = `<a href="${nextAction.action.url}" class="btn btn-primary rounded-pill px-4 py-2 smart-pulse shadow-sm fw-bold">
+        let btnHtml = `<a href="${nextAction.action.url}" class="btn btn-primary rounded-pill px-4 py-2 smart-pulse shadow-sm fw-bold">
                         ${nextAction.action.label}
                        </a>`;
-        }
 
         container.innerHTML = `
             <div class="smart-card">
@@ -146,4 +138,20 @@ document.addEventListener('DOMContentLoaded', () => {
             SmartAssistant.init();
         }
     }, 1000);
+
+    // Auto-open modals if action=new is present in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('action') === 'new') {
+        setTimeout(() => {
+            // Cherche le premier bouton qui contient 'ajouter' ou 'nouvel'
+            const buttons = Array.from(document.querySelectorAll('button, a.btn'));
+            const addBtn = buttons.find(b => {
+                const txt = b.textContent.toLowerCase();
+                return (txt.includes('ajouter') || txt.includes('nouvel')) && (b.hasAttribute('data-bs-toggle') || b.href);
+            });
+            if (addBtn) {
+                addBtn.click();
+            }
+        }, 500);
+    }
 });
