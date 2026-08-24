@@ -22,8 +22,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (form) {
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const matricule = document.getElementById('matricule').value.trim();
-            const codeAcces = document.getElementById('code_acces').value.trim();
+            const matricule = document.getElementById('matricule').value.trim().toUpperCase();
+            const codeAcces = document.getElementById('code_acces').value.trim().toUpperCase();
 
             const btn = document.querySelector('#suiviForm button[type="submit"]');
             const oldHtml = btn.innerHTML;
@@ -176,16 +176,58 @@ function showDashboard(data) {
                 });
             }
 
+            let cInfo = {
+                nameFR: "République du Cameroun", mottoFR: "Paix - Travail - Patrie",
+                nameEN: "Republic of Cameroon", mottoEN: "Peace - Work - Fatherland",
+                flagUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Flag_of_Cameroon.svg/256px-Flag_of_Cameroon.svg.png"
+            };
+
             detailsHtml += `
-                <div class="table-responsive mt-3 border rounded">
-                    <table class="table table-bordered table-sm align-middle text-center mb-0" style="font-size: 0.9rem">
-                        <thead class="table-light">
+            <div class="bulletin-page" style="padding: 20px; background: white; margin-top: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e3e6f0;">
+                <div class="bulletin-header d-flex justify-content-between align-items-center mb-4 pb-3" style="border-bottom: 3px solid var(--primary);">
+                    <div class="text-center" style="flex:1">
+                        <div class="fw-bold text-uppercase">${cInfo.nameFR}</div>
+                        <div class="small text-muted">${cInfo.mottoFR}</div>
+                    </div>
+                    <div style="width: 100px; text-align:center">
+                        ${etab.logo_url ? `<img src="${etab.logo_url}" alt="Logo" style="max-height:80px; max-width:100px;">` : `<img src="${cInfo.flagUrl}" alt="Flag" style="height:50px; opacity:0.8">`}
+                    </div>
+                    <div class="text-center" style="flex:1">
+                        <div class="fw-bold text-uppercase">${cInfo.nameEN}</div>
+                        <div class="small text-muted">${cInfo.mottoEN}</div>
+                    </div>
+                </div>
+                
+                <div class="text-center mb-4">
+                    <h2 class="fw-bold text-uppercase m-0" style="color: var(--primary); letter-spacing: 1px;">${etab.nom}</h2>
+                    <div class="text-muted small">${etab.adresse || ''} | Tél: ${etab.telephone || ''} | Email: ${etab.email || ''}</div>
+                    <div class="badge bg-primary mt-2 px-3 py-2 fs-6">BULLETIN - ${_e(b.periode).toUpperCase()}</div>
+                </div>
+                
+                <div class="row mb-4 p-3 rounded" style="background-color: #f8f9fc; border: 1px solid #e3e6f0;">
+                    <div class="col">
+                        <div class="text-muted small fw-bold text-uppercase">Nom de l'élève</div>
+                        <div class="fs-5 fw-bold text-dark">${eleve.nom} ${eleve.prenom}</div>
+                    </div>
+                    <div class="col">
+                        <div class="text-muted small fw-bold text-uppercase">Matricule</div>
+                        <div class="fs-6 fw-semibold text-dark mt-1">${eleve.matricule || '-'}</div>
+                    </div>
+                    <div class="col">
+                        <div class="text-muted small fw-bold text-uppercase">Classe</div>
+                        <div class="fs-6 fw-semibold text-dark mt-1">${eleve.classe || '-'}</div>
+                    </div>
+                </div>
+                
+                <div class="table-responsive mt-3 mb-4">
+                    <table class="table table-bordered text-center align-middle bulletin-table mb-0" style="font-size: 0.9rem">
+                        <thead class="text-white" style="background-color: #0d6efd !important;">
                             <tr>
-                                <th class="text-start" style="width:25%">Matière</th>
-                                <th style="width:5%">Coef</th>
-                                <th style="width:10%">Moyenne (/20)</th>
-                                <th style="width:10%">Total Points</th>
-                                <th class="text-start" style="width:30%">Appréciation / Observation</th>
+                                <th class="text-start" style="width: 25%">Matière</th>
+                                <th style="width: 5%">Coef</th>
+                                <th style="width: 15%">Moyenne (/20)</th>
+                                <th style="width: 15%">Total Points</th>
+                                <th class="text-start" style="width: 40%">Appréciation / Observation</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -194,36 +236,36 @@ function showDashboard(data) {
                     </table>
                 </div>
                 
-                <div class="bulletin-summary bg-light p-3 rounded-3 mt-4 border">
-                    <div class="row text-center mb-2">
-                        <div class="col">
+                <div class="summary-box p-3 rounded mb-4" style="background: rgba(13,110,253,0.05); border: 1px solid rgba(13,110,253,0.2);">
+                    <div class="row text-center align-items-center">
+                        <div class="col border-end">
                             <div class="text-muted small fw-bold text-uppercase">Total Points</div>
-                            <div class="fs-5 fw-bold">${parseFloat(b.total_points || 0).toFixed(2)}</div>
+                            <div class="fs-4 fw-bold">${parseFloat(b.total_points || 0).toFixed(2)}</div>
                         </div>
-                        <div class="col">
+                        <div class="col border-end">
                             <div class="text-muted small fw-bold text-uppercase">Total Coefs</div>
-                            <div class="fs-5 fw-bold">${parseFloat(b.total_coefs || 0).toFixed(2)}</div>
+                            <div class="fs-4 fw-bold">${parseFloat(b.total_coefs || 0).toFixed(2)}</div>
                         </div>
-                        <div class="col border-start border-end">
+                        <div class="col border-end" style="background: white; border-radius: 8px; margin: 0 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); padding: 10px 0;">
                             <div class="text-muted small fw-bold text-uppercase">Moyenne Générale</div>
-                            <div class="fs-3 fw-bold text-primary">${parseFloat(b.moyenne_generale || 0).toFixed(2)} <small class="text-muted" style="font-size:1rem">/20</small></div>
+                            <div class="fs-2 fw-bold ${parseFloat(b.moyenne_generale) >= 10 ? 'text-success' : 'text-danger'}">${parseFloat(b.moyenne_generale || 0).toFixed(2)}</div>
+                            <div class="small text-muted">/20</div>
                         </div>
                         <div class="col border-end">
                             <div class="text-muted small fw-bold text-uppercase">Mention</div>
                             <div class="fs-5 fw-bold">${_e(b.mention || 'N/A')}</div>
                         </div>
-                        <div class="col">
+                        ${b.decision ? `
+                        <div class="col border-end">
                             <div class="text-muted small fw-bold text-uppercase">Décision du conseil</div>
-                            <div class="fs-5 fw-bold text-dark">${_e(b.decision || 'N/A')}</div>
-                        </div>
-                    </div>
-                    <div class="row text-center border-top pt-2 mt-2">
-                        <div class="col">
+                            <div class="fs-5 fw-bold">${_e(b.decision)}</div>
+                        </div>` : ''}
+                        <div class="col border-end">
                             <div class="text-muted small fw-bold text-uppercase">Rang de l'élève</div>
-                            <div class="fs-5 fw-bold text-primary">${b.rang ? b.rang + (b.rang === 1 ? 'er' : 'ème') : '-'} ${b.effectif_classe ? '/ ' + b.effectif_classe : ''}</div>
+                            <div class="fs-4 fw-bold text-primary">${b.rang ? b.rang + (b.rang === 1 ? 'er' : 'ème') : '-'} ${b.effectif_classe ? '/ ' + b.effectif_classe : ''}</div>
                         </div>
                         <div class="col">
-                            <div class="text-muted small fw-bold text-uppercase">Moyenne de la classe</div>
+                            <div class="text-muted small fw-bold text-uppercase">Moyenne Générale de la Classe</div>
                             <div class="fs-5 fw-bold">${b.moyenne_classe ? parseFloat(b.moyenne_classe).toFixed(2) : '-'} <small class="text-muted" style="font-size:0.9rem">/20</small></div>
                         </div>
                     </div>
