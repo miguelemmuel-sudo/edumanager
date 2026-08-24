@@ -561,6 +561,10 @@ async function genererBulletin() {
     }
     
     classNotes.sort((a, b) => b - a);
+    
+    // Calcul de la moyenne de la classe
+    let classMoyenne = classNotes.length > 0 ? (classNotes.reduce((a,b) => a + b, 0) / classNotes.length).toFixed(2) : 'N/A';
+    
     for (let mId in subjectAverages) {
         subjectAverages[mId].sort((a, b) => b - a);
     }
