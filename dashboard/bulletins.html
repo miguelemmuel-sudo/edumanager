@@ -316,11 +316,32 @@ async function genererBulletin() {
     
     const pNom = document.getElementById('selPeriode').options[document.getElementById('selPeriode').selectedIndex].text;
     
-    let isTrimestre = !selectedPeriode.parent_id;
+    let isAnnuel = pNom.toLowerCase().includes('annuel');
+    let isTrimestre = !selectedPeriode.parent_id && !isAnnuel;
+    
     let periodesRecherche = [pid];
     let seqTitles = ["Note"];
+    let trimestresEnfants = [];
+    let seqToTrim = {};
     
-    if (isTrimestre) {
+    if (isAnnuel) {
+        trimestresEnfants = Object.values(periodesDict).filter(p => p.parent_id === pid).sort((a,b) => a.ordre - b.ordre);
+        seqTitles = trimestresEnfants.map(e => e.nom);
+        periodesRecherche = [];
+        trimestresEnfants.forEach(trim => {
+            const seqs = Object.values(periodesDict).filter(p => p.parent_id === trim.id);
+            if (seqs.length > 0) {
+                seqs.forEach(s => {
+                    periodesRecherche.push(s.id);
+                    seqToTrim[s.id] = trim.id;
+                });
+            } else {
+                periodesRecherche.push(trim.id);
+                seqToTrim[trim.id] = trim.id;
+            }
+        });
+    }
+    else if (isTrimestre) {
         const enfants = Object.values(periodesDict).filter(p => p.parent_id === pid).sort((a,b) => a.ordre - b.ordre);
         if (enfants.length > 0) {
             periodesRecherche = enfants.map(e => e.id);
@@ -359,10 +380,22 @@ async function genererBulletin() {
                 categorie: m.categorie || 'Enseignement Général',
                 prof: m.enseignants ? `${m.enseignants.nom} ${m.enseignants.prenom}` : 'Non assigné',
                 notesPeriodes: {},
+                notesTrimestres: {},
                 appreciation: ''
             };
         }
         studentStats[eId].matieres[mId].notesPeriodes[pId] = parseFloat(n.valeur);
+        
+        if (isAnnuel) {
+            let tId = seqToTrim[pId];
+            if (tId) {
+                if (!studentStats[eId].matieres[mId].notesTrimestres[tId]) {
+                    studentStats[eId].matieres[mId].notesTrimestres[tId] = [];
+                }
+                studentStats[eId].matieres[mId].notesTrimestres[tId].push(parseFloat(n.valeur));
+            }
+        }
+        
         if(n.commentaire && n.commentaire.length > studentStats[eId].matieres[mId].appreciation.length) {
             studentStats[eId].matieres[mId].appreciation = n.commentaire;
         }
@@ -377,7 +410,20 @@ async function genererBulletin() {
             const m = studentStats[eId].matieres[mId];
             let sumNotes = 0, countNotes = 0;
             
-            if (isTrimestre) {
+            if (isAnnuel) {
+                let sumTrims = 0, countTrims = 0;
+                trimestresEnfants.forEach(trim => {
+                    let notes = m.notesTrimestres[trim.id];
+                    if (notes && notes.length > 0) {
+                        let avgTrim = notes.reduce((a,b) => a+b, 0) / notes.length;
+                        m[`moy_trim_${trim.id}`] = avgTrim;
+                        sumTrims += avgTrim;
+                        countTrims++;
+                    }
+                });
+                if (countTrims > 0) m.moyenneCalculee = sumTrims / countTrims;
+            }
+            else if (isTrimestre) {
                 periodesRecherche.forEach(pId => {
                     if (m.notesPeriodes[pId] !== undefined) {
                         sumNotes += m.notesPeriodes[pId];
@@ -391,8 +437,12 @@ async function genererBulletin() {
                 }
             }
             
-            if (countNotes > 0) {
-                const moy = sumNotes / countNotes;
+            if (!isAnnuel && countNotes > 0) {
+                m.moyenneCalculee = sumNotes / countNotes;
+            }
+            
+            if (m.moyenneCalculee !== undefined) {
+                const moy = m.moyenneCalculee;
                 sTotalPoints += (moy * m.coef);
                 sTotalCoefs += m.coef;
                 
@@ -517,7 +567,14 @@ async function genererBulletin() {
             
             categories[catName].forEach(m => {
                 let seqHtml = '';
-                if (isTrimestre) {
+                if (isAnnuel) {
+                    trimestresEnfants.forEach(trim => {
+                        let avgT = m[`moy_trim_${trim.id}`];
+                        if (avgT !== undefined) seqHtml += `<td class="align-middle fw-bold text-dark">${avgT.toFixed(2)}</td>`;
+                        else seqHtml += `<td class="align-middle">-</td>`;
+                    });
+                }
+                else if (isTrimestre) {
                     periodesRecherche.forEach(pId => {
                         const n = m.notesPeriodes[pId];
                         if (n !== undefined) seqHtml += `<td class="align-middle">${n.toFixed(2)}</td>`;
