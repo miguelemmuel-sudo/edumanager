@@ -533,8 +533,8 @@ function showTab(name, el) {
     
     function populateParentSelect() {
         const select = document.getElementById('period_parent');
-        // Allow Année, Trimestre, and Semestre to be parents
-        const parents = currentPeriods.filter(p => p.type === 'Trimestre' || p.type === 'Semestre' || p.type === 'Année');
+        // Allow Année, Annuel, Trimestre, and Semestre to be parents
+        const parents = currentPeriods.filter(p => p.type === 'Trimestre' || p.type === 'Semestre' || p.type === 'Année' || p.type === 'Annuel');
         select.innerHTML = '<option value="">Aucune (Période racine)</option>' + 
             parents.map(p => `<option value="${p.id}">${p.nom}</option>`).join('');
     }
