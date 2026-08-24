@@ -213,14 +213,22 @@ async function initBulletins() {
     const sessionStr = localStorage.getItem('edu_session');
     const etabId = sessionStr ? JSON.parse(sessionStr).etablissement_id : null;
     
-    // Charger l'année académique active
-    let anneeQuery = window.supabase.from('annees_academiques').select('id').eq('statut', 'Active');
-    if (etabId) anneeQuery = anneeQuery.eq('etablissement_id', etabId);
+    // 1. Tenter le localStorage d'abord (comme app.js)
+    window.currentAcademicYearId = localStorage.getItem('current_academic_year_id');
     
-    const { data: anneeActive, error: anneeError } = await anneeQuery.maybeSingle();
-    
-    if (anneeError) console.error("Erreur année active:", anneeError);
-    window.currentAcademicYearId = anneeActive ? anneeActive.id : null;
+    // 2. Si vide, interroger la DB (robuste contre les multiples lignes actives)
+    if (!window.currentAcademicYearId) {
+        let anneeQuery = window.supabase.from('annees_academiques').select('id').eq('statut', 'Active').order('date_debut', {ascending: false}).limit(1);
+        if (etabId) anneeQuery = anneeQuery.eq('etablissement_id', etabId);
+        
+        const { data: anneesActives, error: anneeError } = await anneeQuery;
+        if (anneeError) console.error("Erreur année active:", anneeError);
+        window.currentAcademicYearId = (anneesActives && anneesActives.length > 0) ? anneesActives[0].id : null;
+        
+        if (window.currentAcademicYearId) {
+            localStorage.setItem('current_academic_year_id', window.currentAcademicYearId);
+        }
+    }
     
     if(!window.currentAcademicYearId) {
         console.warn("Aucune année académique active trouvée.");
