@@ -214,7 +214,7 @@ async function initBulletins() {
     const [etabRes, periodesRes, classesRes] = await Promise.all([
         window.supabase.from('etablissements').select('*').limit(1).maybeSingle(),
         window.supabase.from('periodes_evaluation').select('*').eq('actif', true).order('ordre'),
-        window.supabase.from('classes').select('id, nom').order('nom')
+        window.supabase.from('classes').select('id, nom').eq('annee_academique_id', window.currentAcademicYearId).order('nom')
     ]);
     
     currentEtab = etabRes.data || { nom: "Mon Établissement", adresse: "", tel: "", email: "" };
@@ -257,7 +257,13 @@ async function loadEleves() {
     selEleve.innerHTML = '<option value="">Chargement...</option>';
     selEleve.disabled = true;
     
-    const {data: eleves} = await window.supabase.from('eleves').select('id, nom, prenom').eq('classe_id', cid).order('nom');
+    const {data: inscr} = await window.supabase.from('inscriptions_annuelles')
+        .select('eleves(id, nom, prenom)')
+        .eq('classe_id', cid)
+        .eq('annee_academique_id', window.currentAcademicYearId);
+    let eleves = [];
+    if (inscr) eleves = inscr.map(i => i.eleves).filter(e => e).sort((a,b) => (a.nom||'').localeCompare(b.nom||''));
+    
     if(!eleves || eleves.length === 0) {
         selEleve.innerHTML = '<option value="">Aucun élève</option>';
     } else {
@@ -301,7 +307,22 @@ async function genererBulletin() {
     isMassGeneration = (eid === 'ALL');
     
     // Charger infos élève, classe, période
-    const { data: elevesClasse } = await window.supabase.from('eleves').select('*, classes(nom, titulaire_id)').eq('classe_id', cid).order('nom');
+    const { data: inscrClasse } = await window.supabase.from('inscriptions_annuelles')
+        .select('eleve_id, eleves(*), classes(nom, titulaire_id)')
+        .eq('classe_id', cid)
+        .eq('annee_academique_id', window.currentAcademicYearId);
+        
+    let elevesClasse = [];
+    if (inscrClasse) {
+        elevesClasse = inscrClasse.map(i => {
+            if (i.eleves) {
+                i.eleves.classes = i.classes;
+                return i.eleves;
+            }
+            return null;
+        }).filter(e => e).sort((a,b) => (a.nom||'').localeCompare(b.nom||''));
+    }
+    
     if (!elevesClasse || elevesClasse.length === 0) {
         alert("Aucun élève dans cette classe.");
         return;
@@ -361,11 +382,12 @@ async function genererBulletin() {
     }
     
     const elevesIds = elevesClasse.map(e => e.id);
-    const {data: allNotes} = await window.supabase
+    const { data: allNotes, error: errNotes } = await window.supabase
         .from('notes')
         .select('eleve_id, matiere_id, valeur, periode_id, commentaire, matieres(nom, coefficient_defaut, categorie, enseignants(nom, prenom))')
         .in('eleve_id', elevesIds)
-        .in('periode_id', periodesRecherche);
+        .in('periode_id', periodesRecherche)
+        .eq('annee_academique_id', window.currentAcademicYearId);
         
     if(!allNotes || allNotes.length === 0) {
         alert("Aucune note trouvée sur cette période.");
