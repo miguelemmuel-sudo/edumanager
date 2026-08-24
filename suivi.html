@@ -215,7 +215,18 @@
 <script src="/js/vendor/bootstrap.bundle.min.js"></script>
 <script src="js/vendor/supabase.js"></script>
 <script src="js/config.js"></script>
-<script src="js/supabase.js"></script>
+<script>
+  // Initialiser un client Supabase "stateless" (sans session persistante) 
+  // pour éviter les conflits (ex: "JWT expired") avec les sessions Admin
+  if (window.supabase && window.EDUMANAGER_CONFIG) {
+      window.supabaseClient = window.supabase.createClient(
+          window.EDUMANAGER_CONFIG.SUPABASE_URL, 
+          window.EDUMANAGER_CONFIG.SUPABASE_ANON_KEY, 
+          { auth: { persistSession: false, autoRefreshToken: false } }
+      );
+      window.supabase = window.supabaseClient;
+  }
+</script>
 <script src="js/suivi.js"></script>
 <script>
   function togglePwd(id, iconId) {
