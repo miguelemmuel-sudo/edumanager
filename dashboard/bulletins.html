@@ -165,6 +165,10 @@
 let currentEtab = null;
 let currentEleveData = null;
 let generatedData = null;
+let generatedDataBatch = [];
+let isMassGeneration = false;
+let generatedDataBatch = [];
+let isMassGeneration = false;
 let periodesDict = {};
 
 async function initBulletins() {
@@ -209,11 +213,13 @@ async function loadEleves() {
     if(!eleves || eleves.length === 0) {
         selEleve.innerHTML = '<option value="">Aucun élève</option>';
     } else {
-        selEleve.innerHTML = '<option value="">Sélectionner un élève</option>' + 
+        selEleve.innerHTML = '<option value="ALL">Tous les élèves (Génération de masse)</option>' + 
             eleves.map(e => `<option value="${e.id}">${e.nom} ${e.prenom}</option>`).join('');
         selEleve.disabled = false;
     }
 }
+
+
 
 async function genererBulletin() {
     const cid = document.getElementById('selClasse').value;
@@ -225,41 +231,49 @@ async function genererBulletin() {
         return;
     }
     
+    isMassGeneration = (eid === 'ALL');
+    
     // Charger infos élève, classe, période
-    const {data: eleve} = await window.supabase.from('eleves').select('*, classes(nom, titulaire_id)').eq('id', eid).single();
+    const { data: elevesClasse } = await window.supabase.from('eleves').select('*, classes(nom, titulaire_id)').eq('classe_id', cid).order('nom');
+    if (!elevesClasse || elevesClasse.length === 0) {
+        alert("Aucun élève dans cette classe.");
+        return;
+    }
+    
+    let targetEleves = isMassGeneration ? elevesClasse : elevesClasse.filter(e => e.id === eid);
+    if (targetEleves.length === 0) {
+        alert("Élève introuvable.");
+        return;
+    }
+    
     let titulaireNom = "";
-    if (eleve && eleve.classes && eleve.classes.titulaire_id) {
-        const {data: titu} = await window.supabase.from('enseignants').select('nom, prenom').eq('id', eleve.classes.titulaire_id).maybeSingle();
+    if (elevesClasse[0].classes && elevesClasse[0].classes.titulaire_id) {
+        const {data: titu} = await window.supabase.from('enseignants').select('nom, prenom').eq('id', elevesClasse[0].classes.titulaire_id).maybeSingle();
         if (titu) titulaireNom = titu.prenom + ' ' + titu.nom;
     }
-    eleve.titulaireNom = titulaireNom;
-    currentEleveData = eleve;
+    targetEleves.forEach(e => e.titulaireNom = titulaireNom);
+    if (!isMassGeneration) currentEleveData = targetEleves[0];
     
     const selectedPeriode = periodesDict[pid];
     if(!selectedPeriode) { alert("Période invalide."); return; }
     
     const pNom = document.getElementById('selPeriode').options[document.getElementById('selPeriode').selectedIndex].text;
     
-    // Déterminer les sous-périodes si c'est un Trimestre (parent_id null)
     let isTrimestre = !selectedPeriode.parent_id;
     let periodesRecherche = [pid];
     let seqTitles = ["Note"];
     
     if (isTrimestre) {
-        // Trouver les sous-périodes
         const enfants = Object.values(periodesDict).filter(p => p.parent_id === pid).sort((a,b) => a.ordre - b.ordre);
         if (enfants.length > 0) {
             periodesRecherche = enfants.map(e => e.id);
             seqTitles = enfants.map(e => e.nom);
         } else {
-            isTrimestre = false; // Pas d'enfants, on traite comme une séquence unique
+            isTrimestre = false;
         }
     }
     
-    // Charger les notes de toute la classe pour calculer la moyenne de classe et les rangs exacts
-    const { data: elevesClasse } = await window.supabase.from('eleves').select('id').eq('classe_id', cid);
-    const elevesIds = elevesClasse ? elevesClasse.map(e => e.id) : [eid];
-
+    const elevesIds = elevesClasse.map(e => e.id);
     const {data: allNotes} = await window.supabase
         .from('notes')
         .select('eleve_id, matiere_id, valeur, periode_id, commentaire, matieres(nom, coefficient_defaut, categorie, enseignants(nom, prenom))')
@@ -271,9 +285,8 @@ async function genererBulletin() {
         return;
     }
     
-    // Engine de calcul - Agrégation des notes pour toute la classe
     const studentStats = {};
-    const subjectAverages = {}; // mId -> array of averages of all students
+    const subjectAverages = {};
     
     allNotes.forEach(n => {
         const eId = n.eleve_id;
@@ -298,20 +311,14 @@ async function genererBulletin() {
         }
     });
     
-    // Calcul des moyennes par matière pour chaque élève et moyenne générale
     let classNotes = [];
-    let currentStudentTotalPoints = 0;
-    let currentStudentTotalCoefs = 0;
-    let currentStudentMatieresStats = studentStats[eid] ? studentStats[eid].matieres : {};
-
     for (let eId in studentStats) {
         let sTotalPoints = 0;
         let sTotalCoefs = 0;
         
         for (let mId in studentStats[eId].matieres) {
             const m = studentStats[eId].matieres[mId];
-            let sumNotes = 0;
-            let countNotes = 0;
+            let sumNotes = 0, countNotes = 0;
             
             if (isTrimestre) {
                 periodesRecherche.forEach(pId => {
@@ -332,294 +339,257 @@ async function genererBulletin() {
                 sTotalPoints += (moy * m.coef);
                 sTotalCoefs += m.coef;
                 
-                // Enregistrer la moyenne de la matière pour calculer le rang par matière
                 if (!subjectAverages[mId]) subjectAverages[mId] = [];
                 subjectAverages[mId].push(parseFloat(moy.toFixed(2)));
                 
-                // Sauvegarder la moyenne calculée dans l'objet pour l'élève actuel
-                if (eId === eid) {
-                    m.moyenneCalculee = parseFloat(moy.toFixed(2));
-                }
+                m.moyenneCalculee = parseFloat(moy.toFixed(2));
             }
         }
         
         const avg = sTotalCoefs > 0 ? (sTotalPoints / sTotalCoefs) : 0;
+        studentStats[eId].totalPoints = sTotalPoints;
+        studentStats[eId].totalCoefs = sTotalCoefs;
+        studentStats[eId].moyenneGenerale = parseFloat(avg.toFixed(2));
         classNotes.push(parseFloat(avg.toFixed(2)));
-        
-        if (eId === eid) {
-            currentStudentTotalPoints = sTotalPoints;
-            currentStudentTotalCoefs = sTotalCoefs;
-        }
     }
     
-    // Si l'élève actuel n'avait aucune note, initialiser ses stats
-    if (!studentStats[eid]) {
+    if (!isMassGeneration && !studentStats[eid]) {
         alert("L'élève sélectionné n'a aucune note.");
         return;
     }
     
-    // Trier les moyennes générales de la classe
-    classNotes.sort((a, b) => b - a); // Décroissant
-    
-    // Trier les moyennes par matière pour les classements par matière
+    classNotes.sort((a, b) => b - a);
     for (let mId in subjectAverages) {
         subjectAverages[mId].sort((a, b) => b - a);
     }
     
-    // Regroupement par catégorie (branche) pour l'élève actuel
-    const categories = {};
-    for (let mId in currentStudentMatieresStats) {
-        const m = currentStudentMatieresStats[mId];
-        if (m.moyenneCalculee !== undefined) {
-            if (!categories[m.categorie]) categories[m.categorie] = [];
-            categories[m.categorie].push({ id: mId, ...m });
-        }
-    }
+    let allHtml = '';
+    generatedDataBatch = [];
     
-    let rowsHtml = '';
-    const totalCols = 6 + seqTitles.length; // +1 pour la colonne Rang
-    
-    for (let catName in categories) {
-        rowsHtml += `
-            <tr>
-                <td colspan="${totalCols}" class="bg-light fw-bold text-start text-primary" style="text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.5px;">
-                    ${catName}
-                </td>
-            </tr>
-        `;
-        
-        categories[catName].forEach(m => {
-            let seqHtml = '';
-            
-            if (isTrimestre) {
-                periodesRecherche.forEach(pId => {
-                    const n = m.notesPeriodes[pId];
-                    if (n !== undefined) {
-                        seqHtml += `<td class="align-middle">${n.toFixed(2)}</td>`;
-                    } else {
-                        seqHtml += `<td class="align-middle">-</td>`;
-                    }
-                });
-            } else {
-                const n = m.notesPeriodes[pid];
-                if (n !== undefined) {
-                    seqHtml += `<td class="align-middle">${n.toFixed(2)}</td>`;
-                } else {
-                    seqHtml += `<td class="align-middle">-</td>`;
-                }
-            }
-            
-            // Trouver le rang de l'élève pour cette matière
-            let rankMatStr = '-';
-            if (subjectAverages[m.id] && m.moyenneCalculee !== undefined) {
-                const rankM = subjectAverages[m.id].indexOf(m.moyenneCalculee);
-                if (rankM !== -1) {
-                    rankMatStr = (rankM + 1) + (rankM === 0 ? 'er' : 'ème');
-                }
-            }
-            
-            rowsHtml += `
-                <tr>
-                    <td class="text-start">
-                        <div class="fw-bold">${m.nom}</div>
-                        <div class="text-muted" style="font-size: 0.70rem; font-style: italic;">Prof: ${m.prof}</div>
-                    </td>
-                    <td class="align-middle">${m.coef}</td>
-                    ${seqHtml}
-                    <td class="align-middle fw-bold ${m.moyenneCalculee >= 10 ? 'text-success' : 'text-danger'}" style="background-color:rgba(0,0,0,.03);">${m.moyenneCalculee.toFixed(2)}</td>
-                    <td class="align-middle fw-bold text-primary" style="font-size:0.85rem">${rankMatStr}</td>
-                    <td class="align-middle fw-bold">${(m.moyenneCalculee * m.coef).toFixed(2)}</td>
-                    <td class="text-muted small text-start align-middle">${m.appreciation || ''}</td>
-                </tr>
-            `;
-        });
-    }
-    
-    const moyenneGenerale = currentStudentTotalCoefs > 0 ? (currentStudentTotalPoints / currentStudentTotalCoefs) : 0;
-    const totalPoints = currentStudentTotalPoints;
-    const totalCoefs = currentStudentTotalCoefs;
-    const matieresStats = currentStudentMatieresStats;
-    
-    let mention = 'Passable';
-    if(moyenneGenerale >= 16) mention = 'Très Bien';
-    else if(moyenneGenerale >= 14) mention = 'Bien';
-    else if(moyenneGenerale >= 12) mention = 'Assez Bien';
-    else if(moyenneGenerale < 10) mention = 'Insuffisant';
-    
-    let decision = moyenneGenerale >= 10 ? 'Admis' : 'Échec';
-    
-    let studentRankStr = 'N/A';
-    const rankIdx = classNotes.indexOf(parseFloat(moyenneGenerale.toFixed(2)));
-    if (rankIdx !== -1) {
-        studentRankStr = (rankIdx + 1) + (rankIdx === 0 ? 'er' : 'ème') + ` / ${classNotes.length}`;
-    }
-    
-    let classMoyenne = classNotes.length > 0 ? (classNotes.reduce((a,b)=>a+b,0) / classNotes.length).toFixed(2) : 'N/A';
-    
-    // Garder en mémoire pour la sauvegarde
-    generatedData = {
-        eleve_id: eid,
-        periode_id: pid,
-        classe_id: cid,
-        moyenne_generale: moyenneGenerale.toFixed(2),
-        total_points: totalPoints.toFixed(2),
-        total_coefs: totalCoefs.toFixed(2),
-        mention: mention,
-        decision: decision,
-        donnees_json: matieresStats,
-        statut: 'Brouillon',
-        rang: rankIdx !== -1 ? rankIdx + 1 : null,
-        rang_str: studentRankStr
-    };
-    
-    // Génération des en-têtes de colonnes dynamiques
-    let headerSeqHtml = '';
-    seqTitles.forEach(t => headerSeqHtml += `<th>${t} (/20)</th>`);
-    
-    // Mapping des pays
     const countryData = {
         'cameroun': { nameFR: 'République du Cameroun', nameEN: 'Republic of Cameroon', mottoFR: 'Paix - Travail - Patrie', mottoEN: 'Peace - Work - Fatherland', flagUrl: 'https://flagcdn.com/w80/cm.png' },
         'gabon': { nameFR: 'République Gabonaise', nameEN: 'Gabonese Republic', mottoFR: 'Union - Travail - Justice', mottoEN: 'Union - Work - Justice', flagUrl: 'https://flagcdn.com/w80/ga.png' },
         'senegal': { nameFR: 'République du Sénégal', nameEN: 'Republic of Senegal', mottoFR: 'Un Peuple - Un But - Une Foi', mottoEN: 'One People - One Goal - One Faith', flagUrl: 'https://flagcdn.com/w80/sn.png' },
-        'cote d\'ivoire': { nameFR: 'République de Côte d\'Ivoire', nameEN: 'Republic of Côte d\'Ivoire', mottoFR: 'Union - Discipline - Travail', mottoEN: 'Unity - Discipline - Work', flagUrl: 'https://flagcdn.com/w80/ci.png' },
-        'mali': { nameFR: 'République du Mali', nameEN: 'Republic of Mali', mottoFR: 'Un Peuple - Un But - Une Foi', mottoEN: 'One People - One Goal - One Faith', flagUrl: 'https://flagcdn.com/w80/ml.png' },
-        'france': { nameFR: 'République Française', nameEN: 'French Republic', mottoFR: 'Liberté, Égalité, Fraternité', mottoEN: 'Liberty, Equality, Fraternity', flagUrl: 'https://flagcdn.com/w80/fr.png' },
-        'togo': { nameFR: 'République Togolaise', nameEN: 'Togolese Republic', mottoFR: 'Travail - Liberté - Patrie', mottoEN: 'Work - Liberty - Homeland', flagUrl: 'https://flagcdn.com/w80/tg.png' },
-        'benin': { nameFR: 'République du Bénin', nameEN: 'Republic of Benin', mottoFR: 'Fraternité - Justice - Travail', mottoEN: 'Fraternity - Justice - Work', flagUrl: 'https://flagcdn.com/w80/bj.png' },
-        'congo': { nameFR: 'République du Congo', nameEN: 'Republic of the Congo', mottoFR: 'Unité - Travail - Progrès', mottoEN: 'Unity - Work - Progress', flagUrl: 'https://flagcdn.com/w80/cg.png' },
-        'rdc': { nameFR: 'République Démocratique du Congo', nameEN: 'Democratic Republic of the Congo', mottoFR: 'Justice - Paix - Travail', mottoEN: 'Justice - Peace - Work', flagUrl: 'https://flagcdn.com/w80/cd.png' },
-        'tchad': { nameFR: 'République du Tchad', nameEN: 'Republic of Chad', mottoFR: 'Unité - Travail - Progrès', mottoEN: 'Unity - Work - Progress', flagUrl: 'https://flagcdn.com/w80/td.png' },
-        'niger': { nameFR: 'République du Niger', nameEN: 'Republic of Niger', mottoFR: 'Fraternité - Travail - Progrès', mottoEN: 'Fraternity - Work - Progress', flagUrl: 'https://flagcdn.com/w80/ne.png' },
-        'burkina faso': { nameFR: 'Burkina Faso', nameEN: 'Burkina Faso', mottoFR: 'La Patrie ou la mort, nous vaincrons', mottoEN: 'Homeland or death, we will overcome', flagUrl: 'https://flagcdn.com/w80/bf.png' },
-        'guinee': { nameFR: 'République de Guinée', nameEN: 'Republic of Guinea', mottoFR: 'Travail - Justice - Solidarité', mottoEN: 'Work - Justice - Solidarity', flagUrl: 'https://flagcdn.com/w80/gn.png' }
+        'cote d\'ivoire': { nameFR: 'République de Côte d\'Ivoire', nameEN: 'Republic of Côte d\'Ivoire', mottoFR: 'Union - Discipline - Travail', mottoEN: 'Unity - Discipline - Work', flagUrl: 'https://flagcdn.com/w80/ci.png' }
     };
-
-    let cInfo = countryData['cameroun']; // Default
+    let cInfo = countryData['cameroun'];
     if (currentEtab.pays) {
         let pNorm = currentEtab.pays.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        if (countryData[pNorm]) {
-            cInfo = countryData[pNorm];
-        } else if (pNorm.includes('ivoire')) {
-            cInfo = countryData['cote d\'ivoire'];
-        } else if (pNorm.includes('democratique') || pNorm === 'rdc') {
-            cInfo = countryData['rdc'];
-        } else {
-            cInfo = { nameFR: 'République du ' + currentEtab.pays, nameEN: 'Republic of ' + currentEtab.pays, mottoFR: '', mottoEN: '', flagUrl: '' };
-        }
+        if (countryData[pNorm]) cInfo = countryData[pNorm];
+        else if (pNorm.includes('ivoire')) cInfo = countryData['cote d\'ivoire'];
     }
-
-    const flagHtml = cInfo.flagUrl ? `<img src="${cInfo.flagUrl}" style="height:15px; vertical-align:middle; margin-left:6px; margin-bottom: 2px; border-radius: 2px; box-shadow: 0 0 2px rgba(0,0,0,0.3);" alt="Drapeau">` : '';
-
-    // Signatures
-    const sigDir = currentEtab.signature_directeur_url ? `<img src="${currentEtab.signature_directeur_url}" style="max-height:80px; margin-top:10px;">` : `<div style="height:80px"></div>`;
-    const logoHtml = currentEtab.logo_url ? `<img src="${currentEtab.logo_url}" style="max-height:80px;">` : `<div style="height:80px;width:80px;background:#f8f9fa;display:inline-block;border-radius:50%"></div>`;
-
-    // Affichage Premium
-    const container = document.getElementById('printableBulletin');
-    container.innerHTML = `
-        <div class="bulletin-header d-flex justify-content-between align-items-center mb-4 pb-3" style="border-bottom: 2px solid #1e293b;">
-            <div class="text-center" style="flex:1">
-                <h6 class="fw-bold text-uppercase m-0">${cInfo.nameFR} ${flagHtml}</h6>
-                <p class="small text-muted m-0">${cInfo.mottoFR}</p>
-                <div class="mt-2 text-uppercase fw-bold text-primary" style="font-size: 1.1rem">${currentEtab.nom}</div>
-                <p class="small m-0">${currentEtab.devise || ''}</p>
-                <p class="small m-0">${currentEtab.adresse} | Tél: ${currentEtab.tel}</p>
-            </div>
-            <div class="text-center mx-4">
-                ${logoHtml}
-            </div>
-            <div class="text-center" style="flex:1">
-                <h6 class="fw-bold text-uppercase m-0">${cInfo.nameEN} ${flagHtml}</h6>
-                <p class="small text-muted m-0">${cInfo.mottoEN}</p>
-                <div class="mt-2 text-uppercase fw-bold" style="font-size: 1.2rem">BULLETIN DE NOTES</div>
-                <div class="badge bg-primary text-white p-2 mt-1" style="font-size: 0.9rem">${pNom}</div>
-            </div>
-        </div>
+    
+    for (let i = 0; i < targetEleves.length; i++) {
+        let eData = targetEleves[i];
+        let currentEid = eData.id;
         
-        <div class="bulletin-student-info bg-light p-3 rounded-3 mb-4 d-flex justify-content-between border">
-            <div>
-                <div class="text-muted small text-uppercase fw-bold mb-1">Nom de l'élève</div>
-                <h5 class="fw-bold m-0">${eleve.nom} ${eleve.prenom}</h5>
-            </div>
-            <div>
-                <div class="text-muted small text-uppercase fw-bold mb-1">Matricule</div>
-                <div class="fw-medium">${eleve.matricule}</div>
-            </div>
-            <div>
-                <div class="text-muted small text-uppercase fw-bold mb-1">Classe</div>
-                <div class="fw-medium">${eleve.classes ? eleve.classes.nom : ''}</div>
-            </div>
-            <div>
-                <div class="text-muted small text-uppercase fw-bold mb-1">Année Scolaire</div>
-                <div class="fw-medium">2025-2026</div>
-            </div>
-        </div>
+        if (!studentStats[currentEid]) continue;
         
-        <table class="bulletin-table table table-bordered table-sm align-middle text-center" style="font-size: 0.9rem">
-            <thead class="table-light">
-                <tr>
-                    <th class="text-start" style="width:25%">Matière</th>
-                    <th style="width:5%">Coef</th>
-                    ${headerSeqHtml}
-                    <th style="width:10%">Moyenne (/20)</th>
-                    <th style="width:8%">Rang</th>
-                    <th style="width:10%">Total Points</th>
-                    <th class="text-start" style="width:30%">Appréciation / Observation</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${rowsHtml}
-            </tbody>
-        </table>
+        let matStats = studentStats[currentEid].matieres;
+        let totalPoints = studentStats[currentEid].totalPoints;
+        let totalCoefs = studentStats[currentEid].totalCoefs;
+        let moyenneGenerale = studentStats[currentEid].moyenneGenerale;
         
-        <div class="bulletin-summary bg-light p-3 rounded-3 mt-4 border">
-            <div class="row text-center mb-2">
-                <div class="col">
-                    <div class="text-muted small fw-bold text-uppercase">Total Points</div>
-                    <div class="fs-5 fw-bold">${totalPoints.toFixed(2)}</div>
-                </div>
-                <div class="col">
-                    <div class="text-muted small fw-bold text-uppercase">Total Coefs</div>
-                    <div class="fs-5 fw-bold">${totalCoefs.toFixed(2)}</div>
-                </div>
-                <div class="col border-start border-end">
-                    <div class="text-muted small fw-bold text-uppercase">Moyenne de l'élève</div>
-                    <div class="fs-3 fw-bold ${moyenneGenerale >= 10 ? 'text-success' : 'text-danger'}">${moyenneGenerale.toFixed(2)} <small class="text-muted" style="font-size:1rem">/20</small></div>
-                </div>
-                <div class="col border-end">
-                    <div class="text-muted small fw-bold text-uppercase">Mention</div>
-                    <div class="fs-5 fw-bold">${mention}</div>
-                </div>
-                <div class="col">
-                    <div class="text-muted small fw-bold text-uppercase">Décision du conseil</div>
-                    <div class="fs-5 fw-bold ${moyenneGenerale >= 10 ? 'text-success' : 'text-danger'}">${decision}</div>
-                </div>
-            </div>
-            <div class="row text-center border-top pt-2 mt-2">
-                <div class="col">
-                    <div class="text-muted small fw-bold text-uppercase">Rang de l'élève</div>
-                    <div class="fs-5 fw-bold text-primary">${studentRankStr}</div>
-                </div>
-                <div class="col">
-                    <div class="text-muted small fw-bold text-uppercase">Moyenne Générale de la Classe</div>
-                    <div class="fs-5 fw-bold">${classMoyenne} <small class="text-muted" style="font-size:0.9rem">/20</small></div>
-                </div>
-            </div>
-        </div>
+        let mention = 'Passable';
+        if(moyenneGenerale >= 16) mention = 'Très Bien';
+        else if(moyenneGenerale >= 14) mention = 'Bien';
+        else if(moyenneGenerale >= 12) mention = 'Assez Bien';
+        else if(moyenneGenerale < 10) mention = 'Insuffisant';
         
-        <div class="bulletin-footer d-flex justify-content-between mt-5 pt-3">
-            <div class="signature-box text-center" style="width: 250px">
-                <div class="fw-bold">Le Professeur Titulaire</div>
-                <div class="small text-muted mb-2">${eleve.titulaireNom || ""}</div>
-                <div style="border-bottom: 1px dotted #ccc; height: 60px;"></div>
+        let decision = moyenneGenerale >= 10 ? 'Admis' : 'Échec';
+        
+        let studentRankStr = 'N/A';
+        const rankIdx = classNotes.indexOf(parseFloat(moyenneGenerale.toFixed(2)));
+        if (rankIdx !== -1) {
+            studentRankStr = (rankIdx + 1) + (rankIdx === 0 ? 'er' : 'ème') + ` / ${classNotes.length}`;
+        }
+        
+        generatedDataBatch.push({
+            eleve_id: currentEid,
+            periode_id: pid,
+            classe_id: cid,
+            moyenne_generale: moyenneGenerale.toFixed(2),
+            total_points: totalPoints.toFixed(2),
+            total_coefs: totalCoefs.toFixed(2),
+            mention: mention,
+            decision: decision,
+            donnees_json: matStats,
+            statut: 'Brouillon',
+            rang: rankIdx !== -1 ? rankIdx + 1 : null,
+            rang_str: studentRankStr
+        });
+        
+        let classMoyenne = classNotes.length > 0 ? (classNotes.reduce((a,b)=>a+b,0) / classNotes.length).toFixed(2) : 'N/A';
+        
+        const categories = {};
+        for (let mId in matStats) {
+            const m = matStats[mId];
+            if (m.moyenneCalculee !== undefined) {
+                if (!categories[m.categorie]) categories[m.categorie] = [];
+                categories[m.categorie].push({ id: mId, ...m });
+            }
+        }
+        
+        let headerSeqHtml = '';
+        seqTitles.forEach(t => headerSeqHtml += `<th>${t} (/20)</th>`);
+        
+        let rowsHtml = '';
+        const totalCols = 6 + seqTitles.length;
+        
+        for (let catName in categories) {
+            rowsHtml += `<tr><td colspan="${totalCols}" class="bg-light fw-bold text-start text-primary" style="text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.5px;">${catName}</td></tr>`;
+            
+            categories[catName].forEach(m => {
+                let seqHtml = '';
+                if (isTrimestre) {
+                    periodesRecherche.forEach(pId => {
+                        const n = m.notesPeriodes[pId];
+                        if (n !== undefined) seqHtml += `<td class="align-middle">${n.toFixed(2)}</td>`;
+                        else seqHtml += `<td class="align-middle">-</td>`;
+                    });
+                } else {
+                    const n = m.notesPeriodes[pid];
+                    if (n !== undefined) seqHtml += `<td class="align-middle">${n.toFixed(2)}</td>`;
+                    else seqHtml += `<td class="align-middle">-</td>`;
+                }
+                
+                let rankMatStr = '-';
+                if (subjectAverages[m.id] && m.moyenneCalculee !== undefined) {
+                    const rankM = subjectAverages[m.id].indexOf(m.moyenneCalculee);
+                    if (rankM !== -1) rankMatStr = (rankM + 1) + (rankM === 0 ? 'er' : 'ème');
+                }
+                
+                rowsHtml += `
+                    <tr>
+                        <td class="text-start">
+                            <div class="fw-bold">${m.nom}</div>
+                            <div class="text-muted" style="font-size: 0.70rem; font-style: italic;">Prof: ${m.prof}</div>
+                        </td>
+                        <td class="align-middle">${m.coef}</td>
+                        ${seqHtml}
+                        <td class="align-middle fw-bold ${m.moyenneCalculee >= 10 ? 'text-success' : 'text-danger'}" style="background-color:rgba(0,0,0,.03);">${m.moyenneCalculee.toFixed(2)}</td>
+                        <td class="align-middle fw-bold text-primary" style="font-size:0.85rem">${rankMatStr}</td>
+                        <td class="align-middle fw-bold">${(m.moyenneCalculee * m.coef).toFixed(2)}</td>
+                        <td class="text-muted small text-start align-middle">${m.appreciation || ''}</td>
+                    </tr>
+                `;
+            });
+        }
+        
+        let sigDir = `<div style="border-bottom: 1px dotted #ccc; height: 60px;"></div>`;
+        if (currentEtab.signature_url) {
+            sigDir = `<img src="${currentEtab.signature_url}" style="height: 60px; object-fit: contain; margin-top:5px">`;
+        }
+        
+        let singleBulletinHtml = `
+        <div class="bulletin-page" style="page-break-after: always; padding: 20px; background: white; margin-bottom: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+            <div class="bulletin-header d-flex justify-content-between align-items-center mb-4 pb-3" style="border-bottom: 3px solid var(--primary);">
+                <div class="text-center" style="flex:1">
+                    <div class="fw-bold text-uppercase">${cInfo.nameFR}</div>
+                    <div class="small text-muted">${cInfo.mottoFR}</div>
+                </div>
+                <div style="width: 100px; text-align:center">
+                    ${currentEtab.logo_url ? `<img src="${currentEtab.logo_url}" alt="Logo" style="max-height:80px; max-width:100px;">` : `<img src="${cInfo.flagUrl}" alt="Flag" style="height:50px; opacity:0.8">`}
+                </div>
+                <div class="text-center" style="flex:1">
+                    <div class="fw-bold text-uppercase">${cInfo.nameEN}</div>
+                    <div class="small text-muted">${cInfo.mottoEN}</div>
+                </div>
             </div>
-            <div class="signature-box text-center" style="width: 250px">
-                <div class="fw-bold">${currentEtab.titre_directeur || "Le Chef d'Établissement"}</div>
-                <div class="small text-muted mb-2">${currentEtab.nom_directeur || ""}</div>
-                ${sigDir}
+            
+            <div class="text-center mb-4">
+                <h2 class="fw-bold text-uppercase m-0" style="color: var(--primary); letter-spacing: 1px;">${currentEtab.nom}</h2>
+                <div class="text-muted small">${currentEtab.adresse || ''} | Tél: ${currentEtab.tel || ''} | Email: ${currentEtab.email || ''}</div>
+                <div class="badge bg-primary mt-2 px-3 py-2 fs-6">BULLETIN - ${pNom.toUpperCase()}</div>
             </div>
-        </div>
-    `;
+            
+            <div class="row mb-4 p-3 rounded" style="background-color: #f8f9fc; border: 1px solid #e3e6f0;">
+                <div class="col-md-3">
+                    <div class="text-muted small fw-bold text-uppercase">Nom de l'élève</div>
+                    <div class="fs-5 fw-bold text-dark">${eData.nom} ${eData.prenom}</div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-muted small fw-bold text-uppercase">Matricule</div>
+                    <div class="fs-6 fw-semibold text-dark mt-1">${eData.matricule || '-'}</div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-muted small fw-bold text-uppercase">Classe</div>
+                    <div class="fs-6 fw-semibold text-dark mt-1">${eData.classes?.nom || '-'}</div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-muted small fw-bold text-uppercase">Année Scolaire</div>
+                    <div class="fs-6 fw-semibold text-dark mt-1">${document.getElementById('selPeriode').options[0].getAttribute('data-year') || '2025-2026'}</div>
+                </div>
+            </div>
+            
+            <table class="table table-bordered text-center align-middle bulletin-table mb-4">
+                <thead class="bg-primary text-white" style="background-color: var(--primary) !important;">
+                    <tr>
+                        <th class="text-start" style="width: 25%">Matière</th>
+                        <th>Coef</th>
+                        ${headerSeqHtml}
+                        <th>Moyenne (/20)</th>
+                        <th>Rang</th>
+                        <th>Total Points</th>
+                        <th class="text-start" style="width: 20%">Appréciation / Observation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rowsHtml}
+                </tbody>
+            </table>
+            
+            <div class="summary-box p-3 rounded mb-4" style="background: rgba(78,115,223,0.05); border: 1px solid rgba(78,115,223,0.2);">
+                <div class="row text-center align-items-center">
+                    <div class="col border-end">
+                        <div class="text-muted small fw-bold text-uppercase">Total Points</div>
+                        <div class="fs-4 fw-bold">${totalPoints.toFixed(2)}</div>
+                    </div>
+                    <div class="col border-end">
+                        <div class="text-muted small fw-bold text-uppercase">Total Coefs</div>
+                        <div class="fs-4 fw-bold">${totalCoefs.toFixed(2)}</div>
+                    </div>
+                    <div class="col border-end" style="background: white; border-radius: 8px; margin: 0 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); padding: 10px 0;">
+                        <div class="text-muted small fw-bold text-uppercase">Moyenne de l'élève</div>
+                        <div class="fs-2 fw-bold ${moyenneGenerale >= 10 ? 'text-success' : 'text-danger'}">${moyenneGenerale.toFixed(2)}</div>
+                        <div class="small text-muted">/20</div>
+                    </div>
+                    <div class="col border-end">
+                        <div class="text-muted small fw-bold text-uppercase">Mention</div>
+                        <div class="fs-5 fw-bold">${mention}</div>
+                    </div>
+                    <div class="col border-end">
+                        <div class="text-muted small fw-bold text-uppercase">Décision du Conseil</div>
+                        <div class="fs-5 fw-bold ${moyenneGenerale >= 10 ? 'text-success' : 'text-danger'}">${decision}</div>
+                    </div>
+                    <div class="col border-end">
+                        <div class="text-muted small fw-bold text-uppercase">Rang de l'élève</div>
+                        <div class="fs-4 fw-bold text-primary">${studentRankStr}</div>
+                    </div>
+                    <div class="col">
+                        <div class="text-muted small fw-bold text-uppercase">Moyenne Générale de la Classe</div>
+                        <div class="fs-5 fw-bold">${classMoyenne} <small class="text-muted" style="font-size:0.9rem">/20</small></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bulletin-footer d-flex justify-content-between mt-5 pt-3">
+                <div class="signature-box text-center" style="width: 250px">
+                    <div class="fw-bold">Le Professeur Titulaire</div>
+                    <div class="small text-muted mb-2">${eData.titulaireNom || ""}</div>
+                    <div style="border-bottom: 1px dotted #ccc; height: 60px;"></div>
+                </div>
+                <div class="signature-box text-center" style="width: 250px">
+                    <div class="fw-bold">${currentEtab.titre_directeur || "Le Chef d'Établissement"}</div>
+                    <div class="small text-muted mb-2">${currentEtab.nom_directeur || ""}</div>
+                    ${sigDir}
+                </div>
+            </div>
+        </div>`;
+        allHtml += singleBulletinHtml;
+    }
+    
+    document.getElementById('printableBulletin').innerHTML = allHtml;
     
     document.getElementById('bulletinPreviewContainer').classList.remove('d-none');
     
@@ -656,7 +626,7 @@ async function genererBulletin() {
         btnAnnulerPub.classList.add('d-none');
     }
     const btnWa = document.getElementById('btnWhatsApp');
-    if (btnWa) btnWa.classList.add('d-none');
+    if (btnWa) { if (isMassGeneration) btnWa.classList.add('d-none'); else btnWa.classList.add('d-none'); }
 
     if (existingB && existingB.statut === 'Publié') {
         btnValider.className = 'btn btn-secondary rounded-pill px-4 fw-bold';
@@ -668,7 +638,7 @@ async function genererBulletin() {
         if (btnAnnulerPub && isAdminOrDirection) {
             btnAnnulerPub.classList.remove('d-none');
         }
-        if (btnWa) btnWa.classList.remove('d-none');
+        if (btnWa && !isMassGeneration) btnWa.classList.remove('d-none');
     } else if(existingB && existingB.statut === 'Validé') {
         btnValider.className = 'btn btn-success rounded-pill px-4 fw-bold';
         btnValider.innerHTML = '<i class="fas fa-check-double me-1"></i>Bulletin déjà validé';
@@ -677,17 +647,16 @@ async function genererBulletin() {
 }
 
 async function validerBulletin() {
-    if(!generatedData) return;
+    if(!isMassGeneration && !generatedData) return;
+    if(isMassGeneration && (!generatedDataBatch || generatedDataBatch.length === 0)) return;
     
-    generatedData.statut = 'Validé';
+    if(isMassGeneration) { generatedDataBatch.forEach(b => b.statut = 'Validé'); } else { if(generatedData) generatedData.statut = 'Validé'; }
     const btn = document.getElementById('btnValider');
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Validation...';
     
-    const { error } = await window.supabase.from('bulletins').upsert({
-        ...generatedData,
-        updated_at: new Date().toISOString()
-    }, { onConflict: 'eleve_id, periode_id' });
+    let batchData = isMassGeneration ? generatedDataBatch : [{...generatedData, updated_at: new Date().toISOString()}];
+    const { error } = await window.supabase.from('bulletins').upsert(batchData, { onConflict: 'eleve_id, periode_id' });
     
     if(error) {
         alert("Erreur lors de la validation: " + error.message);
@@ -700,17 +669,16 @@ async function validerBulletin() {
 }
 
 async function publierBulletin() {
-    if(!generatedData) return;
+    if(!isMassGeneration && !generatedData) return;
+    if(isMassGeneration && (!generatedDataBatch || generatedDataBatch.length === 0)) return;
     
-    generatedData.statut = 'Publié';
+    if(isMassGeneration) { generatedDataBatch.forEach(b => b.statut = 'Publié'); } else { if(generatedData) generatedData.statut = 'Publié'; }
     const btn = document.getElementById('btnPublier');
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Publication...';
     
-    const { error } = await window.supabase.from('bulletins').upsert({
-        ...generatedData,
-        updated_at: new Date().toISOString()
-    }, { onConflict: 'eleve_id, periode_id' });
+    let batchData = isMassGeneration ? generatedDataBatch : [{...generatedData, updated_at: new Date().toISOString()}];
+    const { error } = await window.supabase.from('bulletins').upsert(batchData, { onConflict: 'eleve_id, periode_id' });
     
     if(error) {
         alert("Erreur lors de la publication: " + error.message);
@@ -730,7 +698,7 @@ async function publierBulletin() {
         }
         
         const btnWa = document.getElementById('btnWhatsApp');
-        if (btnWa) btnWa.classList.remove('d-none');
+        if (btnWa && !isMassGeneration) btnWa.classList.remove('d-none');
         
         // Envoi automatique via WhatsApp (peut être bloqué par le navigateur, d'où le bouton manuel)
         window.envoyerWhatsApp();
@@ -738,18 +706,24 @@ async function publierBulletin() {
 }
 
 async function annulerPublication() {
-    if(!generatedData) return;
+    if(!isMassGeneration && !generatedData) return;
+    if(isMassGeneration && (!generatedDataBatch || generatedDataBatch.length === 0)) return;
     
     const btn = document.getElementById('btnAnnulerPub');
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Annulation...';
     
-    generatedData.statut = 'Validé';
+    if(isMassGeneration) { generatedDataBatch.forEach(b => b.statut = 'Validé'); } else { if(generatedData) generatedData.statut = 'Validé'; }
     
-    const { error } = await window.supabase.from('bulletins').update({
-        statut: 'Validé',
-        updated_at: new Date().toISOString()
-    }).eq('eleve_id', generatedData.eleve_id).eq('periode_id', generatedData.periode_id);
+    let error = null;
+    if (isMassGeneration) {
+        const eIds = generatedDataBatch.map(b => b.eleve_id);
+        const {error: err} = await window.supabase.from('bulletins').update({statut: 'Validé', updated_at: new Date().toISOString()}).in('eleve_id', eIds).eq('periode_id', generatedDataBatch[0].periode_id);
+        error = err;
+    } else {
+        const {error: err} = await window.supabase.from('bulletins').update({statut: 'Validé', updated_at: new Date().toISOString()}).eq('eleve_id', generatedData.eleve_id).eq('periode_id', generatedData.periode_id);
+        error = err;
+    }
     
     if(error) {
         alert("Erreur lors de l'annulation: " + error.message);
@@ -776,7 +750,7 @@ async function annulerPublication() {
         }
         
         const btnWa = document.getElementById('btnWhatsApp');
-        if (btnWa) btnWa.classList.add('d-none');
+        if (btnWa) { if (isMassGeneration) btnWa.classList.add('d-none'); else btnWa.classList.add('d-none'); }
         
         alert("La publication du bulletin a été annulée. Vous pouvez maintenant corriger les erreurs et republier.");
     }
@@ -811,7 +785,7 @@ window.exporterPDF = function() {
     
     const opt = {
         margin:       [10, 10, 10, 10],
-        filename:     `Bulletin_${currentEleveData.nom}_${currentEleveData.prenom}.pdf`,
+        filename: isMassGeneration ? `Bulletins_Masse_${new Date().getTime()}.pdf` : `Bulletin_${currentEleveData.nom}_${currentEleveData.prenom}.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  { scale: 2, useCORS: true },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
