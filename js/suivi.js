@@ -138,42 +138,51 @@ function showDashboard(data) {
         let detailsHtml = `<div class="bulletin-details" id="details-${b.id}" style="display:none; margin-top: 15px;">`;
         
         if (b.donnees_json && Object.keys(b.donnees_json).length > 0 && !b.donnees_json.lignes) {
-            // Nouveau format des données
-            let categories = {};
-            for (let mId in b.donnees_json) {
-                let m = b.donnees_json[mId];
-                let cat = m.categorie || 'Enseignement Général';
-                if (!categories[cat]) categories[cat] = [];
-                categories[cat].push(m);
-            }
-
+            let isIntegral = !!b.donnees_json.html_rows;
             let rowsHtml = '';
-            for (let cat in categories) {
-                rowsHtml += `<tr><td colspan="5" class="bg-light fw-bold text-start text-primary" style="text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.5px;">${_e(cat)}</td></tr>`;
-                categories[cat].forEach(m => {
-                    let sum = 0; let count = 0;
-                    for (let p in m.notesPeriodes) {
-                        sum += m.notesPeriodes[p];
-                        count++;
-                    }
-                    let moy = count > 0 ? (sum / count) : 0;
-                    let moyFormatted = moy.toFixed(2);
-                    let noteColor = moy >= 10 ? 'text-success' : 'text-danger';
-                    let totalPoints = (moy * m.coef).toFixed(2);
-                    
-                    rowsHtml += `
-                        <tr>
-                            <td class="text-start">
-                                <div class="fw-bold text-dark" style="font-size: 0.95rem">${_e(m.nom)}</div>
-                                <div class="text-muted" style="font-size: 0.75rem; font-style: italic;">Prof: ${_e(m.prof)}</div>
-                            </td>
-                            <td class="align-middle">${m.coef}</td>
-                            <td class="align-middle fw-bold ${noteColor}" style="background-color:rgba(0,0,0,.03);">${moyFormatted}</td>
-                            <td class="align-middle fw-bold">${totalPoints}</td>
-                            <td class="text-muted small text-start align-middle">${_e(m.appreciation)}</td>
-                        </tr>
-                    `;
-                });
+            let headerSeqHtml = '';
+            
+            if (isIntegral) {
+                rowsHtml = b.donnees_json.html_rows;
+                headerSeqHtml = b.donnees_json.html_header || '';
+            } else {
+                let matStats = b.donnees_json.matieres || b.donnees_json;
+                let categories = {};
+                for (let mId in matStats) {
+                    if (mId === 'html_header' || mId === 'html_rows') continue;
+                    let m = matStats[mId];
+                    let cat = m.categorie || 'Enseignement Général';
+                    if (!categories[cat]) categories[cat] = [];
+                    categories[cat].push(m);
+                }
+
+                for (let cat in categories) {
+                    rowsHtml += `<tr><td colspan="5" class="bg-light fw-bold text-start text-primary" style="text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.5px;">${_e(cat)}</td></tr>`;
+                    categories[cat].forEach(m => {
+                        let sum = 0; let count = 0;
+                        for (let p in m.notesPeriodes) {
+                            sum += m.notesPeriodes[p];
+                            count++;
+                        }
+                        let moy = count > 0 ? (sum / count) : 0;
+                        let moyFormatted = moy.toFixed(2);
+                        let noteColor = moy >= 10 ? 'text-success' : 'text-danger';
+                        let totalPoints = (moy * m.coef).toFixed(2);
+                        
+                        rowsHtml += `
+                            <tr>
+                                <td class="text-start">
+                                    <div class="fw-bold text-dark" style="font-size: 0.95rem">${_e(m.nom)}</div>
+                                    <div class="text-muted" style="font-size: 0.75rem; font-style: italic;">Prof: ${_e(m.prof)}</div>
+                                </td>
+                                <td class="align-middle">${m.coef}</td>
+                                <td class="align-middle fw-bold ${noteColor}" style="background-color:rgba(0,0,0,.03);">${moyFormatted}</td>
+                                <td class="align-middle fw-bold">${totalPoints}</td>
+                                <td class="text-muted small text-start align-middle">${_e(m.appreciation)}</td>
+                            </tr>
+                        `;
+                    });
+                }
             }
 
             let cInfo = {
@@ -224,10 +233,12 @@ function showDashboard(data) {
                         <thead class="text-white" style="background-color: #0d6efd !important;">
                             <tr>
                                 <th class="text-start" style="width: 25%">Matière</th>
-                                <th style="width: 5%">Coef</th>
-                                <th style="width: 15%">Moyenne (/20)</th>
-                                <th style="width: 15%">Total Points</th>
-                                <th class="text-start" style="width: 40%">Appréciation / Observation</th>
+                                <th>Coef</th>
+                                ${headerSeqHtml}
+                                <th>Moyenne (/20)</th>
+                                ${isIntegral ? '<th>Rang</th>' : ''}
+                                <th>Total Points</th>
+                                <th class="text-start" style="width: 20%">Appréciation / Observation</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -247,7 +258,7 @@ function showDashboard(data) {
                             <div class="fs-4 fw-bold">${parseFloat(b.total_coefs || 0).toFixed(2)}</div>
                         </div>
                         <div class="col border-end" style="background: white; border-radius: 8px; margin: 0 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); padding: 10px 0;">
-                            <div class="text-muted small fw-bold text-uppercase">Moyenne Générale</div>
+                            <div class="text-muted small fw-bold text-uppercase">Moyenne de l'élève</div>
                             <div class="fs-2 fw-bold ${parseFloat(b.moyenne_generale) >= 10 ? 'text-success' : 'text-danger'}">${parseFloat(b.moyenne_generale || 0).toFixed(2)}</div>
                             <div class="small text-muted">/20</div>
                         </div>
