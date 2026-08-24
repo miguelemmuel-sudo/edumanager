@@ -925,7 +925,10 @@ window.envoyerWhatsApp = async function() {
     const parentName = currentEleveData.parent_nom || 'Parent';
     const portalUrl = window.location.origin + '/suivi.html';
     
-    const message = `Bonjour Mr ou Mme ${parentName},\n\nLe bulletin de ${currentEleveData.prenom} est disponible.\n\nMoyenne : ${studentAverage}/20\nRang : ${studentRank}\n\nMatricule : ${currentEleveData.matricule || 'N/A'}\nCode secret : ${currentEleveData.code_acces || 'N/A'}\n\nConsultez tous les détails (notes par matière, coefficients, etc.) au lien suivant : ${portalUrl}`;
+    const selPeriode = document.getElementById('selPeriode');
+    const periodeName = selPeriode && selPeriode.selectedIndex > -1 ? selPeriode.options[selPeriode.selectedIndex].text : 'la période';
+    
+    const message = `Bonjour Mr ou Mme ${parentName},\n\nLe bulletin de ${currentEleveData.prenom} pour la période : ${periodeName} est disponible.\n\nMoyenne : ${studentAverage}/20\nRang : ${studentRank}\n\nMatricule : ${currentEleveData.matricule || 'N/A'}\nCode secret : ${currentEleveData.code_acces || 'N/A'}\n\nConsultez tous les détails (notes par matière, coefficients, etc.) au lien suivant : ${portalUrl}`;
     
     const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
     window.open(waUrl, '_blank');
