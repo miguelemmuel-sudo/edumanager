@@ -234,6 +234,16 @@ async function initBulletins() {
         (classes||[]).map(c => `<option value="${c.id}">${c.nom}</option>`).join('');
 }
 
+function getAppreciation(moy) {
+    if(moy >= 18) return 'Excellent';
+    if(moy >= 16) return 'Très Bien';
+    if(moy >= 14) return 'Bien';
+    if(moy >= 12) return 'Assez Bien';
+    if(moy >= 10) return 'Passable';
+    if(moy >= 8) return 'Insuffisant';
+    return 'Faible';
+}
+
 async function loadEleves() {
     const cid = document.getElementById('selClasse').value;
     const selEleve = document.getElementById('selEleve');
@@ -449,6 +459,9 @@ async function genererBulletin() {
                 subjectAverages[mId].push(parseFloat(moy.toFixed(2)));
                 
                 m.moyenneCalculee = parseFloat(moy.toFixed(2));
+                
+                // Générer automatiquement l'appréciation basée sur la moyenne pour être toujours cohérent
+                m.appreciation = getAppreciation(m.moyenneCalculee);
             }
         }
         
@@ -503,11 +516,7 @@ async function genererBulletin() {
         let totalCoefs = studentStats[currentEid].totalCoefs;
         let moyenneGenerale = studentStats[currentEid].moyenneGenerale;
         
-        let mention = 'Passable';
-        if(moyenneGenerale >= 16) mention = 'Très Bien';
-        else if(moyenneGenerale >= 14) mention = 'Bien';
-        else if(moyenneGenerale >= 12) mention = 'Assez Bien';
-        else if(moyenneGenerale < 10) mention = 'Insuffisant';
+        let mention = getAppreciation(moyenneGenerale);
         
         let decision = moyenneGenerale >= 10 ? 'Admis' : 'Échec';
         
