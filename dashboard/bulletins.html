@@ -406,12 +406,23 @@ async function genererBulletin() {
     }
     
     const elevesIds = elevesClasse.map(e => e.id);
-    const { data: allNotes, error: errNotes } = await window.supabase
+    const {data: currentAnneeInfo} = await window.supabase.from('annees_academiques').select('statut').eq('id', window.currentAcademicYearId).maybeSingle();
+    const isCloturee = currentAnneeInfo && currentAnneeInfo.statut === 'Clôturée';
+
+    let queryNotes = window.supabase
         .from('notes')
         .select('eleve_id, matiere_id, valeur, periode_id, commentaire, matieres(nom, coefficient_defaut, categorie, enseignants(nom, prenom))')
         .in('eleve_id', elevesIds)
-        .in('periode_id', periodesRecherche)
-        .eq('annee_academique_id', window.currentAcademicYearId);
+        .in('periode_id', periodesRecherche);
+        
+    if (isCloturee) {
+        // Pour l'année passée, inclure les notes qui n'avaient pas d'année définie (legacy)
+        queryNotes = queryNotes.or(`annee_academique_id.eq.${window.currentAcademicYearId},annee_academique_id.is.null`);
+    } else {
+        queryNotes = queryNotes.eq('annee_academique_id', window.currentAcademicYearId);
+    }
+    
+    const { data: allNotes, error: errNotes } = await queryNotes;
         
     if(!allNotes || allNotes.length === 0) {
         document.getElementById('printableBulletin').innerHTML = `
