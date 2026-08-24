@@ -948,6 +948,20 @@ function showTab(name, el) {
             }
         };
         
+        window.cloturerAnnee = async function(id) {
+            if (!confirm("Voulez-vous vraiment clôturer cette année manuellement ?")) return;
+            try {
+                const res = await window.supabase.from('annees_academiques').update({ statut: 'Clôturée' }).eq('id', id);
+                if (res.error) alert("Erreur: " + res.error.message);
+                else {
+                    if(window.showToast) window.showToast("Année clôturée avec succès.", "success");
+                    loadAnnees();
+                }
+            } catch(e) {
+                alert("Erreur: " + e.message);
+            }
+        };
+        
         window.supprimerAnnee = async function(id) {
             if (!confirm("Voulez-vous supprimer cette année ? Cette action est irréversible.")) return;
             const res = await window.supabase.from('annees_academiques').delete().eq('id', id);
