@@ -353,9 +353,13 @@ async function fetchAndRenderAdminDashboard() {
         let recentEleves = [];
         let dataFetched = false;
         
+        // Data for charts
+        let monthlyCounts = new Array(12).fill(0); // For Sep to Aug
+        let statusCounts = { 'Payé': 0, 'Partiel': 0, 'Inconnu': 0, 'Impayé': 0 };
+        
         if (navigator.onLine && window.supabase) {
             try {
-                let queryEleves = window.supabase.from('inscriptions_annuelles').select('id').eq('annee_academique_id', window.currentAcademicYearId);
+                let queryEleves = window.supabase.from('inscriptions_annuelles').select('id, created_at, statut_paiement').eq('annee_academique_id', window.currentAcademicYearId);
                 let queryEnseignants = window.supabase.from('enseignants').select('id');
                 let queryClasses = window.supabase.from('classes').select('id').eq('annee_academique_id', window.currentAcademicYearId);
                 let queryPaiements = window.supabase.from('paiements').select('montant').eq('annee_academique_id', window.currentAcademicYearId);
@@ -371,6 +375,32 @@ async function fetchAndRenderAdminDashboard() {
                     
                     const paiements = resPaiements.data || [];
                     paiements.forEach(p => revenus += parseFloat(p.montant || 0));
+                    
+                    // Chart data extraction
+                    if (resEleves.data) {
+                        resEleves.data.forEach(insc => {
+                            if (insc.statut_paiement) {
+                                const st = insc.statut_paiement;
+                                if (st === 'Payé' || st === 'Partiel' || st === 'Impayé') {
+                                    statusCounts[st] = (statusCounts[st] || 0) + 1;
+                                } else {
+                                    statusCounts['Impayé'] = (statusCounts['Impayé'] || 0) + 1; // Default
+                                }
+                            } else {
+                                statusCounts['Impayé'] = (statusCounts['Impayé'] || 0) + 1;
+                            }
+                            
+                            if (insc.created_at) {
+                                const d = new Date(insc.created_at);
+                                const m = d.getMonth(); // 0-11 (Jan=0, Sep=8)
+                                // Map to academic year starting in Sept (index 0)
+                                const mappedMonth = m >= 8 ? m - 8 : m + 4;
+                                if (mappedMonth >= 0 && mappedMonth < 12) {
+                                    monthlyCounts[mappedMonth]++;
+                                }
+                            }
+                        });
+                    }
                     
                     dataFetched = true;
                 }
@@ -396,6 +426,29 @@ async function fetchAndRenderAdminDashboard() {
             paiements = paiements.filter(p => p.annee_academique_id === window.currentAcademicYearId);
             revenus = paiements.reduce((acc, p) => acc + parseFloat(p.montant || 0), 0);
             
+            // Chart data extraction offline
+            localInsc.forEach(insc => {
+                if (insc.statut_paiement) {
+                    const st = insc.statut_paiement;
+                    if (st === 'Payé' || st === 'Partiel' || st === 'Impayé') {
+                        statusCounts[st] = (statusCounts[st] || 0) + 1;
+                    } else {
+                        statusCounts['Impayé'] = (statusCounts['Impayé'] || 0) + 1;
+                    }
+                } else {
+                    statusCounts['Impayé'] = (statusCounts['Impayé'] || 0) + 1;
+                }
+                
+                if (insc.created_at) {
+                    const d = new Date(insc.created_at);
+                    const m = d.getMonth();
+                    const mappedMonth = m >= 8 ? m - 8 : m + 4;
+                    if (mappedMonth >= 0 && mappedMonth < 12) {
+                        monthlyCounts[mappedMonth]++;
+                    }
+                }
+            });
+            
             // Pour recentEleves en hors ligne
             const allEleves = await window.edumanagerDB.eleves.toArray();
             // On récupère les classes pour joindre le nom (simili-jointure)
@@ -414,6 +467,58 @@ async function fetchAndRenderAdminDashboard() {
             scValues[1].textContent = revenus.toLocaleString('fr-FR') + ' FCFA';
             scValues[2].textContent = nbEnseignants;
             scValues[3].textContent = nbClasses;
+        }
+
+        // --- Render Charts ---
+        const enrollmentsChart = document.getElementById('enrollmentsChart');
+        const enrollmentsLabels = document.getElementById('enrollmentsLabels');
+        if (enrollmentsChart && enrollmentsLabels) {
+            const months = ['Sep', 'Oct', 'Nov', 'Déc', 'Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Aoû'];
+            let maxCount = Math.max(...monthlyCounts, 5); // Minimum scale of 5
+            
+            enrollmentsChart.innerHTML = monthlyCounts.map(count => {
+                const pct = Math.round((count / maxCount) * 100);
+                return `<div style="flex:1; background: #2563EB; height: ${pct}%; border-radius: 4px 4px 0 0; min-height: 2px;" title="${count} inscriptions"></div>`;
+            }).join('');
+            
+            enrollmentsLabels.innerHTML = months.map(m => `<div class="text-center" style="flex:1; font-size: 0.65rem;">${m}</div>`).join('');
+            
+            // Set active year in the chart select
+            const academicYearSelect = document.getElementById('academicYearSelect');
+            if (academicYearSelect && window.edumanagerDB) {
+                const yearDoc = await window.edumanagerDB.annees_academiques.get(window.currentAcademicYearId);
+                if (yearDoc) {
+                    academicYearSelect.innerHTML = `<option>${yearDoc.nom}</option>`;
+                }
+            }
+        }
+        
+        const paymentsDonut = document.getElementById('paymentsDonut');
+        if (paymentsDonut) {
+            const total = nbEleves || 1; // Prevent division by zero
+            const pPaye = Math.round((statusCounts['Payé'] / total) * 100) || 0;
+            const pPartiel = Math.round((statusCounts['Partiel'] / total) * 100) || 0;
+            const pImpaye = 100 - pPaye - pPartiel;
+            
+            // Format for conic-gradient
+            // var(--primary) for Payé, var(--warning) for Partiel, var(--danger) for Impayé
+            const cPaye = pPaye;
+            const cPartiel = pPaye + pPartiel;
+            
+            if (nbEleves === 0) {
+                paymentsDonut.style.background = 'conic-gradient(#e2e8f0 100%)';
+            } else {
+                paymentsDonut.style.background = `conic-gradient(var(--primary) ${cPaye}%, var(--warning) ${cPaye}% ${cPartiel}%, var(--danger) ${cPartiel}%)`;
+            }
+            
+            const pdTxt = document.getElementById('paymentsPaidText');
+            if (pdTxt) pdTxt.textContent = `${pPaye}% · ${statusCounts['Payé']} élèves`;
+            
+            const pPartTxt = document.getElementById('paymentsPartialText');
+            if (pPartTxt) pPartTxt.textContent = `${pPartiel}% · ${statusCounts['Partiel']} élèves`;
+            
+            const pImpTxt = document.getElementById('paymentsUnpaidText');
+            if (pImpTxt) pImpTxt.textContent = `${nbEleves === 0 ? 0 : pImpaye}% · ${statusCounts['Impayé']} élèves`;
         }
 
         const tbody = document.getElementById('dynamicBody');
