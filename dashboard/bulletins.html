@@ -210,12 +210,16 @@ let periodesDict = {};
 async function initBulletins() {
     if(!window.supabase) return;
     
+    const sessionStr = localStorage.getItem('edu_session');
+    const etabId = sessionStr ? JSON.parse(sessionStr).etablissement_id : null;
+    
     // Charger l'année académique active
-    const { data: anneeActive } = await window.supabase
-        .from('annees_academiques')
-        .select('id')
-        .eq('statut', 'Active')
-        .maybeSingle();
+    let anneeQuery = window.supabase.from('annees_academiques').select('id').eq('statut', 'Active');
+    if (etabId) anneeQuery = anneeQuery.eq('etablissement_id', etabId);
+    
+    const { data: anneeActive, error: anneeError } = await anneeQuery.maybeSingle();
+    
+    if (anneeError) console.error("Erreur année active:", anneeError);
     window.currentAcademicYearId = anneeActive ? anneeActive.id : null;
     
     if(!window.currentAcademicYearId) {
