@@ -540,8 +540,7 @@ async function genererBulletin() {
             decision: decision,
             donnees_json: matStats,
             statut: 'Brouillon',
-            rang: rankIdx !== -1 ? rankIdx + 1 : null,
-            rang_str: studentRankStr
+            rang: rankIdx !== -1 ? rankIdx + 1 : null
         });
         
         let classMoyenne = classNotes.length > 0 ? (classNotes.reduce((a,b)=>a+b,0) / classNotes.length).toFixed(2) : 'N/A';
