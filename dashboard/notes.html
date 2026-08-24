@@ -246,10 +246,24 @@ window.chargerGrille = async function() {
     document.getElementById('gridTitle').innerHTML = `<i class="fas fa-table text-primary me-2"></i>Saisie : ${cNom} - ${mNom} (${pNom})`;
     
     // 1. Charger les élèves de la classe via leurs inscriptions pour l'année courante
-    const {data: inscr} = await window.supabase.from('inscriptions_annuelles')
-        .select('eleve_id, eleves(id, prenom, nom, matricule)')
+    const debugDiv = document.createElement('div');
+    debugDiv.className = 'alert alert-info mt-3';
+    debugDiv.innerHTML = `<strong>DEBUG:</strong> classe_id=${currentClasseId}, annee_id=${window.currentAcademicYearId}`;
+    document.getElementById('gridContainer').prepend(debugDiv);
+
+    const {data: inscr, error: inscrError} = await window.supabase.from('inscriptions_annuelles')
+        .select('eleve_id, statut, eleves(id, prenom, nom, matricule)')
         .eq('classe_id', currentClasseId)
         .eq('annee_academique_id', window.currentAcademicYearId);
+    
+    if (inscrError) {
+        debugDiv.innerHTML += `<br><span class='text-danger'>Error: ${inscrError.message}</span>`;
+    } else {
+        debugDiv.innerHTML += `<br><strong>DEBUG:</strong> Found ${inscr ? inscr.length : 0} rows in inscriptions_annuelles.`;
+        if (inscr && inscr.length > 0) {
+            debugDiv.innerHTML += `<br><strong>DEBUG:</strong> First row: ${JSON.stringify(inscr[0])}`;
+        }
+    }
     
     currentEleves = inscr ? inscr.map(i => i.eleves).filter(e => e) : [];
     currentEleves.sort((a,b) => (a.nom||'').localeCompare(b.nom||''));
