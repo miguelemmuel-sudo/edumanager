@@ -77,12 +77,27 @@
         </tbody>
       </table>
     </div>
+    <div class="dash-card-footer d-flex justify-content-end p-3 bg-light border-top">
+        <button class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm" onclick="promouvoirSelection()">
+            <i class="fas fa-check-circle me-2"></i>Valider et inscrire pour la nouvelle année
+        </button>
+    </div>
+  </div>
+
+  <!-- Rapport de l'année écoulée -->
+  <div class="dash-card mt-4">
+    <div class="dash-card-header">
+      <span class="dash-card-title"><i class="fas fa-chart-bar text-primary me-2"></i>Rapport de l'année écoulée</span>
+      <button class="btn btn-outline-primary btn-sm" onclick="genererRapportAnnuel()"><i class="fas fa-sync-alt me-1"></i>Actualiser</button>
+    </div>
+    <div class="dash-card-body">
+      <div class="row text-center" id="rapportAnnuelContainer">
+         <div class="col-12 py-4 text-muted"><i class="fas fa-info-circle me-2"></i>Le rapport s'affichera ici après sélection d'une classe.</div>
+      </div>
+    </div>
   </div>
 </main>
 
-
-<script src="/js/vendor/bootstrap.bundle.min.js"></script>
-<script src="../js/dashboard.js"></script>
 <script src="/js/vendor/bootstrap.bundle.min.js"></script>
 <script src="../js/dashboard.js"></script>
 <script src="../js/vendor/supabase.js"></script>
@@ -183,6 +198,15 @@
             if (!currentClassName) return null;
             const str = currentClassName.toUpperCase();
             
+            const findBestMatch = (targetName) => {
+                const exact = currentClasses.find(c => c.nom.toUpperCase() === targetName);
+                if (exact) return exact.id;
+                const parts = targetName.split(' ');
+                const approx = currentClasses.find(c => c.nom.toUpperCase().includes(parts[0]));
+                if (approx) return approx.id;
+                return null;
+            };
+
             // Logique Collège/Lycée (ex: 6ème -> 5ème)
             const matchDigit = str.match(/(\d+)(E|ÈME|EME)?/);
             if (matchDigit) {
@@ -190,8 +214,8 @@
                 if (num > 1) { 
                     const nextNum = num - 1;
                     const nextStr = str.replace(matchDigit[1], nextNum);
-                    const found = currentClasses.find(c => c.nom.toUpperCase() === nextStr);
-                    if(found) return found.id;
+                    const foundId = findBestMatch(nextStr);
+                    if(foundId) return foundId;
                 }
             }
             
@@ -200,8 +224,8 @@
             for (let i = 0; i < parcours.length - 1; i++) {
                 if (str.includes(parcours[i])) {
                     const nextStr = str.replace(parcours[i], parcours[i+1]);
-                    const found = currentClasses.find(c => c.nom.toUpperCase() === nextStr);
-                    if (found) return found.id;
+                    const foundId = findBestMatch(nextStr);
+                    if (foundId) return foundId;
                 }
             }
             return null;
@@ -287,6 +311,58 @@
              `;
              tbody.appendChild(tr);
         });
+        
+        genererRapportAnnuel();
+    }
+    
+    function genererRapportAnnuel() {
+        const container = document.getElementById('rapportAnnuelContainer');
+        if (!studentsToPromote || studentsToPromote.length === 0) {
+            container.innerHTML = '<div class="col-12 py-4 text-muted">Aucune donnée disponible pour le rapport.</div>';
+            return;
+        }
+        
+        const total = studentsToPromote.length;
+        let admis = 0;
+        let redoublants = 0;
+        let nonEvalues = 0;
+        
+        studentsToPromote.forEach(insc => {
+             const moyStr = insc.moyenne_annuelle_calculee || "N/A";
+             const moyNum = parseFloat(moyStr);
+             if (isNaN(moyNum)) nonEvalues++;
+             else if (moyNum >= 10) admis++;
+             else redoublants++;
+        });
+        
+        const tauxReussite = total > 0 ? ((admis / total) * 100).toFixed(1) : 0;
+        
+        container.innerHTML = `
+            <div class="col-md-3 col-sm-6 mb-3">
+                <div class="p-3 border rounded shadow-sm bg-white">
+                    <h6 class="text-uppercase text-muted small fw-bold">Effectif Évalué</h6>
+                    <h3 class="fw-bold mb-0">${total}</h3>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-3">
+                <div class="p-3 border rounded shadow-sm bg-white border-bottom-success">
+                    <h6 class="text-uppercase text-success small fw-bold">Admis</h6>
+                    <h3 class="fw-bold mb-0 text-success">${admis}</h3>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-3">
+                <div class="p-3 border rounded shadow-sm bg-white border-bottom-danger">
+                    <h6 class="text-uppercase text-danger small fw-bold">Redoublants</h6>
+                    <h3 class="fw-bold mb-0 text-danger">${redoublants}</h3>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-3">
+                <div class="p-3 border rounded shadow-sm bg-white border-bottom-primary">
+                    <h6 class="text-uppercase text-primary small fw-bold">Taux de Réussite</h6>
+                    <h3 class="fw-bold mb-0 text-primary">${tauxReussite}%</h3>
+                </div>
+            </div>
+        `;
     }
 
     async function promouvoirSelection() {
