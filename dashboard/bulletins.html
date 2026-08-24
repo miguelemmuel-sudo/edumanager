@@ -203,12 +203,16 @@ let periodesDict = {};
 async function initBulletins() {
     if(!window.supabase) return;
     
-    // Charger infos Etablissement
-    const {data: etab} = await window.supabase.from('etablissements').select('*').limit(1).maybeSingle();
-    currentEtab = etab || { nom: "Mon Établissement", adresse: "", tel: "", email: "" };
+    // Charger en parallèle pour plus de rapidité
+    const [etabRes, periodesRes, classesRes] = await Promise.all([
+        window.supabase.from('etablissements').select('*').limit(1).maybeSingle(),
+        window.supabase.from('periodes_evaluation').select('*').eq('actif', true).order('ordre'),
+        window.supabase.from('classes').select('id, nom').order('nom')
+    ]);
     
-    // Charger Périodes
-    const {data: periodes} = await window.supabase.from('periodes_evaluation').select('*').eq('actif', true).order('ordre');
+    currentEtab = etabRes.data || { nom: "Mon Établissement", adresse: "", tel: "", email: "" };
+    const periodes = periodesRes.data;
+    const classes = classesRes.data;
     
     // Build dict
     periodesDict = {};
@@ -219,8 +223,6 @@ async function initBulletins() {
     document.getElementById('selPeriode').innerHTML = '<option value="">Sélectionner...</option>' + 
         (periodes||[]).map(p => `<option value="${p.id}">${p.nom}</option>`).join('');
         
-    // Charger Classes
-    const {data: classes} = await window.supabase.from('classes').select('id, nom').order('nom');
     document.getElementById('selClasse').innerHTML = '<option value="">Sélectionner une classe</option>' + 
         (classes||[]).map(c => `<option value="${c.id}">${c.nom}</option>`).join('');
 }
@@ -238,7 +240,7 @@ async function loadEleves() {
     selEleve.innerHTML = '<option value="">Chargement...</option>';
     selEleve.disabled = true;
     
-    const {data: eleves} = await window.supabase.from('eleves').select('*').eq('classe_id', cid).order('nom');
+    const {data: eleves} = await window.supabase.from('eleves').select('id, nom, prenom').eq('classe_id', cid).order('nom');
     if(!eleves || eleves.length === 0) {
         selEleve.innerHTML = '<option value="">Aucun élève</option>';
     } else {
