@@ -231,21 +231,27 @@ window.chargerGrille = async function() {
     const pNom = document.getElementById('selPeriode').options[document.getElementById('selPeriode').selectedIndex].text;
     document.getElementById('gridTitle').innerHTML = `<i class="fas fa-table text-primary me-2"></i>Saisie : ${cNom} - ${mNom} (${pNom})`;
     
-    // 1. Charger les élèves de la classe
-    const {data: eleves} = await window.supabase.from('eleves').select('id, prenom, nom, matricule').eq('classe_id', currentClasseId).order('nom');
-    currentEleves = eleves || [];
+    // 1. Charger les élèves de la classe via leurs inscriptions pour l'année courante
+    const {data: inscr} = await window.supabase.from('inscriptions_annuelles')
+        .select('eleves(id, prenom, nom, matricule)')
+        .eq('classe_id', currentClasseId)
+        .eq('annee_academique_id', window.currentAcademicYearId);
+    
+    currentEleves = inscr ? inscr.map(i => i.eleves).filter(e => e) : [];
+    currentEleves.sort((a,b) => (a.nom||'').localeCompare(b.nom||''));
     
     if(currentEleves.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">Aucun élève dans cette classe.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">Aucun élève dans cette classe pour cette année académique.</td></tr>';
         return;
     }
     
-    // 2. Charger les notes existantes pour cette matière, classe et période
+    // 2. Charger les notes existantes pour cette matière, classe, période ET année académique
     const {data: notes} = await window.supabase
         .from('notes')
         .select('*')
         .eq('matiere_id', currentMatiereId)
-        .eq('periode_id', currentPeriodeId);
+        .eq('periode_id', currentPeriodeId)
+        .eq('annee_academique_id', window.currentAcademicYearId);
         
     currentNotes = notes || [];
     
@@ -326,7 +332,8 @@ window.sauvegarderNotes = async function() {
                     type_evaluation: 'Séquence',
                     valeur: parseFloat(noteInput.value),
                     commentaire: appreInput.value,
-                    statut: 'Brouillon'
+                    statut: 'Brouillon',
+                    annee_academique_id: window.currentAcademicYearId
                 };
                 if (ancienneNote && ancienneNote.id) {
                     noteObj.id = ancienneNote.id;
