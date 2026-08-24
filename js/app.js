@@ -359,7 +359,7 @@ async function fetchAndRenderAdminDashboard() {
         
         if (navigator.onLine && window.supabase) {
             try {
-                let queryEleves = window.supabase.from('inscriptions_annuelles').select('id, eleve_id, created_at').eq('annee_academique_id', window.currentAcademicYearId);
+                let queryEleves = window.supabase.from('inscriptions_annuelles').select('id, eleve_id, created_at, eleves(created_at)').eq('annee_academique_id', window.currentAcademicYearId);
                 let queryEnseignants = window.supabase.from('enseignants').select('id');
                 let queryClasses = window.supabase.from('classes').select('id').eq('annee_academique_id', window.currentAcademicYearId);
                 let queryPaiements = window.supabase.from('paiements').select('eleve_id, montant, statut').eq('annee_academique_id', window.currentAcademicYearId);
@@ -402,8 +402,9 @@ async function fetchAndRenderAdminDashboard() {
                             }
                             statusCounts[derivedStatus] = (statusCounts[derivedStatus] || 0) + 1;
                             
-                            if (insc.created_at) {
-                                const d = new Date(insc.created_at);
+                            const actualDate = (insc.eleves && insc.eleves.created_at) ? insc.eleves.created_at : insc.created_at;
+                            if (actualDate) {
+                                const d = new Date(actualDate);
                                 const m = d.getMonth(); // 0-11 (Jan=0, Sep=8)
                                 // Map to academic year starting in Sept (index 0)
                                 const mappedMonth = m >= 8 ? m - 8 : m + 4;
@@ -453,6 +454,11 @@ async function fetchAndRenderAdminDashboard() {
                 }
             });
             
+            // Pour recentEleves en hors ligne
+            const allEleves = await window.edumanagerDB.eleves.toArray();
+            // On récupère les classes pour joindre le nom (simili-jointure)
+            const allClasses = await window.edumanagerDB.classes.toArray();
+            
             // Chart data extraction offline
             localInsc.forEach(insc => {
                 let derivedStatus = 'Impayé';
@@ -461,8 +467,11 @@ async function fetchAndRenderAdminDashboard() {
                 }
                 statusCounts[derivedStatus] = (statusCounts[derivedStatus] || 0) + 1;
                 
-                if (insc.created_at) {
-                    const d = new Date(insc.created_at);
+                const elv = allEleves.find(e => e.id === insc.eleve_id);
+                const actualDate = (elv && elv.created_at) ? elv.created_at : insc.created_at;
+                
+                if (actualDate) {
+                    const d = new Date(actualDate);
                     const m = d.getMonth();
                     const mappedMonth = m >= 8 ? m - 8 : m + 4;
                     if (mappedMonth >= 0 && mappedMonth < 12) {
@@ -470,11 +479,6 @@ async function fetchAndRenderAdminDashboard() {
                     }
                 }
             });
-            
-            // Pour recentEleves en hors ligne
-            const allEleves = await window.edumanagerDB.eleves.toArray();
-            // On récupère les classes pour joindre le nom (simili-jointure)
-            const allClasses = await window.edumanagerDB.classes.toArray();
             
             recentEleves = allEleves.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0)).slice(0, 5);
             recentEleves = recentEleves.map(e => {
