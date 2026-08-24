@@ -540,7 +540,8 @@ async function genererBulletin() {
             decision: decision,
             donnees_json: matStats,
             statut: 'Brouillon',
-            rang: rankIdx !== -1 ? rankIdx + 1 : null
+            rang: rankIdx !== -1 ? rankIdx + 1 : null,
+            rang_str: studentRankStr
         });
         
         let classMoyenne = classNotes.length > 0 ? (classNotes.reduce((a,b)=>a+b,0) / classNotes.length).toFixed(2) : 'N/A';
@@ -719,6 +720,10 @@ async function genererBulletin() {
     
     document.getElementById('printableBulletin').innerHTML = allHtml;
     
+    if (!isMassGeneration && generatedDataBatch.length > 0) {
+        generatedData = generatedDataBatch[0];
+    }
+    
     document.getElementById('bulletinPreviewContainer').classList.remove('d-none');
     
     // Vérifier si le bulletin existe déjà et son statut
@@ -783,7 +788,8 @@ async function validerBulletin() {
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Validation...';
     
-    let batchData = isMassGeneration ? generatedDataBatch : [{...generatedData, updated_at: new Date().toISOString()}];
+    let batchData = isMassGeneration ? generatedDataBatch.map(b => { let c = {...b}; delete c.rang_str; return c; }) : [{...generatedData, updated_at: new Date().toISOString()}];
+    if (!isMassGeneration) delete batchData[0].rang_str;
     const { error } = await window.supabase.from('bulletins').upsert(batchData, { onConflict: 'eleve_id, periode_id' });
     
     if(error) {
@@ -805,7 +811,8 @@ async function publierBulletin() {
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Publication...';
     
-    let batchData = isMassGeneration ? generatedDataBatch : [{...generatedData, updated_at: new Date().toISOString()}];
+    let batchData = isMassGeneration ? generatedDataBatch.map(b => { let c = {...b}; delete c.rang_str; return c; }) : [{...generatedData, updated_at: new Date().toISOString()}];
+    if (!isMassGeneration) delete batchData[0].rang_str;
     const { error } = await window.supabase.from('bulletins').upsert(batchData, { onConflict: 'eleve_id, periode_id' });
     
     if(error) {
