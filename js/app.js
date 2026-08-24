@@ -30,8 +30,12 @@ window.filterTable = function() {
     const filterClasse = document.getElementById('filterClasse');
     const classeTerm = filterClasse && filterClasse.value ? window.normalizeText(filterClasse.value) : '';
     
-    const filterStatut = document.getElementById('filterStatut');
+    // Gérer indifféremment filterStatut ou filterStatus
+    const filterStatut = document.getElementById('filterStatut') || document.getElementById('filterStatus');
     const statutTerm = filterStatut && filterStatut.value ? window.normalizeText(filterStatut.value) : '';
+
+    const filterMatiere = document.getElementById('filterMatiere');
+    const matiereTerm = filterMatiere && filterMatiere.value ? window.normalizeText(filterMatiere.value) : '';
 
     // Select all table rows in the main body
     const rows = document.querySelectorAll('table tbody tr');
@@ -42,7 +46,13 @@ window.filterTable = function() {
         // Ignore empty state rows
         if (tr.querySelector('td') && tr.querySelector('td').colSpan > 2 && tr.textContent.includes('Aucun')) return;
         const text = window.normalizeText(tr.textContent);
-        const show = text.includes(term) && (!classeTerm || text.includes(classeTerm)) && (!statutTerm || text.includes(statutTerm));
+        
+        // Match condition : tous les critères actifs doivent être remplis
+        const show = text.includes(term) && 
+                     (!classeTerm || text.includes(classeTerm)) && 
+                     (!statutTerm || text.includes(statutTerm)) &&
+                     (!matiereTerm || text.includes(matiereTerm));
+                     
         tr.style.display = show ? '' : 'none';
     });
     
@@ -54,7 +64,11 @@ window.filterTable = function() {
             const container = card.closest('[class*="col-"]');
             if (container && container.parentElement && container.parentElement.classList.contains('row')) {
                 const text = window.normalizeText(card.textContent);
-                const show = text.includes(term) && (!classeTerm || text.includes(classeTerm)) && (!statutTerm || text.includes(statutTerm));
+                const show = text.includes(term) && 
+                             (!classeTerm || text.includes(classeTerm)) && 
+                             (!statutTerm || text.includes(statutTerm)) &&
+                             (!matiereTerm || text.includes(matiereTerm));
+                             
                 container.style.display = show ? '' : 'none';
             }
         }
