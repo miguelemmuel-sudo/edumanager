@@ -727,7 +727,12 @@ async function genererBulletin() {
     document.getElementById('bulletinPreviewContainer').classList.remove('d-none');
     
     // Vérifier si le bulletin existe déjà et son statut
-    const {data: existingB} = await window.supabase.from('bulletins').select('id, statut').eq('eleve_id', eid).eq('periode_id', pid).maybeSingle();
+    let checkEid = isMassGeneration ? (targetEleves.length > 0 ? targetEleves[0].id : null) : eid;
+    let existingB = null;
+    if (checkEid) {
+        const {data} = await window.supabase.from('bulletins').select('id, statut').eq('eleve_id', checkEid).eq('periode_id', pid).maybeSingle();
+        existingB = data;
+    }
     const btnValider = document.getElementById('btnValider');
     const btnPublier = document.getElementById('btnPublier');
     const btnAnnulerPub = document.getElementById('btnAnnulerPub');
