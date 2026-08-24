@@ -86,11 +86,33 @@
     .summary-item .label { font-size: 0.8rem; color: #555; text-transform: uppercase; font-weight: 600; }
     
     @media print {
+        @page { size: A4 portrait; margin: 10mm; }
         body * { visibility: hidden; }
         #printableBulletin, #printableBulletin * { visibility: visible; }
         #printableBulletin { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; }
         .sidebar, .topbar, .page-header, .dash-card, .d-flex.gap-2 { display: none !important; }
-        .bulletin-page { margin-bottom: 0 !important; box-shadow: none !important; border-radius: 0 !important; }
+        
+        .bulletin-page { 
+            margin: 0 !important; 
+            padding: 10px !important; 
+            box-shadow: none !important; 
+            border: none !important; 
+            page-break-after: always; 
+            page-break-inside: avoid; 
+        }
+        
+        /* Réduction de la taille pour s'assurer que ça tient sur 1 page A4 */
+        .bulletin-page, .bulletin-table td, .bulletin-table th { font-size: 0.85rem !important; padding: 4px !important; }
+        .fs-2 { font-size: 1.5rem !important; }
+        .fs-4 { font-size: 1.2rem !important; }
+        .fs-5, .fs-6 { font-size: 1rem !important; }
+        h2 { font-size: 1.3rem !important; margin-bottom: 5px !important; }
+        
+        .summary-box { padding: 5px !important; margin-bottom: 15px !important; page-break-inside: avoid; }
+        .bulletin-table { margin-bottom: 10px !important; page-break-inside: auto; }
+        tr { page-break-inside: avoid; page-break-after: auto; }
+        .bulletin-footer { page-break-inside: avoid; margin-top: 15px !important; padding-top: 5px !important; }
+        .badge { font-size: 0.75rem !important; padding: 5px !important; }
     }
   </style>
 </head>
