@@ -141,6 +141,25 @@
     </div>
   </div>
 
+  <script>
+    // GLOBAL ERROR HANDLER FOR DEBUGGING
+    window.onerror = function(message, source, lineno, colno, error) {
+        document.getElementById('mainContent').insertAdjacentHTML('afterbegin', `
+            <div class="alert alert-danger mt-4" style="z-index:9999;position:relative;">
+                <h5><i class="fas fa-bug"></i> Erreur JavaScript Détectée !</h5>
+                <p><strong>Message:</strong> ${message}</p>
+                <p><strong>Ligne:</strong> ${lineno}:${colno}</p>
+                <p><strong>Stack:</strong> <pre>${error ? error.stack : 'N/A'}</pre></p>
+                <p>Veuillez faire une capture de ce cadre rouge !</p>
+            </div>
+        `);
+        return true; // prevent default behavior
+    };
+    window.onunhandledrejection = function(event) {
+        window.onerror(event.reason.message || "Unhandled Promise Rejection", null, null, null, event.reason);
+    };
+  </script>
+
   <div class="dash-card mb-4 p-3">
     <div class="row g-3 align-items-end">
       <div class="col-md-3">
@@ -318,7 +337,7 @@ function getNextClassName(currentClassName) {
     return null;
 }
 
-async function genererBulletin() {
+async function genererBulletin() { try {
     const cid = document.getElementById('selClasse').value;
     const pid = document.getElementById('selPeriode').value;
     const eid = document.getElementById('selEleve').value;
@@ -1026,4 +1045,5 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 
