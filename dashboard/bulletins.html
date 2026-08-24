@@ -317,7 +317,7 @@ async function genererBulletin() {
     const pNom = document.getElementById('selPeriode').options[document.getElementById('selPeriode').selectedIndex].text;
     
     let isAnnuel = pNom.toLowerCase().includes('annuel');
-    let isTrimestre = !selectedPeriode.parent_id && !isAnnuel;
+    let isTrimestre = false;
     
     let periodesRecherche = [pid];
     let seqTitles = ["Note"];
@@ -341,13 +341,12 @@ async function genererBulletin() {
             }
         });
     }
-    else if (isTrimestre) {
+    else {
         const enfants = Object.values(periodesDict).filter(p => p.parent_id === pid).sort((a,b) => a.ordre - b.ordre);
         if (enfants.length > 0) {
+            isTrimestre = true;
             periodesRecherche = enfants.map(e => e.id);
             seqTitles = enfants.map(e => e.nom);
-        } else {
-            isTrimestre = false;
         }
     }
     
