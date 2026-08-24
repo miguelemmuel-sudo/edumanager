@@ -144,8 +144,10 @@ async function initNotes() {
     selPeriode.innerHTML = '<option value="">Sélectionner...</option>' + 
         (periodes||[]).map(p => `<option value="${p.id}">${p.nom}</option>`).join('');
         
-    // Charger toutes les classes
-    let queryClasses = window.supabase.from('classes').select('id, nom, titulaire_id').order('nom');
+    // Charger toutes les classes (elles sont partagées entre les années)
+    let queryClasses = window.supabase.from('classes')
+        .select('id, nom, titulaire_id')
+        .order('nom');
     const {data: allClasses} = await queryClasses;
     let classesAffichees = allClasses || [];
     
@@ -233,7 +235,7 @@ window.chargerGrille = async function() {
     
     // 1. Charger les élèves de la classe via leurs inscriptions pour l'année courante
     const {data: inscr} = await window.supabase.from('inscriptions_annuelles')
-        .select('eleves(id, prenom, nom, matricule)')
+        .select('eleve_id, eleves(id, prenom, nom, matricule)')
         .eq('classe_id', currentClasseId)
         .eq('annee_academique_id', window.currentAcademicYearId);
     

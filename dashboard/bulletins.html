@@ -214,7 +214,7 @@ async function initBulletins() {
     const [etabRes, periodesRes, classesRes] = await Promise.all([
         window.supabase.from('etablissements').select('*').limit(1).maybeSingle(),
         window.supabase.from('periodes_evaluation').select('*').eq('actif', true).order('ordre'),
-        window.supabase.from('classes').select('id, nom').eq('annee_academique_id', window.currentAcademicYearId).order('nom')
+        window.supabase.from('classes').select('id, nom').order('nom')
     ]);
     
     currentEtab = etabRes.data || { nom: "Mon Établissement", adresse: "", tel: "", email: "" };
