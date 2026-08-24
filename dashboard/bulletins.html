@@ -84,6 +84,14 @@
     }
     .summary-item .val { font-size: 1.8rem; font-weight: 800; color: var(--primary); }
     .summary-item .label { font-size: 0.8rem; color: #555; text-transform: uppercase; font-weight: 600; }
+    
+    @media print {
+        body * { visibility: hidden; }
+        #printableBulletin, #printableBulletin * { visibility: visible; }
+        #printableBulletin { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; }
+        .sidebar, .topbar, .page-header, .dash-card, .d-flex.gap-2 { display: none !important; }
+        .bulletin-page { margin-bottom: 0 !important; box-shadow: none !important; border-radius: 0 !important; }
+    }
   </style>
 </head>
 <body>
@@ -139,6 +147,7 @@
             <button class="btn btn-success rounded-pill px-4 fw-bold d-none" id="btnPublier" onclick="publierBulletin()"><i class="fas fa-paper-plane me-1"></i>Publier</button>
             <button class="btn btn-danger rounded-pill px-4 fw-bold d-none" id="btnAnnulerPub" onclick="annulerPublication()"><i class="fas fa-undo me-1"></i>Annuler la publication</button>
             <button class="btn btn-info rounded-pill px-4 fw-bold text-white d-none" id="btnWhatsApp" onclick="envoyerWhatsApp()" style="background-color: #25D366; border-color: #25D366;"><i class="fab fa-whatsapp me-1"></i>Envoyer au parent</button>
+            <button class="btn btn-secondary rounded-pill px-4" onclick="window.print()"><i class="fas fa-print me-1"></i>Imprimer</button>
             <button class="btn btn-outline-primary rounded-pill px-4" onclick="exporterPDF()"><i class="fas fa-file-pdf me-1"></i>Exporter PDF</button>
         </div>
     </div>
@@ -376,6 +385,13 @@ async function genererBulletin() {
         if (countryData[pNorm]) cInfo = countryData[pNorm];
         else if (pNorm.includes('ivoire')) cInfo = countryData['cote d\'ivoire'];
     }
+    
+    // Trier targetEleves par ordre de mérite (moyenne générale décroissante)
+    targetEleves.sort((a, b) => {
+        const moyA = studentStats[a.id] ? studentStats[a.id].moyenneGenerale : -1;
+        const moyB = studentStats[b.id] ? studentStats[b.id].moyenneGenerale : -1;
+        return moyB - moyA; // Ordre décroissant
+    });
     
     for (let i = 0; i < targetEleves.length; i++) {
         let eData = targetEleves[i];
