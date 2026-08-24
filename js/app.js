@@ -359,10 +359,10 @@ async function fetchAndRenderAdminDashboard() {
         
         if (navigator.onLine && window.supabase) {
             try {
-                let queryEleves = window.supabase.from('inscriptions_annuelles').select('id, created_at, statut_paiement').eq('annee_academique_id', window.currentAcademicYearId);
+                let queryEleves = window.supabase.from('inscriptions_annuelles').select('id, eleve_id, created_at').eq('annee_academique_id', window.currentAcademicYearId);
                 let queryEnseignants = window.supabase.from('enseignants').select('id');
                 let queryClasses = window.supabase.from('classes').select('id').eq('annee_academique_id', window.currentAcademicYearId);
-                let queryPaiements = window.supabase.from('paiements').select('montant').eq('annee_academique_id', window.currentAcademicYearId);
+                let queryPaiements = window.supabase.from('paiements').select('eleve_id, montant, statut').eq('annee_academique_id', window.currentAcademicYearId);
                 
                 const [resEleves, resEnseignants, resClasses, resPaiements] = await Promise.all([
                     queryEleves, queryEnseignants, queryClasses, queryPaiements
@@ -374,21 +374,33 @@ async function fetchAndRenderAdminDashboard() {
                     nbClasses = resClasses.data ? resClasses.data.length : 0;
                     
                     const paiements = resPaiements.data || [];
-                    paiements.forEach(p => revenus += parseFloat(p.montant || 0));
+                    const eleveStatuses = {}; // Map eleve_id -> derived status
+                    
+                    paiements.forEach(p => {
+                        revenus += parseFloat(p.montant || 0);
+                        const st = (p.statut || '').toLowerCase();
+                        let pStatus = 'Partiel';
+                        if (st.includes('soldé') || st.includes('payé')) {
+                            pStatus = 'Payé';
+                        }
+                        
+                        if (p.eleve_id) {
+                            // Upgrade status to Payé if they have a fully paid record
+                            if (!eleveStatuses[p.eleve_id] || pStatus === 'Payé') {
+                                eleveStatuses[p.eleve_id] = pStatus;
+                            }
+                        }
+                    });
                     
                     // Chart data extraction
                     if (resEleves.data) {
                         resEleves.data.forEach(insc => {
-                            if (insc.statut_paiement) {
-                                const st = insc.statut_paiement;
-                                if (st === 'Payé' || st === 'Partiel' || st === 'Impayé') {
-                                    statusCounts[st] = (statusCounts[st] || 0) + 1;
-                                } else {
-                                    statusCounts['Impayé'] = (statusCounts['Impayé'] || 0) + 1; // Default
-                                }
-                            } else {
-                                statusCounts['Impayé'] = (statusCounts['Impayé'] || 0) + 1;
+                            // Derive status from actual payments
+                            let derivedStatus = 'Impayé';
+                            if (insc.eleve_id && eleveStatuses[insc.eleve_id]) {
+                                derivedStatus = eleveStatuses[insc.eleve_id];
                             }
+                            statusCounts[derivedStatus] = (statusCounts[derivedStatus] || 0) + 1;
                             
                             if (insc.created_at) {
                                 const d = new Date(insc.created_at);
@@ -424,20 +436,30 @@ async function fetchAndRenderAdminDashboard() {
             
             let paiements = await window.edumanagerDB.paiements.toArray();
             paiements = paiements.filter(p => p.annee_academique_id === window.currentAcademicYearId);
-            revenus = paiements.reduce((acc, p) => acc + parseFloat(p.montant || 0), 0);
+            
+            const eleveStatuses = {};
+            paiements.forEach(p => {
+                revenus += parseFloat(p.montant || 0);
+                const st = (p.statut || '').toLowerCase();
+                let pStatus = 'Partiel';
+                if (st.includes('soldé') || st.includes('payé')) {
+                    pStatus = 'Payé';
+                }
+                
+                if (p.eleve_id) {
+                    if (!eleveStatuses[p.eleve_id] || pStatus === 'Payé') {
+                        eleveStatuses[p.eleve_id] = pStatus;
+                    }
+                }
+            });
             
             // Chart data extraction offline
             localInsc.forEach(insc => {
-                if (insc.statut_paiement) {
-                    const st = insc.statut_paiement;
-                    if (st === 'Payé' || st === 'Partiel' || st === 'Impayé') {
-                        statusCounts[st] = (statusCounts[st] || 0) + 1;
-                    } else {
-                        statusCounts['Impayé'] = (statusCounts['Impayé'] || 0) + 1;
-                    }
-                } else {
-                    statusCounts['Impayé'] = (statusCounts['Impayé'] || 0) + 1;
+                let derivedStatus = 'Impayé';
+                if (insc.eleve_id && eleveStatuses[insc.eleve_id]) {
+                    derivedStatus = eleveStatuses[insc.eleve_id];
                 }
+                statusCounts[derivedStatus] = (statusCounts[derivedStatus] || 0) + 1;
                 
                 if (insc.created_at) {
                     const d = new Date(insc.created_at);
