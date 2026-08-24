@@ -836,7 +836,9 @@ async function publierBulletin() {
         if (btnWa && !isMassGeneration) btnWa.classList.remove('d-none');
         
         // Envoi automatique via WhatsApp (peut être bloqué par le navigateur, d'où le bouton manuel)
-        window.envoyerWhatsApp();
+        if (!isMassGeneration) {
+            window.envoyerWhatsApp();
+        }
     }
 }
 
