@@ -571,19 +571,19 @@ async function genererBulletin() {
             </div>
             
             <div class="row mb-4 p-3 rounded" style="background-color: #f8f9fc; border: 1px solid #e3e6f0;">
-                <div class="col-md-3">
+                <div class="col">
                     <div class="text-muted small fw-bold text-uppercase">Nom de l'élève</div>
                     <div class="fs-5 fw-bold text-dark">${eData.nom} ${eData.prenom}</div>
                 </div>
-                <div class="col-md-3">
+                <div class="col">
                     <div class="text-muted small fw-bold text-uppercase">Matricule</div>
                     <div class="fs-6 fw-semibold text-dark mt-1">${eData.matricule || '-'}</div>
                 </div>
-                <div class="col-md-3">
+                <div class="col">
                     <div class="text-muted small fw-bold text-uppercase">Classe</div>
                     <div class="fs-6 fw-semibold text-dark mt-1">${eData.classes?.nom || '-'}</div>
                 </div>
-                <div class="col-md-3">
+                <div class="col">
                     <div class="text-muted small fw-bold text-uppercase">Année Scolaire</div>
                     <div class="fs-6 fw-semibold text-dark mt-1">${document.getElementById('selPeriode').options[0].getAttribute('data-year') || '2025-2026'}</div>
                 </div>
