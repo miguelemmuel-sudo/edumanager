@@ -94,25 +94,32 @@
         
         .bulletin-page { 
             margin: 0 !important; 
-            padding: 15mm 10mm 10mm 10mm !important; /* Top padding slightly larger for breathing room */
+            padding: 8mm 5mm 5mm 5mm !important; /* Minimum safe padding */
             box-shadow: none !important; 
             border: none !important; 
             page-break-after: always; 
             page-break-inside: avoid; 
         }
         
-        /* Réduction de la taille pour s'assurer que ça tient sur 1 page A4 */
-        .bulletin-page, .bulletin-table td, .bulletin-table th { font-size: 0.85rem !important; padding: 4px !important; }
-        .fs-2 { font-size: 1.5rem !important; }
-        .fs-4 { font-size: 1.2rem !important; }
-        .fs-5, .fs-6 { font-size: 1rem !important; }
-        h2 { font-size: 1.3rem !important; margin-bottom: 5px !important; }
+        /* Réduction drastique de la taille et des espacements pour s'assurer que ça tient sur 1 page A4 */
+        .bulletin-page { font-size: 0.75rem !important; }
+        .bulletin-table td, .bulletin-table th { font-size: 0.7rem !important; padding: 2px 4px !important; line-height: 1.1 !important; }
+        .fs-2 { font-size: 1.3rem !important; }
+        .fs-4 { font-size: 1.1rem !important; }
+        .fs-5, .fs-6 { font-size: 0.9rem !important; }
+        h2 { font-size: 1.2rem !important; margin-bottom: 2px !important; }
         
-        .summary-box { padding: 5px !important; margin-bottom: 15px !important; page-break-inside: avoid; }
-        .bulletin-table { margin-bottom: 10px !important; page-break-inside: auto; }
+        /* Overrides Bootstrap utilities in print mode to save vertical space */
+        .mb-4 { margin-bottom: 8px !important; }
+        .mt-5 { margin-top: 10px !important; }
+        .p-3 { padding: 5px !important; }
+        .pb-3 { padding-bottom: 2px !important; }
+        
+        .summary-box { padding: 2px !important; margin-bottom: 10px !important; page-break-inside: avoid; }
+        .bulletin-table { margin-bottom: 5px !important; page-break-inside: auto; }
         tr { page-break-inside: avoid; page-break-after: auto; }
-        .bulletin-footer { page-break-inside: avoid; margin-top: 15px !important; padding-top: 5px !important; }
-        .badge { font-size: 0.75rem !important; padding: 5px !important; }
+        .bulletin-footer { page-break-inside: avoid; margin-top: 10px !important; padding-top: 2px !important; }
+        .badge { font-size: 0.7rem !important; padding: 3px !important; margin: 0 !important; }
     }
   </style>
 </head>
