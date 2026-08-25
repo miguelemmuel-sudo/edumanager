@@ -56,8 +56,9 @@
             <div class="col-md-3"><label class="form-label">Système éducatif</label><select id="etab_systeme" class="form-select"><option selected>Francophone</option><option>Anglophone</option><option>Bilingue</option></select></div>
             <div class="col-md-6"><label class="form-label">Email</label><input type="email" id="etab_email" class="form-control" value=""/></div>
             <div class="col-md-6"><label class="form-label">Téléphone</label><input type="tel" id="etab_tel" class="form-control" value=""/></div>
-            <div class="col-md-6"><label class="form-label">Pays</label><input type="text" id="etab_pays" class="form-control" value=""/></div>
-            <div class="col-md-6"><label class="form-label">Ville</label><input type="text" id="etab_ville" class="form-control" value=""/></div>
+            <div class="col-md-4"><label class="form-label">Pays</label><input type="text" id="etab_pays" class="form-control" value=""/></div>
+            <div class="col-md-4"><label class="form-label">Ville</label><input type="text" id="etab_ville" class="form-control" value=""/></div>
+            <div class="col-md-4"><label class="form-label">Monnaie (ex: FCFA, €, $)</label><input type="text" id="etab_currency" class="form-control" value="FCFA"/></div>
             <div class="col-12"><label class="form-label">Adresse complète</label><input type="text" id="etab_adresse" class="form-control" value=""/></div>
             <div class="col-12"><label class="form-label">Site web</label><input type="url" id="etab_site" class="form-control" value=""/></div>
             <div class="col-12"><label class="form-label">Devise de l'établissement (ex: Paix - Travail - Patrie)</label><input type="text" id="etab_devise" class="form-control" value=""/></div>
@@ -192,8 +193,8 @@
               <thead>
                 <tr id="fraisTableHead">
                   <th>Niveau</th>
-                  <th>Inscription (FCFA)</th>
-                  <th>Scolarité (FCFA)</th>
+                  <th>Inscription (<span class="currency-symbol">FCFA</span>)</th>
+                  <th>Scolarité (<span class="currency-symbol">FCFA</span>)</th>
                   <!-- Additional fee types will be injected here -->
                 </tr>
               </thead>
@@ -695,7 +696,7 @@ function showTab(name, el) {
         if (!thead) return;
         let headHtml = '<th>Niveau</th>';
         currentFraisTypes.forEach(t => {
-            headHtml += `<th>${t} (FCFA)</th>`;
+            headHtml += `<th>${t} (<span class="currency-symbol">FCFA</span>)</th>`;
         });
         thead.innerHTML = headHtml;
         

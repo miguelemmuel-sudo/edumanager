@@ -51,15 +51,15 @@
           <div class="d-flex flex-column gap-3">
             <div class="d-flex align-items-center justify-content-between p-2 rounded-2" style="background:rgba(16,185,129,.06)">
               <div class="d-flex align-items-center gap-2"><div style="width:10px;height:10px;border-radius:2px;background:var(--primary)"></div><span style="font-size:.85rem;font-weight:500">Soldés</span></div>
-              <div class="text-end"><div class="fw-bold" style="font-size:.9rem" id="payStatsSoldesCount">0 élèves</div><div style="font-size:.75rem;color:var(--success)" id="payStatsSoldesVal">0% · 0 FCFA</div></div>
+              <div class="text-end"><div class="fw-bold" style="font-size:.9rem" id="payStatsSoldesCount">0 élèves</div><div style="font-size:.75rem;color:var(--success)" id="payStatsSoldesVal">0% · 0 <span class="currency-symbol">FCFA</span></div></div>
             </div>
             <div class="d-flex align-items-center justify-content-between p-2 rounded-2" style="background:rgba(245,158,11,.06)">
               <div class="d-flex align-items-center gap-2"><div style="width:10px;height:10px;border-radius:2px;background:var(--warning)"></div><span style="font-size:.85rem;font-weight:500">Partiels</span></div>
-              <div class="text-end"><div class="fw-bold" style="font-size:.9rem" id="payStatsPartielsCount">0 élèves</div><div style="font-size:.75rem;color:var(--warning)" id="payStatsPartielsVal">0% · 0 FCFA</div></div>
+              <div class="text-end"><div class="fw-bold" style="font-size:.9rem" id="payStatsPartielsCount">0 élèves</div><div style="font-size:.75rem;color:var(--warning)" id="payStatsPartielsVal">0% · 0 <span class="currency-symbol">FCFA</span></div></div>
             </div>
             <div class="d-flex align-items-center justify-content-between p-2 rounded-2" style="background:rgba(239,68,68,.06)">
               <div class="d-flex align-items-center gap-2"><div style="width:10px;height:10px;border-radius:2px;background:var(--danger)"></div><span style="font-size:.85rem;font-weight:500">Impayés</span></div>
-              <div class="text-end"><div class="fw-bold" style="font-size:.9rem" id="payStatsImpayesCount">0 élèves</div><div style="font-size:.75rem;color:var(--danger)" id="payStatsImpayesVal">0% · 0 FCFA</div></div>
+              <div class="text-end"><div class="fw-bold" style="font-size:.9rem" id="payStatsImpayesCount">0 élèves</div><div style="font-size:.75rem;color:var(--danger)" id="payStatsImpayesVal">0% · 0 <span class="currency-symbol">FCFA</span></div></div>
             </div>
           </div>
         </div>
@@ -105,7 +105,7 @@
       <div class="mb-3"><label class="form-label">Élève *</label><select name="eleve_id" id="paiementEleveSelect" class="form-select"><option value="">Sélectionner un élève...</option></select></div>
       <div class="row g-3">
         <div class="col-6"><label class="form-label">Type de frais *</label><select name="type_frais" id="paiementTypeSelect" class="form-select"><option value="Scolarité">Scolarité</option><option value="Inscription">Inscription</option></select></div>
-        <div class="col-6"><label class="form-label">Montant attendu (FCFA)</label><input type="text" id="paiementAttendu" class="form-control bg-light" readonly placeholder="Calcul automatique..."/></div>
+        <div class="col-6"><label class="form-label">Montant attendu (<span class="currency-symbol">FCFA</span>)</label><input type="text" id="paiementAttendu" class="form-control bg-light" readonly placeholder="Calcul automatique..."/></div>
         
         <div class="col-12"><label class="form-label text-danger">Reste à payer avant versement</label><input type="text" id="paiementResteAvant" class="form-control text-danger fw-bold bg-light" readonly placeholder="0"/></div>
 

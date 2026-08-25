@@ -612,11 +612,12 @@ async function initEtablissementSettings() {
             nom: etabData.nom || 'Votre établissement',
             type: etabData.type || 'Collège / Secondaire',
             systeme: etabData.systeme_educatif || 'Francophone',
+            currency: etabData.devise || 'FCFA',
             logo_url: etabData.logo_url || null
         };
         localStorage.setItem('edu_settings', JSON.stringify(window.EduSettings));
     } else {
-        window.EduSettings = { nom: 'Votre établissement', type: 'Collège / Secondaire', systeme: 'Francophone', logo_url: null };
+        window.EduSettings = { nom: 'Votre établissement', type: 'Collège / Secondaire', systeme: 'Francophone', currency: 'FCFA', logo_url: null };
         localStorage.setItem('edu_settings', JSON.stringify(window.EduSettings));
     }
 }

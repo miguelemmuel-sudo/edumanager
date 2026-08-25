@@ -32,7 +32,7 @@ async function fetchAndRenderRapports() {
     const kpiValues = document.querySelectorAll('.stat-card .sc-value');
     if (kpiValues.length >= 3) {
         kpiValues[0].textContent = countEleves;
-        kpiValues[1].textContent = revenus.toLocaleString() + ' FCFA';
+        kpiValues[1].textContent = revenus.toLocaleString() + ' ' + (window.EduSettings?.currency || 'FCFA');
         kpiValues[2].textContent = moyenne;
         kpiValues[3].textContent = '95%'; // Mocked Assiduité
     }

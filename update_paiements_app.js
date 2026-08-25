@@ -42,7 +42,7 @@ async function fetchAndRenderPaiements() {
     // Update Top KPIs
     const scValues = document.querySelectorAll('.sc-value');
     if(scValues.length >= 4) {
-        scValues[0].textContent = totalCollecte.toLocaleString() + ' FCFA';
+        scValues[0].textContent = totalCollecte.toLocaleString() + ' ' + (window.EduSettings?.currency || 'FCFA');
         scValues[1].textContent = nbSoldes;
         scValues[2].textContent = nbPartiels;
         scValues[3].textContent = nbImpayes;
@@ -52,7 +52,7 @@ async function fetchAndRenderPaiements() {
     const elSCnt = document.getElementById('payStatsSoldesCount');
     if(elSCnt) {
         elSCnt.textContent = nbSoldes + ' élèves';
-        document.getElementById('payStatsSoldesVal').textContent = pSoldes + '% · ' + (totalCollecte).toLocaleString() + ' FCFA';
+        document.getElementById('payStatsSoldesVal').textContent = pSoldes + '% · ' + (totalCollecte).toLocaleString() + ' ' + (window.EduSettings?.currency || 'FCFA');
         document.getElementById('payStatsPartielsCount').textContent = nbPartiels + ' élèves';
         document.getElementById('payStatsPartielsVal').textContent = pPartiels + '%';
         document.getElementById('payStatsImpayesCount').textContent = nbImpayes + ' élèves';
@@ -75,7 +75,7 @@ async function fetchAndRenderPaiements() {
                 <td><strong>\${_e(el.matricule || '-')}</strong></td>
                 <td><div class="fw-semibold">\${_e(el.prenom)} \${_e(el.nom)}</div></td>
                 <td>\${_e(p.motif || 'Scolarité')}</td>
-                <td><span class="text-success fw-bold">\${p.montant} FCFA</span></td>
+                <td><span class="text-success fw-bold">\${p.montant} </span> <span class="currency-symbol"></span></td>
                 <td>\${new Date(p.date_paiement).toLocaleDateString('fr-FR')}</td>
                 <td><span class="status-badge \${stColor}">\${_e(p.statut || 'Enregistré')}</span></td>
                 <td>

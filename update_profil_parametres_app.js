@@ -31,6 +31,7 @@ async function fetchAndRenderParametres() {
         if(document.getElementById('etab_nom')) document.getElementById('etab_nom').value = etab.nom || '';
         if(document.getElementById('etab_type')) document.getElementById('etab_type').value = etab.type || '';
         if(document.getElementById('etab_pays')) document.getElementById('etab_pays').value = etab.pays || '';
+        if(document.getElementById('etab_currency')) document.getElementById('etab_currency').value = etab.devise || 'FCFA';
         if(document.getElementById('etab_ville')) document.getElementById('etab_ville').value = etab.ville || '';
         if(document.getElementById('etab_tel')) document.getElementById('etab_tel').value = etab.tel || '';
     }
@@ -71,6 +72,7 @@ function setupProfilParametres() {
                 const nom = etabNom.value;
                 const type = document.getElementById('etab_type').value;
                 const pays = document.getElementById('etab_pays').value;
+                const devise = document.getElementById('etab_currency') ? document.getElementById('etab_currency').value : 'FCFA';
                 const ville = document.getElementById('etab_ville').value;
                 const tel = document.getElementById('etab_tel').value;
                 
@@ -80,7 +82,7 @@ function setupProfilParametres() {
                 const { data: etab } = await window.supabase.from('etablissements').select('id').limit(1).single();
                 if (etab) {
                     const { error } = await window.supabase.from('etablissements').update({
-                        nom, type, pays, ville, tel
+                        nom, type, pays, ville, tel, devise
                     }).eq('id', etab.id);
                     
                     if (error) {
