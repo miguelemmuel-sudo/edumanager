@@ -612,7 +612,7 @@ async function initEtablissementSettings() {
             nom: etabData.nom || 'Votre établissement',
             type: etabData.type || 'Collège / Secondaire',
             systeme: etabData.systeme_educatif || 'Francophone',
-            currency: etabData.devise || 'FCFA',
+            currency: etabData.currency || 'FCFA',
             logo_url: etabData.logo_url || null
         };
         localStorage.setItem('edu_settings', JSON.stringify(window.EduSettings));
