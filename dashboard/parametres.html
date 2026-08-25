@@ -59,7 +59,7 @@
             <div class="col-md-4"><label class="form-label">Pays</label><input type="text" id="etab_pays" class="form-control" value=""/></div>
             <div class="col-md-4"><label class="form-label">Ville</label><input type="text" id="etab_ville" class="form-control" value=""/></div>
             <div class="col-md-4"><label class="form-label">Monnaie</label>
-                <select id="etab_currency" class="form-select">
+                <select id="etab_currency" class="form-select" onchange="document.querySelectorAll('.currency-symbol').forEach(el => el.textContent = this.value)">
                   <option value="FCFA">FCFA</option>
                   <option value="€">Euro (€)</option>
                   <option value="$">Dollar ($)</option>
