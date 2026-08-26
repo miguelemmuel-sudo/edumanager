@@ -970,14 +970,127 @@ async function fetchAndRenderEleves() {
             <td><span class="status-badge ${e.statut_paiement === 'À jour' ? 'success' : 'warning'}">${_e(e.statut_paiement || 'Inconnu')}</span></td>
             <td><span class="status-badge ${e.statut === 'Actif' ? 'success' : 'secondary'}">${_e(e.statut || 'Actif')}</span></td>
             <td>
-                <button class="btn btn-sm btn-icon text-muted"><i class="fas fa-edit"></i></button>
-                ${canDeleteEleve ? `<button class="btn btn-sm btn-icon text-danger" onclick="deleteEleve('${e.id}')"><i class="fas fa-trash"></i></button>` : ''}
+                <button class="btn btn-sm btn-icon text-primary" onclick="viewEleve('${e.id}')" title="Voir le profil"><i class="fas fa-eye"></i></button>
+                <button class="btn btn-sm btn-icon text-muted" title="Modifier"><i class="fas fa-edit"></i></button>
+                ${canDeleteEleve ? `<button class="btn btn-sm btn-icon text-danger" onclick="deleteEleve('${e.id}')" title="Supprimer"><i class="fas fa-trash"></i></button>` : ''}
             </td>
         `;
         tbody.appendChild(tr);
     });
     
     if (window.applyUrlSearch) window.applyUrlSearch();
+}
+
+window.viewEleve = async function(eleveId) {
+    if(!window.supabase) return;
+    
+    // 1. Fetch Eleve Details
+    const { data: insc } = await window.supabase.from('inscriptions_annuelles')
+        .select('*, eleves(*), classes(nom)')
+        .eq('eleve_id', eleveId)
+        .eq('annee_academique_id', window.currentAcademicYearId)
+        .single();
+        
+    if(!insc) {
+        if(window.showToast) window.showToast('Données introuvables', 'danger');
+        return;
+    }
+    
+    const e = insc.eleves;
+    const classeNom = insc.classes ? insc.classes.nom : 'Non assigné';
+    
+    // 2. Fetch Presences
+    const { data: presences } = await window.supabase.from('presences')
+        .select('date_appel, statut, motif')
+        .eq('eleve_id', eleveId)
+        .eq('annee_academique_id', window.currentAcademicYearId)
+        .order('date_appel', { ascending: false });
+        
+    let attendanceHtml = '<p class="text-muted">Aucun historique d\\'appel pour cet élève.</p>';
+    let attendanceKpi = '--';
+    
+    if (presences && presences.length > 0) {
+        const total = presences.length;
+        const presents = presences.filter(p => ['Présent', 'Retard'].includes(p.statut)).length;
+        attendanceKpi = ((presents / total) * 100).toFixed(1) + '%';
+        
+        let rows = presences.map(p => {
+            let badgeClass = 'success';
+            if(p.statut === 'Absent' || p.statut.includes('Absence')) badgeClass = 'danger';
+            if(p.statut === 'Retard') badgeClass = 'warning';
+            return `
+                <tr>
+                    <td>${new Date(p.date_appel).toLocaleDateString('fr-FR')}</td>
+                    <td><span class="status-badge ${badgeClass}">${p.statut}</span></td>
+                    <td>${p.motif || '-'}</td>
+                </tr>
+            `;
+        }).join('');
+        
+        attendanceHtml = `
+            <table class="table table-sm table-hover align-middle mb-0" style="font-size:0.85rem">
+                <thead class="table-light"><tr><th>Date</th><th>Statut</th><th>Motif</th></tr></thead>
+                <tbody>${rows}</tbody>
+            </table>
+        `;
+    }
+
+    // 3. Update Modal UI
+    const m = document.getElementById('viewEleveModal');
+    if(!m) return;
+    
+    m.querySelector('.modal-title').innerHTML = `<i class="fas fa-user-graduate text-primary me-2"></i>Profil – ${e.prenom} ${e.nom}`;
+    
+    const bodyHtml = `
+        <div class="row g-3">
+          <div class="col-md-3 text-center">
+            <div class="table-av mx-auto mb-2" style="width:72px;height:72px;font-size:1.8rem;background:#2563EB">${e.prenom.charAt(0)}</div>
+            <span class="status-badge ${insc.statut === 'Actif' ? 'success' : 'secondary'}">${insc.statut || 'Actif'}</span>
+            <div class="mt-3">
+                <div class="fw-bold" style="font-size:1.5rem">${attendanceKpi}</div>
+                <div class="text-muted" style="font-size:0.75rem">Taux de présence</div>
+            </div>
+          </div>
+          <div class="col-md-9">
+            <!-- TABS -->
+            <ul class="nav nav-pills mb-3" id="eleveTabs" role="tablist">
+              <li class="nav-item" role="presentation"><button class="nav-link active btn-sm rounded-pill px-3" data-bs-toggle="pill" data-bs-target="#tab-infos" type="button" role="tab">Informations</button></li>
+              <li class="nav-item" role="presentation"><button class="nav-link btn-sm rounded-pill px-3" data-bs-toggle="pill" data-bs-target="#tab-assiduite" type="button" role="tab">Assiduité</button></li>
+            </ul>
+            <div class="tab-content" id="eleveTabsContent">
+              <!-- INFOS -->
+              <div class="tab-pane fade show active" id="tab-infos" role="tabpanel">
+                <div class="row g-2 bg-light p-3 rounded">
+                  <div class="col-6"><div class="text-muted" style="font-size:.75rem">Nom complet</div><div class="fw-semibold">${e.prenom} ${e.nom}</div></div>
+                  <div class="col-6"><div class="text-muted" style="font-size:.75rem">Matricule</div><div class="fw-semibold">${e.matricule || '-'}</div></div>
+                  <div class="col-6"><div class="text-muted" style="font-size:.75rem">Classe</div><div class="fw-semibold">${classeNom}</div></div>
+                  <div class="col-6"><div class="text-muted" style="font-size:.75rem">Code d'accès Parent</div><div class="fw-bold text-primary">${e.code_acces || '-'}</div></div>
+                  <div class="col-6"><div class="text-muted" style="font-size:.75rem">Date de naissance</div><div class="fw-semibold">${e.date_naissance ? new Date(e.date_naissance).toLocaleDateString('fr-FR') : '-'}</div></div>
+                  <div class="col-6"><div class="text-muted" style="font-size:.75rem">Parent / Tuteur</div><div class="fw-semibold">${e.parent_nom || '-'}</div></div>
+                  <div class="col-6"><div class="text-muted" style="font-size:.75rem">Contact Parent</div><div class="fw-semibold">${e.parent_tel || '-'}</div></div>
+                  <div class="col-6"><div class="text-muted" style="font-size:.75rem">Statut paiement</div><span class="status-badge ${insc.statut_paiement === 'À jour' ? 'success' : 'warning'}">${insc.statut_paiement || 'Inconnu'}</span></div>
+                </div>
+              </div>
+              <!-- ASSIDUITE -->
+              <div class="tab-pane fade" id="tab-assiduite" role="tabpanel">
+                <div class="border rounded p-0" style="max-height: 250px; overflow-y: auto;">
+                    ${attendanceHtml}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+    `;
+    m.querySelector('.modal-body').innerHTML = bodyHtml;
+    
+    // Add dynamic links to footer
+    m.querySelector('.modal-footer').innerHTML = `
+        <a href="notes.html" class="btn btn-outline-primary rounded-pill px-4">Voir les notes</a>
+        <button type="button" class="btn btn-primary rounded-pill px-4 fw-semibold" data-bs-dismiss="modal">Fermer</button>
+    `;
+    
+    const modalInstance = new bootstrap.Modal(m);
+    modalInstance.show();
 }
 window.toggleEleveType = function() {
     const isNew = document.getElementById('typeNew').checked;
