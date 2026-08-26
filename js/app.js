@@ -1006,7 +1006,7 @@ window.viewEleve = async function(eleveId) {
         .eq('annee_academique_id', window.currentAcademicYearId)
         .order('date_appel', { ascending: false });
         
-    let attendanceHtml = '<p class="text-muted">Aucun historique d\\'appel pour cet élève.</p>';
+    let attendanceHtml = `<p class="text-muted">Aucun historique d'appel pour cet élève.</p>`;
     let attendanceKpi = '--';
     
     if (presences && presences.length > 0) {
