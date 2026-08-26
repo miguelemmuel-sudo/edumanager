@@ -213,18 +213,26 @@ function showDashboard(data) {
                     <div class="badge bg-primary mt-2 px-3 py-2 fs-6">BULLETIN - ${_e(b.periode).toUpperCase()}</div>
                 </div>
                 
-                <div class="row mb-4 p-3 rounded" style="background-color: #f8f9fc; border: 1px solid #e3e6f0;">
-                    <div class="col">
+                <div class="row mb-4 p-3 rounded g-3" style="background-color: #f8f9fc; border: 1px solid #e3e6f0;">
+                    <div class="col-12 col-md-4">
                         <div class="text-muted small fw-bold text-uppercase">Nom de l'élève</div>
                         <div class="fs-5 fw-bold text-dark">${eleve.nom} ${eleve.prenom}</div>
                     </div>
-                    <div class="col">
+                    <div class="col-6 col-md-2">
                         <div class="text-muted small fw-bold text-uppercase">Matricule</div>
                         <div class="fs-6 fw-semibold text-dark mt-1">${eleve.matricule || '-'}</div>
                     </div>
-                    <div class="col">
+                    <div class="col-6 col-md-2">
                         <div class="text-muted small fw-bold text-uppercase">Classe</div>
                         <div class="fs-6 fw-semibold text-dark mt-1">${eleve.classe || '-'}</div>
+                    </div>
+                    <div class="col-6 col-md-2">
+                        <div class="text-muted small fw-bold text-uppercase">Année Scolaire</div>
+                        <div class="fs-6 fw-semibold text-primary mt-1">${b.donnees_json?.annee_scolaire || 'Année en cours'}</div>
+                    </div>
+                    <div class="col-6 col-md-2">
+                        <div class="text-muted small fw-bold text-uppercase">Assiduité (Année)</div>
+                        <div class="fs-6 fw-semibold text-info mt-1">${b.donnees_json?.assiduite_str || 'N/A'}</div>
                     </div>
                 </div>
                 

@@ -425,8 +425,9 @@ async function genererBulletin() {
     }
     
     const elevesIds = elevesClasse.map(e => e.id);
-    const {data: currentAnneeInfo} = await window.supabase.from('annees_academiques').select('statut').eq('id', window.currentAcademicYearId).maybeSingle();
+    const {data: currentAnneeInfo} = await window.supabase.from('annees_academiques').select('nom, statut').eq('id', window.currentAcademicYearId).maybeSingle();
     const isCloturee = currentAnneeInfo && currentAnneeInfo.statut !== 'Active';
+    const currentYearLabel = currentAnneeInfo ? currentAnneeInfo.nom : 'Année en cours';
 
     let queryNotes = window.supabase
         .from('notes')
@@ -454,6 +455,12 @@ async function genererBulletin() {
         document.getElementById('bulletinPreviewContainer').classList.remove('d-none');
         return;
     }
+    
+    const { data: allPresences } = await window.supabase
+        .from('presences')
+        .select('eleve_id, statut')
+        .in('eleve_id', elevesIds)
+        .eq('annee_academique_id', window.currentAcademicYearId);
     
     const studentStats = {};
     const subjectAverages = {};
@@ -598,6 +605,11 @@ async function genererBulletin() {
         
         if (!studentStats[currentEid]) continue;
         
+        let studentPresences = allPresences ? allPresences.filter(p => p.eleve_id === currentEid) : [];
+        let totalAppels = studentPresences.length;
+        let presents = studentPresences.filter(p => ['Présent', 'Retard'].includes(p.statut)).length;
+        let assiduiteStr = totalAppels > 0 ? ((presents / totalAppels) * 100).toFixed(1) + '%' : 'N/A';
+        
         let matStats = studentStats[currentEid].matieres;
         let totalPoints = studentStats[currentEid].totalPoints;
         let totalCoefs = studentStats[currentEid].totalCoefs;
@@ -694,7 +706,9 @@ async function genererBulletin() {
         const fullDonneesJson = {
             matieres: matStats,
             html_header: headerSeqHtml,
-            html_rows: rowsHtml
+            html_rows: rowsHtml,
+            assiduite_str: assiduiteStr,
+            annee_scolaire: currentYearLabel
         };
         
         generatedDataBatch.push({
@@ -739,22 +753,26 @@ async function genererBulletin() {
                 <div class="badge bg-primary mt-2 px-3 py-2 fs-6">BULLETIN - ${pNom.toUpperCase()}</div>
             </div>
             
-            <div class="row mb-4 p-3 rounded" style="background-color: #f8f9fc; border: 1px solid #e3e6f0;">
-                <div class="col">
+            <div class="row mb-4 p-3 rounded g-3" style="background-color: #f8f9fc; border: 1px solid #e3e6f0;">
+                <div class="col-12 col-md-4">
                     <div class="text-muted small fw-bold text-uppercase">Nom de l'élève</div>
                     <div class="fs-5 fw-bold text-dark">${eData.nom} ${eData.prenom}</div>
                 </div>
-                <div class="col">
+                <div class="col-6 col-md-2">
                     <div class="text-muted small fw-bold text-uppercase">Matricule</div>
                     <div class="fs-6 fw-semibold text-dark mt-1">${eData.matricule || '-'}</div>
                 </div>
-                <div class="col">
+                <div class="col-6 col-md-2">
                     <div class="text-muted small fw-bold text-uppercase">Classe</div>
                     <div class="fs-6 fw-semibold text-dark mt-1">${eData.classes?.nom || '-'}</div>
                 </div>
-                <div class="col">
+                <div class="col-6 col-md-2">
                     <div class="text-muted small fw-bold text-uppercase">Année Scolaire</div>
-                    <div class="fs-6 fw-semibold text-dark mt-1">${document.getElementById('selPeriode').options[0].getAttribute('data-year') || '2025-2026'}</div>
+                    <div class="fs-6 fw-semibold text-primary mt-1">${currentYearLabel}</div>
+                </div>
+                <div class="col-6 col-md-2">
+                    <div class="text-muted small fw-bold text-uppercase">Assiduité (Année)</div>
+                    <div class="fs-6 fw-semibold text-info mt-1">${assiduiteStr}</div>
                 </div>
             </div>
             
