@@ -49,6 +49,7 @@ const menuItems = [];
     } else if (role === 'enseignant') {
         menuItems.push({ label: 'Mes Classes', icon: 'fa-door-open', link: 'classes.html', section: 'Gestion' });
         menuItems.push({ label: 'Mes Matières', icon: 'fa-book-open', link: 'mes-matieres.html', section: 'Gestion' });
+        menuItems.push({ label: 'Présences', icon: 'fa-clipboard-check', link: 'presences.html', section: 'Gestion' });
         menuItems.push({ label: 'Notes', icon: 'fa-clipboard-list', link: 'notes.html', section: 'Gestion' });
         menuItems.push({ label: 'Bulletins', icon: 'fa-file-alt', link: 'bulletins.html', section: 'Gestion' });
         menuItems.push({ label: 'Emplois du temps', icon: 'fa-calendar-alt', link: 'emploi-du-temps.html', section: 'Gestion' });
