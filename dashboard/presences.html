@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Appel & Présences – EduManager</title>
+  <link rel="icon" type="image/png" href="../img/favicon.png"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="/css/vendor/bootstrap.min.css" rel="stylesheet"/>
+  <link href="/css/vendor/all.min.css" rel="stylesheet"/>
+  <link href="../css/dashboard.css" rel="stylesheet"/>
+  <style>
+    .radio-status { display: none; }
+    .label-status {
+      padding: 6px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      border: 1px solid #dee2e6;
+      transition: all 0.2s;
+      margin-right: 5px;
+      margin-bottom: 5px;
+      display: inline-block;
+    }
+    .radio-status[value="Présent"]:checked + .label-status { background-color: #d1e7dd; color: #0f5132; border-color: #badbcc; font-weight: 600; }
+    .radio-status[value="Absent"]:checked + .label-status { background-color: #f8d7da; color: #842029; border-color: #f5c2c7; font-weight: 600; }
+    .radio-status[value="Retard"]:checked + .label-status { background-color: #fff3cd; color: #664d03; border-color: #ffecb5; font-weight: 600; }
+    .radio-status[value="Absence justifiée"]:checked + .label-status { background-color: #e2e3e5; color: #41464b; border-color: #d3d6d8; font-weight: 600; }
+    .radio-status[value="Absence non justifiée"]:checked + .label-status { background-color: #f8d7da; color: #842029; border-color: #f5c2c7; font-weight: 600; border-style: dashed; }
+    
+    .motif-input {
+      display: none;
+      width: 100%;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+<aside class="sidebar" id="sidebar"></aside>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<header class="topbar" id="topbar">
+  <button class="topbar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+  <div class="topbar-search"><i class="fas fa-search"></i><input type="text" placeholder="Rechercher…"/></div>
+  <div class="topbar-actions">
+    <div id="syncStatusIndicator" class="me-3 d-flex align-items-center"></div>
+    <button class="topbar-btn"><i class="fas fa-bell"></i><span class="notif-dot"></span></button>
+    <div class="topbar-divider"></div>
+    <div class="user-av" style="cursor:pointer">D</div>
+  </div>
+</header>
+
+<main class="main-content" id="mainContent">
+  <div class="page-header d-flex flex-wrap align-items-center justify-content-between gap-3">
+    <div>
+      <h1 class="page-title">Appel & Présences</h1>
+      <nav aria-label="breadcrumb"><ol class="breadcrumb mb-0"><li class="breadcrumb-item"><a href="index.html">Accueil</a></li><li class="breadcrumb-item active">Présences</li></ol></nav>
+    </div>
+  </div>
+
+  <!-- Sélecteur Classe / Date -->
+  <div class="dash-card mb-4 p-3">
+    <div class="row g-3 align-items-end">
+      <div class="col-md-4">
+        <label class="form-label">Classe</label>
+        <select class="form-select" id="selClasse">
+          <option value="">Chargement des classes...</option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Date de l'appel</label>
+        <input type="date" class="form-control" id="dateAppel">
+      </div>
+      <div class="col-md-4">
+        <button class="btn btn-primary w-100 rounded-pill" onclick="chargerAppel()">Faire l'appel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Grille d'appel -->
+  <div class="dash-card d-none" id="gridContainer">
+    <div class="dash-card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <span class="dash-card-title"><i class="fas fa-clipboard-check text-primary me-2"></i>Liste des élèves</span>
+      <div class="d-flex gap-2">
+        <button class="btn btn-sm btn-outline-success rounded-pill px-3" onclick="marquerTousPresents()"><i class="fas fa-check-double me-1"></i>Tous Présents</button>
+        <button class="btn btn-sm btn-primary rounded-pill px-3" onclick="sauvegarderAppel()"><i class="fas fa-save me-1"></i>Enregistrer l'appel</button>
+      </div>
+    </div>
+    <div class="dash-card-body p-0" style="overflow-x:auto">
+      <table class="dash-table mb-0">
+        <thead class="bg-light">
+          <tr>
+            <th style="width: 50px;" class="text-center">N°</th>
+            <th style="width: 250px;">Élève</th>
+            <th>Statut de présence</th>
+          </tr>
+        </thead>
+        <tbody id="grilleAppelBody">
+          <!-- Chargé en JS -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<script src="/js/vendor/bootstrap.bundle.min.js"></script>
+<script src="../js/vendor/supabase.js"></script>
+<script src="../js/config.js"></script>
+<script src="../js/vendor/dexie.min.js"></script>
+<script src="../js/sync.js"></script>
+<script src="../js/supabase.js"></script>
+<script src="../js/sidebar.js"></script>
+<script src="../js/security.js"></script>
+
+<script>
+let currentEleves = [];
+let currentClasseId = null;
+let currentDateAppel = null;
+let role = 'admin';
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('dateAppel').valueAsDate = new Date();
+    initPresences();
+});
+
+async function initPresences() {
+    if(!window.supabase) return;
+    
+    const sessionStr = localStorage.getItem('edu_session');
+    const etabId = sessionStr ? JSON.parse(sessionStr).etablissement_id : null;
+    
+    window.currentAcademicYearId = localStorage.getItem('current_academic_year_id');
+    
+    if (!window.currentAcademicYearId) {
+        let anneeQuery = window.supabase.from('annees_academiques').select('id').eq('statut', 'Active').order('date_debut', {ascending: false}).limit(1);
+        if (etabId) anneeQuery = anneeQuery.eq('etablissement_id', etabId);
+        
+        const { data: anneesActives } = await anneeQuery;
+        window.currentAcademicYearId = (anneesActives && anneesActives.length > 0) ? anneesActives[0].id : null;
+        if (window.currentAcademicYearId) {
+            localStorage.setItem('current_academic_year_id', window.currentAcademicYearId);
+        }
+    }
+    
+    if(!window.currentAcademicYearId) {
+        alert("Aucune année académique active. Veuillez en configurer une dans les paramètres.");
+    }
+    
+    // Déterminer le rôle
+    const session = await window.supabase.auth.getSession();
+    if (session.data.session) {
+        const r = JSON.parse(localStorage.getItem('edu_session') || '{}').role || 'admin';
+        role = r.toLowerCase();
+    }
+    
+    let queryClasses = window.supabase.from('classes').select('id, nom, titulaire_id').order('nom');
+    const {data: allClasses} = await queryClasses;
+    let classesAffichees = allClasses || [];
+    
+    if (role === 'enseignant') {
+        const uid = session.data.session.user.id;
+        const {data: ens} = await window.supabase.from('enseignants').select('id').eq('user_id', uid).single();
+        if (ens) {
+            window.currentEnseignantId = ens.id;
+            // Récupérer les classes où l'enseignant enseigne via les matières
+            const {data: matieres} = await window.supabase.from('matieres').select('id').eq('enseignant_id', ens.id);
+            const matIds = (matieres||[]).map(m => m.id);
+            let classeIdsOuIlEnseigne = new Set();
+            if(matIds.length > 0) {
+                const {data: cm} = await window.supabase.from('classes_matieres').select('classe_id').in('matiere_id', matIds);
+                (cm||[]).forEach(c => classeIdsOuIlEnseigne.add(c.classe_id));
+            }
+            classesAffichees = classesAffichees.filter(c => classeIdsOuIlEnseigne.has(c.id) || c.titulaire_id === ens.id);
+        }
+    }
+    
+    const selClasse = document.getElementById('selClasse');
+    selClasse.innerHTML = '<option value="">Sélectionner une classe</option>' + 
+        classesAffichees.map(c => `<option value="${c.id}">${c.nom}</option>`).join('');
+}
+
+async function chargerAppel() {
+    currentClasseId = document.getElementById('selClasse').value;
+    currentDateAppel = document.getElementById('dateAppel').value;
+    
+    if(!currentClasseId || !currentDateAppel) {
+        alert("Veuillez sélectionner une classe et une date.");
+        return;
+    }
+    
+    document.getElementById('gridContainer').classList.remove('d-none');
+    const tbody = document.getElementById('grilleAppelBody');
+    tbody.innerHTML = '<tr><td colspan="3" class="text-center py-4"><i class="fas fa-spinner fa-spin me-2"></i>Chargement...</td></tr>';
+    
+    // Charger les élèves inscrits dans cette classe pour l'année académique courante
+    const {data: inscriptions, error: errInsc} = await window.supabase
+        .from('inscriptions_annuelles')
+        .select(`
+            eleve_id,
+            eleves (id, prenom, nom, matricule)
+        `)
+        .eq('classe_id', currentClasseId)
+        .eq('annee_academique_id', window.currentAcademicYearId);
+        
+    if (errInsc) {
+        console.error(errInsc);
+        tbody.innerHTML = '<tr><td colspan="3" class="text-danger text-center">Erreur lors du chargement des élèves.</td></tr>';
+        return;
+    }
+    
+    if (!inscriptions || inscriptions.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-4">Aucun élève inscrit dans cette classe pour cette année.</td></tr>';
+        return;
+    }
+    
+    currentEleves = inscriptions.map(i => i.eleves).sort((a,b) => (a.nom+a.prenom).localeCompare(b.nom+b.prenom));
+    
+    // Charger les présences existantes pour cette date
+    const {data: presencesExistant} = await window.supabase
+        .from('presences')
+        .select('*')
+        .eq('classe_id', currentClasseId)
+        .eq('date_appel', currentDateAppel)
+        .eq('annee_academique_id', window.currentAcademicYearId);
+        
+    const presenceMap = {};
+    if (presencesExistant) {
+        presencesExistant.forEach(p => {
+            presenceMap[p.eleve_id] = p;
+        });
+    }
+
+    let html = '';
+    const statuts = ['Présent', 'Absent', 'Retard', 'Absence justifiée', 'Absence non justifiée'];
+    
+    currentEleves.forEach((el, index) => {
+        const exist = presenceMap[el.id];
+        const valStatut = exist ? exist.statut : 'Présent'; // Défaut à Présent
+        const valMotif = exist && exist.motif ? exist.motif : '';
+        const showMotif = ['Absent', 'Retard', 'Absence justifiée', 'Absence non justifiée'].includes(valStatut);
+        
+        let radios = statuts.map(st => {
+            const checked = (valStatut === st) ? 'checked' : '';
+            return `
+                <input type="radio" name="statut_${el.id}" id="st_${el.id}_${st}" value="${st}" class="radio-status" ${checked} onchange="toggleMotif('${el.id}', this.value)">
+                <label for="st_${el.id}_${st}" class="label-status">${st}</label>
+            `;
+        }).join('');
+        
+        html += `
+        <tr>
+            <td class="text-center text-muted">${index + 1}</td>
+            <td>
+                <div class="fw-bold">${el.nom} ${el.prenom}</div>
+                <div class="small text-muted">${el.matricule || ''}</div>
+            </td>
+            <td>
+                <div class="d-flex flex-wrap">${radios}</div>
+                <input type="text" id="motif_${el.id}" class="form-control form-control-sm motif-input" placeholder="Précisez le motif (facultatif)" value="${valMotif}" style="display: ${showMotif ? 'block' : 'none'};">
+            </td>
+        </tr>`;
+    });
+    
+    tbody.innerHTML = html;
+}
+
+function toggleMotif(eleveId, statut) {
+    const input = document.getElementById(`motif_${eleveId}`);
+    if (statut !== 'Présent') {
+        input.style.display = 'block';
+    } else {
+        input.style.display = 'none';
+        input.value = '';
+    }
+}
+
+function marquerTousPresents() {
+    currentEleves.forEach(el => {
+        const radio = document.getElementById(`st_${el.id}_Présent`);
+        if(radio) {
+            radio.checked = true;
+            toggleMotif(el.id, 'Présent');
+        }
+    });
+}
+
+async function sauvegarderAppel() {
+    if(!window.currentAcademicYearId || !currentClasseId || !currentDateAppel) return;
+    
+    const sessionStr = localStorage.getItem('edu_session');
+    const etabId = sessionStr ? JSON.parse(sessionStr).etablissement_id : null;
+    
+    if(!etabId) {
+        alert("Erreur d'établissement."); return;
+    }
+    
+    const btn = event.currentTarget;
+    const oldText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Enregistrement...';
+    btn.disabled = true;
+    
+    let toUpsert = [];
+    currentEleves.forEach(el => {
+        const radios = document.getElementsByName(`statut_${el.id}`);
+        let selectedStatut = 'Présent';
+        for(let i=0; i<radios.length; i++){
+            if(radios[i].checked){
+                selectedStatut = radios[i].value;
+                break;
+            }
+        }
+        const motif = document.getElementById(`motif_${el.id}`).value.trim();
+        
+        toUpsert.push({
+            etablissement_id: etabId,
+            annee_academique_id: window.currentAcademicYearId,
+            eleve_id: el.id,
+            classe_id: currentClasseId,
+            date_appel: currentDateAppel,
+            statut: selectedStatut,
+            motif: motif,
+            enseignant_id: (role === 'enseignant' && window.currentEnseignantId) ? window.currentEnseignantId : null
+        });
+    });
+    
+    try {
+        // En Supabase, on peut utiliser upsert basé sur la contrainte d'unicité
+        const {error} = await window.supabase
+            .from('presences')
+            .upsert(toUpsert, { onConflict: 'etablissement_id, annee_academique_id, eleve_id, date_appel' });
+            
+        if(error) {
+            console.error(error);
+            if(error.code === '42P01') {
+                alert("La table 'presences' n'existe pas encore. Veuillez exécuter le script SQL dans votre base de données.");
+            } else {
+                alert("Erreur lors de l'enregistrement: " + error.message);
+            }
+        } else {
+            alert("Appel enregistré avec succès.");
+        }
+    } catch(e) {
+        console.error(e);
+        alert("Une erreur est survenue.");
+    }
+    
+    btn.innerHTML = oldText;
+    btn.disabled = false;
+}
+</script>
+</body>
+</html>

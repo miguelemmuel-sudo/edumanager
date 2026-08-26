@@ -39,10 +39,11 @@ const menuItems = [];
 
     // Gestion
     if (['admin', 'secretaire', 'surveillant'].includes(role)) {
-        menuItems.push({ label: 'Élèves', icon: 'fa-user-graduate', link: 'eleves.html', section: 'Gestion' });
-        menuItems.push({ label: 'Enseignants', icon: 'fa-chalkboard-teacher', link: 'enseignants.html', section: 'Gestion' });
-        menuItems.push({ label: 'Classes', icon: 'fa-door-open', link: 'classes.html', section: 'Gestion' });
-        menuItems.push({ label: 'Notes', icon: 'fa-clipboard-list', link: 'notes.html', section: 'Gestion' });
+        menuItems.push({ label: 'Élèves', icon: 'fa-user-graduate', link: 'eleves.html', section: 'Scolarité' });
+        menuItems.push({ label: 'Enseignants', icon: 'fa-chalkboard-teacher', link: 'enseignants.html', section: 'Scolarité' });
+        menuItems.push({ label: 'Classes', icon: 'fa-door-open', link: 'classes.html', section: 'Scolarité' });
+        menuItems.push({ label: 'Présences', icon: 'fa-clipboard-check', link: 'presences.html', section: 'Scolarité' });
+        menuItems.push({ label: 'Notes', icon: 'fa-edit', link: 'notes.html', section: 'Scolarité' });
         menuItems.push({ label: 'Bulletins', icon: 'fa-file-alt', link: 'bulletins.html', section: 'Gestion' });
         menuItems.push({ label: 'Emplois du temps', icon: 'fa-calendar-alt', link: 'emploi-du-temps.html', section: 'Gestion' });
     } else if (role === 'enseignant') {

@@ -349,7 +349,7 @@ async function fetchAndRenderAdminDashboard() {
             try { etabId = JSON.parse(sessionStr).etablissement_id; } catch(e) {}
         }
         
-        let nbEleves = 0, nbEnseignants = 0, nbClasses = 0, revenus = 0;
+        let nbEleves = 0, nbEnseignants = 0, nbClasses = 0, revenus = 0, assiduite = '0%';
         let recentEleves = [];
         let dataFetched = false;
         
@@ -363,9 +363,10 @@ async function fetchAndRenderAdminDashboard() {
                 let queryEnseignants = window.supabase.from('enseignants').select('id');
                 let queryClasses = window.supabase.from('classes').select('id').eq('annee_academique_id', window.currentAcademicYearId);
                 let queryPaiements = window.supabase.from('paiements').select('eleve_id, montant, statut').eq('annee_academique_id', window.currentAcademicYearId);
+                let queryPresences = window.supabase.from('presences').select('statut').eq('annee_academique_id', window.currentAcademicYearId);
                 
-                const [resEleves, resEnseignants, resClasses, resPaiements] = await Promise.all([
-                    queryEleves, queryEnseignants, queryClasses, queryPaiements
+                const [resEleves, resEnseignants, resClasses, resPaiements, resPresences] = await Promise.all([
+                    queryEleves, queryEnseignants, queryClasses, queryPaiements, queryPresences
                 ]);
                 
                 if (!resEleves.error && !resEnseignants.error && !resClasses.error) {
@@ -391,6 +392,14 @@ async function fetchAndRenderAdminDashboard() {
                             }
                         }
                     });
+                    
+                    if (!resPresences.error && resPresences.data && resPresences.data.length > 0) {
+                        const totalAppels = resPresences.data.length;
+                        const presents = resPresences.data.filter(p => ['Présent', 'Retard'].includes(p.statut)).length;
+                        assiduite = ((presents / totalAppels) * 100).toFixed(1) + '%';
+                    } else {
+                        assiduite = '--%';
+                    }
                     
                     // Chart data extraction
                     if (resEleves.data) {
@@ -493,7 +502,7 @@ async function fetchAndRenderAdminDashboard() {
             const currency = window.EduSettings?.currency || 'FCFA';
             scValues[1].textContent = revenus.toLocaleString('fr-FR') + ' ' + currency;
             scValues[2].textContent = nbEnseignants;
-            scValues[3].textContent = nbClasses;
+            scValues[3].textContent = assiduite;
         }
 
         // --- Render Charts ---
