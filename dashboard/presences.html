@@ -103,6 +103,7 @@
 </main>
 
 <script src="/js/vendor/bootstrap.bundle.min.js"></script>
+<script src="../js/dashboard.js"></script>
 <script src="../js/vendor/supabase.js"></script>
 <script src="../js/config.js"></script>
 <script src="../js/vendor/dexie.min.js"></script>
@@ -331,16 +332,20 @@ async function sauvegarderAppel() {
         if(error) {
             console.error(error);
             if(error.code === '42P01') {
-                alert("La table 'presences' n'existe pas encore. Veuillez exécuter le script SQL dans votre base de données.");
+                if (window.showToast) window.showToast("La table 'presences' n'existe pas encore. Veuillez exécuter le script SQL dans votre base de données.", 'danger');
+                else alert("La table 'presences' n'existe pas encore. Veuillez exécuter le script SQL dans votre base de données.");
             } else {
-                alert("Erreur lors de l'enregistrement: " + error.message);
+                if (window.showToast) window.showToast("Erreur lors de l'enregistrement: " + error.message, 'danger');
+                else alert("Erreur lors de l'enregistrement: " + error.message);
             }
         } else {
-            alert("Appel enregistré avec succès.");
+            if (window.showToast) window.showToast("Appel enregistré avec succès.", 'success');
+            else alert("Appel enregistré avec succès.");
         }
     } catch(e) {
         console.error(e);
-        alert("Une erreur est survenue.");
+        if (window.showToast) window.showToast("Une erreur est survenue.", 'danger');
+        else alert("Une erreur est survenue.");
     }
     
     btn.innerHTML = oldText;
