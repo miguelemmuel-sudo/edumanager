@@ -767,14 +767,12 @@ function showTab(name, el) {
             
             inputs.forEach(inp => {
                 const val = inp.value.trim();
-                if (val !== '') {
-                    toUpsert.push({
-                        etablissement_id: etab_id,
-                        niveau: inp.getAttribute('data-niveau'),
-                        type_frais: inp.getAttribute('data-type'),
-                        montant: parseFloat(val) || 0
-                    });
-                }
+                toUpsert.push({
+                    etablissement_id: etab_id,
+                    niveau: inp.getAttribute('data-niveau'),
+                    type_frais: inp.getAttribute('data-type'),
+                    montant: val !== '' ? parseFloat(val) : 0
+                });
             });
             
             if (etab_id) {
