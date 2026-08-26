@@ -368,6 +368,30 @@
                     alert('Pour le plan VIP, veuillez nous contacter à contact@edumanager.com pour obtenir un devis personnalisé.');
                  });
               }
+              
+              // Notifications VIP Check
+              if (plan !== 'vip') {
+                 const notifEmail = document.getElementById('notif_email');
+                 const notifSms = document.getElementById('notif_sms');
+                 if (notifEmail) {
+                    notifEmail.disabled = true;
+                    notifEmail.checked = false;
+                 }
+                 if (notifSms) {
+                    notifSms.disabled = true;
+                    notifSms.checked = false;
+                 }
+                 const notifSection = document.querySelector('#tab-notifications .form-section');
+                 if (notifSection) {
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-warning mt-4';
+                    alertDiv.innerHTML = '<i class=\"fas fa-crown me-2\"></i>Les notifications automatiques (Email & SMS) sont exclusivement réservées au <strong>Plan VIP</strong>. Veuillez contacter l\'assistance d\'EduManager pour passer à ce pack.';
+                    notifSection.appendChild(alertDiv);
+                 }
+                 // Disable the save button for notifications since nothing can be saved
+                 const saveNotifBtn = document.querySelector('#tab-notifications .btn-save');
+                 if (saveNotifBtn) saveNotifBtn.disabled = true;
+              }
            }
         });
       </script>
