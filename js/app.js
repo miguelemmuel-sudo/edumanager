@@ -2924,12 +2924,14 @@ async function fetchAndRenderRapports() {
     // Currency dynamic
     const currency = window.EduSettings?.currency || 'FCFA';
 
-    // 1. Fetch Eleves
-    const { data: eleves } = await window.supabase.from('eleves').select('id, sexe, created_at, statut');
-    // 2. Fetch Paiements
-    const { data: paiements } = await window.supabase.from('paiements').select('montant, created_at');
+    // 1. Fetch Eleves inscrits dans l'année
+    const { data: eleves } = await window.supabase.from('inscriptions_annuelles').select('id, eleve_id, created_at, statut').eq('annee_academique_id', window.currentAcademicYearId);
+    // 2. Fetch Paiements de l'année
+    const { data: paiements } = await window.supabase.from('paiements').select('montant, created_at').eq('annee_academique_id', window.currentAcademicYearId);
     // 3. Fetch Notes
     const { data: notes } = await window.supabase.from('notes').select('valeur');
+    // 4. Fetch Presences
+    const { data: presencesData } = await window.supabase.from('presences').select('statut').eq('annee_academique_id', window.currentAcademicYearId);
     
     const countEleves = eleves ? eleves.length : 0;
     
@@ -2945,9 +2947,15 @@ async function fetchAndRenderRapports() {
     const moyenneNum = notes && notes.length > 0 ? (totalNotes / notes.length) : 0;
     const moyenne = notes && notes.length > 0 ? moyenneNum.toFixed(1) : '0';
     
-    // Assiduité (Simulated realistically, stable per school based on count)
-    const assiduiteNum = countEleves > 0 ? 90 + (countEleves % 8) + (moyenneNum % 1) : 0;
-    const assiduite = countEleves > 0 ? assiduiteNum.toFixed(1) + '%' : '0%'; 
+    // Assiduité (Réelle)
+    let assiduiteNum = 0;
+    let assiduite = '--%';
+    if (presencesData && presencesData.length > 0) {
+        const totalAppels = presencesData.length;
+        const presents = presencesData.filter(p => ['Présent', 'Retard'].includes(p.statut)).length;
+        assiduiteNum = (presents / totalAppels) * 100;
+        assiduite = assiduiteNum.toFixed(1) + '%';
+    } 
     
     // Update KPI values in the DOM
     const kpiValues = document.querySelectorAll('.stat-card .sc-value');
