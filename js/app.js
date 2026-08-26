@@ -3042,7 +3042,7 @@ async function fetchAndRenderRapports() {
     // 2. Fetch Paiements de l'année
     const { data: paiements } = await window.supabase.from('paiements').select('montant, created_at').eq('annee_academique_id', window.currentAcademicYearId);
     // 3. Fetch Notes
-    const { data: notes } = await window.supabase.from('notes').select('valeur');
+    const { data: notes } = await window.supabase.from('notes').select('valeur').eq('annee_academique_id', window.currentAcademicYearId);
     // 4. Fetch Presences
     const { data: presencesData } = await window.supabase.from('presences').select('statut').eq('annee_academique_id', window.currentAcademicYearId);
     
@@ -3154,8 +3154,9 @@ async function fetchAndRenderRapports() {
     // --- Dynamic Evolution Charts ---
     // Inscriptions Chart
     const inscriptionsChart = document.getElementById('inscriptionsChart');
+    const inscriptionsLabels = document.getElementById('inscriptionsChartLabels');
     if (inscriptionsChart && eleves) {
-        let inscCounts = new Array(10).fill(0);
+        let inscCounts = new Array(12).fill(0);
         
         eleves.forEach(e => {
             if (e.created_at) {
@@ -3163,18 +3164,22 @@ async function fetchAndRenderRapports() {
                 let m = date.getMonth(); // 0-11
                 // mapping to school year roughly (sep=8)
                 let idx = m >= 8 ? m - 8 : m + 4;
-                if (idx >= 0 && idx < 10) inscCounts[idx]++;
+                if (idx >= 0 && idx < 12) inscCounts[idx]++;
             }
         });
         
         const maxInsc = Math.max(...inscCounts, 10);
-        const monthsInsc = ['Sep', 'Oct', 'Nov', 'Déc', 'Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun'];
+        const monthsInsc = ['Sep', 'Oct', 'Nov', 'Déc', 'Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû'];
         
         inscriptionsChart.innerHTML = inscCounts.map((val, i) => {
             let height = Math.max((val / maxInsc) * 100, 5); // min 5% height
             let color = i % 2 === 0 ? '#3B82F6' : '#10B981'; // alternating blue/green
-            return `<div class="bar-item" style="height:${height}%;background:linear-gradient(180deg,${color},#93C5FD)" title="${monthsInsc[i]}: ${val}"></div>`;
+            return `<div class="bar-item" style="height:${height}%;background:linear-gradient(180deg,${color},#93C5FD); flex:1; border-radius: 4px 4px 0 0;" title="${monthsInsc[i]}: ${val}"></div>`;
         }).join('');
+        
+        if (inscriptionsLabels) {
+            inscriptionsLabels.innerHTML = monthsInsc.map(m => `<span style="flex:1; text-align:center;">${m}</span>`).join('');
+        }
     }
 
     // Finance Chart
@@ -3312,7 +3317,7 @@ async function fetchAndRenderRapports() {
             let statsMatieres = {};
             uniqueMatieres.forEach(m => statsMatieres[m] = { total: 0, count: 0 });
             
-            const { data: allNotes } = await window.supabase.from('notes').select('matiere, valeur');
+            const { data: allNotes } = await window.supabase.from('notes').select('matiere, valeur').eq('annee_academique_id', window.currentAcademicYearId);
             if (allNotes) {
                 allNotes.forEach(n => {
                     let m = n.matiere ? n.matiere.charAt(0).toUpperCase() + n.matiere.slice(1) : null;
