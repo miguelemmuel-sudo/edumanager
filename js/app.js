@@ -620,6 +620,12 @@ async function initEtablissementSettings() {
         window.EduSettings = { nom: 'Votre établissement', type: 'Collège / Secondaire', systeme: 'Francophone', currency: 'FCFA', logo_url: null };
         localStorage.setItem('edu_settings', JSON.stringify(window.EduSettings));
     }
+
+    // Mettre à jour tous les symboles de devise sur l'interface
+    const ccy = window.EduSettings.currency || 'FCFA';
+    document.querySelectorAll('.currency-symbol').forEach(el => {
+        el.textContent = ccy;
+    });
 }
 
 function getNiveauxList() {
@@ -3459,8 +3465,10 @@ async function initParametres() {
         if (etabData) {
         if(document.getElementById('etab_nom')) document.getElementById('etab_nom').value = etabData.nom || '';
         if(document.getElementById('etab_email')) document.getElementById('etab_email').value = etabData.email || '';
+        if(document.getElementById('etab_type')) document.getElementById('etab_type').value = etabData.type || '';
         if(document.getElementById('etab_tel')) document.getElementById('etab_tel').value = etabData.telephone || '';
         if(document.getElementById('etab_pays')) document.getElementById('etab_pays').value = etabData.pays || '';
+        if(document.getElementById('etab_currency')) document.getElementById('etab_currency').value = etabData.currency || 'FCFA';
         if(document.getElementById('etab_ville')) document.getElementById('etab_ville').value = etabData.ville || '';
         if(document.getElementById('etab_adresse')) document.getElementById('etab_adresse').value = etabData.adresse || '';
         if(document.getElementById('etab_site')) document.getElementById('etab_site').value = etabData.site_web || '';
@@ -3586,9 +3594,9 @@ async function initParametres() {
             
             const updates = {
                 nom: document.getElementById('etab_nom').value.trim(),
-                email: document.getElementById('etab_email').value.trim(),
-                telephone: document.getElementById('etab_tel').value.trim(),
+                tel: document.getElementById('etab_tel').value.trim(),
                 pays: document.getElementById('etab_pays').value.trim(),
+                currency: document.getElementById('etab_currency') ? document.getElementById('etab_currency').value.trim() : 'FCFA',
                 ville: document.getElementById('etab_ville').value.trim(),
                 adresse: document.getElementById('etab_adresse').value.trim(),
                 site_web: document.getElementById('etab_site').value.trim(),
@@ -3607,10 +3615,11 @@ async function initParametres() {
             if (error) {
                 if(window.showToast) window.showToast(error.message, 'danger');
             } else {
-                if(window.showToast) window.showToast('Param�tres enregistr�s avec succ�s', 'success');
+                if(window.showToast) window.showToast('Paramètres enregistrés avec succès', 'success');
                 if (window.EduSettings) {
                     window.EduSettings.nom = updates.nom;
                     window.EduSettings.type = updates.type;
+                    window.EduSettings.currency = updates.currency;
                     localStorage.setItem('edu_settings', JSON.stringify(window.EduSettings));
                 }
             }
