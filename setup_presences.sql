@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS public.presences (
     date_appel DATE NOT NULL DEFAULT CURRENT_DATE,
     statut VARCHAR(50) NOT NULL DEFAULT 'Présent', -- Présent, Absent, Retard, Absence justifiée, Absence non justifiée
     motif TEXT,
-    enseignant_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    enseignant_id UUID REFERENCES public.enseignants(id) ON DELETE SET NULL,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     UNIQUE(etablissement_id, annee_academique_id, eleve_id, date_appel)
