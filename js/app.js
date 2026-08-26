@@ -490,7 +490,8 @@ async function fetchAndRenderAdminDashboard() {
         const scValues = document.querySelectorAll('.stat-card .sc-value');
         if (scValues.length >= 4) {
             scValues[0].textContent = nbEleves;
-            scValues[1].textContent = revenus.toLocaleString('fr-FR') + ' FCFA';
+            const currency = window.EduSettings?.currency || 'FCFA';
+            scValues[1].textContent = revenus.toLocaleString('fr-FR') + ' ' + currency;
             scValues[2].textContent = nbEnseignants;
             scValues[3].textContent = nbClasses;
         }
@@ -1982,13 +1983,7 @@ async function fetchAndRenderPaiements() {
     const pImpayes = totalEleves ? 100 - pSoldes - pPartiels : 0;
 
     // Currency dynamic
-    const { data: etablissement } = await window.supabase.from('etablissements').select('pays').limit(1).single();
-    function getCurrencyByCountry(country) {
-        if (!country) return 'FCFA';
-        const map = { 'France': '€', 'Canada': '$', 'Maroc': 'MAD', 'Algérie': 'DZD', 'Tunisie': 'TND', 'RDC': 'FC' };
-        return map[country] || 'FCFA';
-    }
-    const currency = etablissement && etablissement.pays ? getCurrencyByCountry(etablissement.pays) : 'FCFA';
+    const currency = window.EduSettings?.currency || 'FCFA';
 
 
     // Update Top KPIs
@@ -2917,16 +2912,8 @@ async function fetchAndRenderRapports() {
     const isRapportsPage = document.querySelector('.dash-card-title') && document.querySelector('.dash-card-title').textContent.includes('Évolution des inscriptions');
     if (!isRapportsPage) return;
     
-    // Currency mapping
-    function getCurrencyByCountry(country) {
-        if (!country) return 'FCFA';
-        const map = { 'France': '€', 'Canada': '$', 'Maroc': 'MAD', 'Algérie': 'DZD', 'Tunisie': 'TND', 'RDC': 'FC' };
-        return map[country] || 'FCFA'; // default to FCFA for Sénégal, Côte d'Ivoire, Cameroun, etc.
-    }
-    
-    // Fetch Etablissement for currency
-    const { data: etab } = await window.supabase.from('etablissements').select('pays').limit(1).single();
-    const currency = etab ? getCurrencyByCountry(etab.pays) : 'FCFA';
+    // Currency dynamic
+    const currency = window.EduSettings?.currency || 'FCFA';
 
     // 1. Fetch Eleves
     const { data: eleves } = await window.supabase.from('eleves').select('id, sexe, created_at, statut');
