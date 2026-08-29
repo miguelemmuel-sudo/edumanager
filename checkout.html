@@ -95,17 +95,17 @@
         <label class="form-label fw-medium mb-3">Méthode de paiement</label>
         
         <div class="d-flex flex-column gap-3 mb-4">
-          <!-- Option Fapshi -->
+          <!-- Option Notch Pay -->
           <label class="payment-opt active d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center gap-3">
-              <input class="form-check-input mt-0" type="radio" name="gateway" value="fapshi" checked>
+              <input class="form-check-input mt-0" type="radio" name="gateway" value="notchpay" checked>
               <div>
-                <span class="d-block fw-semibold" style="color: var(--text)">Fapshi</span>
-                <span class="d-block text-muted small" style="font-size: 0.75rem;">Mobile Money (MTN, Orange...)</span>
+                <span class="d-block fw-semibold" style="color: var(--text)">Notch Pay</span>
+                <span class="d-block text-muted small" style="font-size: 0.75rem;">Mobile Money, Cartes (MTN, Orange...)</span>
               </div>
             </div>
-            <!-- Vous pourrez remplacer ceci par le logo de Fapshi -->
-            <div class="fw-bold" style="color: #FF5A5F; font-size: 1.2rem; font-style: italic;">Fapshi</div>
+            <!-- Vous pourrez remplacer ceci par le logo de Notch Pay -->
+            <div class="fw-bold" style="color: #2F80ED; font-size: 1.2rem; font-style: italic;">Notch Pay</div>
           </label>
 
           <!-- Option Chariow -->
@@ -233,8 +233,30 @@
         btn.innerHTML = originalText;
         btn.disabled = false;
       }
+    } else if (gateway === 'notchpay') {
+      try {
+        const response = await fetch('/api/notchpay/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ plan, etablissement_id, email, first_name, last_name, phone })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) throw new Error(data.error || 'Erreur inconnue');
+        
+        successDiv.style.display = 'flex';
+        // Redirection vers l'URL de paiement Notch Pay
+        window.location.href = data.paymentUrl;
+      } catch (error) {
+        errorDiv.className = 'alert alert-danger mt-3';
+        errorDiv.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i> Erreur : ' + error.message;
+        errorDiv.style.display = 'block';
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
     } else {
-      // Pour Fapshi ou autre (simulation en attendant l'API)
+      // Autre passerelle (simulation)
       setTimeout(() => {
         successDiv.style.display = 'flex';
         setTimeout(() => {

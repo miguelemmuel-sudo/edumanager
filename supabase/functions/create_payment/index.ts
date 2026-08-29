@@ -29,33 +29,33 @@ serve(async (req) => {
 
     let paymentUrl = ""
 
-    // 2. Traitement Fapshi
-    if (gateway === 'fapshi') {
-      const fapshiApiUser = Deno.env.get('FAPSHI_API_USER')
-      const fapshiApiKey = Deno.env.get('FAPSHI_API_KEY')
+    // 2. Traitement Notch Pay
+    if (gateway === 'notchpay') {
+      const notchPayPublicKey = Deno.env.get('NOTCH_PAY_PUBLIC_KEY') || 'pk.pS5OEv0VDdsbHJ4I9ym0u5nbHrJp2MmEr0DOGS1a4TwOAD1UBdUmeL7xHLlFkwoFD3DIj1pSKfpzuKoRIGjpQGBM2Qe3B7xQbuflDJZXd4wnX6luLOUXO3hcBvr1Q'
       
-      // Exemple d'appel API Fapshi (à adapter selon la doc exacte de Fapshi)
-      // L'appel génère un lien de paiement
-      /* 
-      const response = await fetch('https://api.fapshi.com/v1/payment/initiate', {
+      const response = await fetch('https://api.notchpay.co/payments', {
         method: 'POST',
         headers: {
+          'Authorization': notchPayPublicKey,
           'Content-Type': 'application/json',
-          'apiuser': fapshiApiUser,
-          'apikey': fapshiApiKey
+          'Accept': 'application/json'
         },
         body: JSON.stringify({
           amount: amount,
-          externalId: etablissement_id,
-          redirectUrl: 'https://votredomaine.com/dashboard/index.html?payment=success'
+          currency: 'XAF',
+          reference: etablissement_id,
+          description: `Paiement pour le plan ${plan}`,
+          callback: 'https://edumanagerpower.com/dashboard/index.html?payment=success'
         })
       });
-      const data = await response.json();
-      paymentUrl = data.link; 
-      */
       
-      // Simulation pour le moment
-      paymentUrl = "https://fapshi.com/pay/sandbox_demo"
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Erreur lors de l\'initialisation du paiement Notch Pay');
+      }
+      
+      paymentUrl = data.authorization_url;
     } 
     // 3. Traitement Chariow
     else if (gateway === 'chariow') {

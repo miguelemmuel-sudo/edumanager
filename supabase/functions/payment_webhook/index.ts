@@ -17,8 +17,8 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Vérification de la signature du webhook si applicable (Chariow / Fapshi)
-    // Exemple pour Chariow : comparer un header HMAC avec CHARIOW_WEBHOOK_SECRET
+    // Vérification de la signature du webhook si applicable (Chariow / Notch Pay)
+    // Notch Pay : vérifier le header x-notch-signature avec NOTCH_PAY_HASH_KEY via HMAC SHA256
 
     // Mise à jour de l'abonnement
     const { error } = await supabaseClient

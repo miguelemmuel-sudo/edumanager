@@ -1,0 +1,63 @@
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  try {
+    const { plan, etablissement_id, email, first_name, last_name, phone } = req.body;
+
+    const notchPayPublicKey = process.env.NOTCH_PAY_PUBLIC_KEY || 'pk.pS5OEv0VDdsbHJ4I9ym0u5nbHrJp2MmEr0DOGS1a4TwOAD1UBdUmeL7xHLlFkwoFD3DIj1pSKfpzuKoRIGjpQGBM2Qe3B7xQbuflDJZXd4wnX6luLOUXO3hcBvr1Q';
+    
+    // Déterminer le montant en fonction du plan
+    const amount = plan === 'premium' ? 35000 : 25000;
+    
+    const origin = req.headers.origin || 'https://edumanagerpower.com';
+
+    // Format phone if needed
+    let customerPhone = phone || "";
+
+    const payload = {
+      amount: amount,
+      currency: "XAF",
+      reference: etablissement_id, // Utilisé pour identifier l'établissement dans le webhook
+      description: `Paiement du plan ${plan} - EduManager`,
+      customer: {
+        email: email || "contact@etablissement.com",
+        name: `${first_name || 'Admin'} ${last_name || 'Edu'}`.trim(),
+        phone: customerPhone
+      },
+      callback: `${origin}/dashboard/index.html?payment=success`
+    };
+
+    // Appel à l'API Notch Pay pour créer une session de paiement
+    const notchRes = await fetch('https://api.notchpay.co/payments/initialize', {
+      method: 'POST',
+      headers: {
+        'Authorization': notchPayPublicKey,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await notchRes.json();
+
+    if (!notchRes.ok) {
+      console.error("Notch Pay API Error:", data);
+      return res.status(400).json({ error: data.message || data.error || 'Erreur lors de la création du paiement Notch Pay' });
+    }
+
+    let finalUrl = data.authorization_url;
+
+    if (!finalUrl) {
+      console.error("URL de paiement introuvable dans la réponse Notch Pay:", data);
+      return res.status(400).json({ error: "L'URL de paiement n'a pas pu être générée par Notch Pay." });
+    }
+
+    return res.status(200).json({ paymentUrl: finalUrl });
+
+  } catch (error) {
+    console.error("Internal Server Error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+}

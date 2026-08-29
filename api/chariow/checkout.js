@@ -14,7 +14,7 @@ export default async function handler(req, res) {
       ? process.env.CHARIOW_PREMIUM_PLAN_ID
       : process.env.CHARIOW_STANDARD_PLAN_ID;
 
-    const origin = req.headers.origin || 'https://edumanager-ten.vercel.app';
+    const origin = req.headers.origin || 'https://edumanagerpower.com';
 
     // Parse phone number loosely to separate country code if starts with + or 237
     let country_code = "CM"; // Chariow API expects an ISO alpha-2 country code like "CM"
