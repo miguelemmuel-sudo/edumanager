@@ -9,7 +9,7 @@ ALTER TABLE public.etablissements
   ADD COLUMN IF NOT EXISTS max_eleves             INTEGER DEFAULT 300,
   ADD COLUMN IF NOT EXISTS max_enseignants        INTEGER DEFAULT 99999,
   ADD COLUMN IF NOT EXISTS max_classes            INTEGER DEFAULT 99999,
-  ADD COLUMN IF NOT EXISTS fonctionnalites        TEXT[]  DEFAULT ARRAY['eleves','classes','notes','paiements'];
+  ADD COLUMN IF NOT EXISTS fonctionnalites        TEXT[]  DEFAULT ARRAY['all'];
 
 -- Commentaires
 COMMENT ON COLUMN public.etablissements.abonnement_expire_le IS 'Date d''expiration de l''abonnement';
@@ -25,7 +25,7 @@ UPDATE public.etablissements SET
   max_eleves      = 300,
   max_enseignants = 99999,
   max_classes     = 99999,
-  fonctionnalites = ARRAY['eleves','classes','notes','paiements'],
+  fonctionnalites = ARRAY['all'],
   abonnement_expire_le = COALESCE(date_fin_essai, NOW() + INTERVAL '14 days')
 WHERE plan = 'starter';
 
@@ -34,7 +34,7 @@ UPDATE public.etablissements SET
   max_eleves      = 1000,
   max_enseignants = 99999,
   max_classes     = 99999,
-  fonctionnalites = ARRAY['eleves','classes','notes','paiements','emploi_temps','notifications','messages'],
+  fonctionnalites = ARRAY['all'],
   abonnement_expire_le = NOW() + INTERVAL '30 days'
 WHERE plan = 'standard' AND statut_abonnement = 'actif';
 
@@ -43,7 +43,7 @@ UPDATE public.etablissements SET
   max_eleves      = 1500,
   max_enseignants = 99999,
   max_classes     = 99999,
-  fonctionnalites = ARRAY['eleves','classes','notes','paiements','emploi_temps','notifications','messages','rapports','portail_parents','multi_utilisateurs'],
+  fonctionnalites = ARRAY['all'],
   abonnement_expire_le = NOW() + INTERVAL '30 days'
 WHERE plan = 'premium' AND statut_abonnement = 'actif';
 

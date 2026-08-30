@@ -11,7 +11,7 @@ const PLAN_RIGHTS = {
     max_eleves: 300,
     max_enseignants: 99999,
     max_classes: 99999,
-    fonctionnalites: ['eleves', 'classes', 'notes', 'paiements'],
+    fonctionnalites: ['all'],
     duree_jours: 14  // Essai gratuit 14 jours
   },
   // Standard : 25 000 FCFA/mois, 1 000 élèves max, 30 jours
@@ -20,7 +20,7 @@ const PLAN_RIGHTS = {
     max_eleves: 1000,
     max_enseignants: 99999,
     max_classes: 99999,
-    fonctionnalites: ['eleves', 'classes', 'notes', 'paiements', 'emploi_temps', 'notifications', 'messages'],
+    fonctionnalites: ['all'],
     duree_jours: 30
   },
   // Premium : 35 000 FCFA/mois, 1 500 élèves max, 30 jours
@@ -29,7 +29,7 @@ const PLAN_RIGHTS = {
     max_eleves: 1500,
     max_enseignants: 99999,
     max_classes: 99999,
-    fonctionnalites: ['eleves', 'classes', 'notes', 'paiements', 'emploi_temps', 'notifications', 'messages', 'rapports', 'portail_parents', 'multi_utilisateurs'],
+    fonctionnalites: ['all'],
     duree_jours: 30
   },
   // VIP : Sur devis, assistance sur site, 30 jours renouvelables
