@@ -25,16 +25,28 @@ export default async function handler(req, res) {
       } else if (number.startsWith("237") && number.length > 9) {
          number = number.substring(3);
       } else if (number.startsWith("+")) {
-         number = number.substring(4);
+         // Pour d'autres indicatifs, on extrait après le +
+         const match = number.match(/^\+(\d{1,3})(\d{8,})$/);
+         if (match) number = match[2];
       }
     }
+
+    // Chariow exige phone, first_name, last_name — on met des valeurs par défaut si vides
+    const safeFirstName = first_name || "Admin";
+    const safeLastName  = last_name  || "EduManager";
+    // Si aucun numéro fourni, on utilise un numéro de substitution générique
+    const safePhone = number || "600000000";
 
     const payload = {
       product_id: productId,
       store: merchantId,
       email: email || "admin@edumanager.com",
-      first_name: first_name || "Admin",
-      last_name: last_name || "Edu",
+      first_name: safeFirstName,
+      last_name: safeLastName,
+      phone: {
+        number: safePhone,
+        country_code: country_code
+      },
       metadata: {
         etablissement_id: etablissement_id,
         plan: plan
@@ -42,13 +54,6 @@ export default async function handler(req, res) {
       success_url: `${origin}/dashboard/index.html?payment=success`,
       cancel_url: `${origin}/checkout.html`
     };
-
-    if (number) {
-      payload.phone = {
-        number: number,
-        country_code: country_code
-      };
-    }
 
     // Appel à l'API Chariow pour créer une session de paiement (checkout)
     const chariowRes = await fetch('https://api.chariow.com/v1/checkout', {

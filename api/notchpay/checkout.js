@@ -16,10 +16,13 @@ export default async function handler(req, res) {
     // Format phone if needed
     let customerPhone = phone || "";
 
+    // Génère une référence unique pour éviter l'erreur "Reference already existing"
+    const uniqueRef = `${etablissement_id}_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+
     const payload = {
       amount: amount,
       currency: "XAF",
-      reference: etablissement_id, // Utilisé pour identifier l'établissement dans le webhook
+      reference: uniqueRef, // Référence unique par tentative de paiement
       description: `Paiement du plan ${plan} - EduManager`,
       customer: {
         email: email || "contact@etablissement.com",
