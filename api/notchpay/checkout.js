@@ -35,7 +35,7 @@ export default async function handler(req, res) {
         plan: plan
       },
       // Redirige vers une page de vérification intermédiaire, pas directement le dashboard
-      callback: `${origin}/payment-verify.html?ref=${uniqueRef}&gateway=notchpay`
+      callback: `${origin}/payment-verify.html?ref=${uniqueRef}&gateway=notchpay&etablissement_id=${encodeURIComponent(etablissement_id)}&plan=${encodeURIComponent(plan)}`
     };
 
     // Appel à l'API Notch Pay pour créer une session de paiement

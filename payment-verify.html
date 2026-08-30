@@ -192,13 +192,15 @@
 </div>
 
 <script>
-  const params  = new URLSearchParams(window.location.search);
-  const ref     = params.get('ref');
-  const gateway = (params.get('gateway') || 'notchpay').toLowerCase();
+  const params          = new URLSearchParams(window.location.search);
+  const ref             = params.get('ref');
+  const gateway         = (params.get('gateway') || 'notchpay').toLowerCase();
+  const etablissement_id = params.get('etablissement_id') || localStorage.getItem('etablissement_id') || '';
+  const planFromUrl     = params.get('plan') || localStorage.getItem('pending_plan') || 'standard';
 
   let attempts = 0;
-  const MAX_ATTEMPTS = 8;    // Jusqu'à 8 tentatives
-  const RETRY_DELAY  = 5000; // 5 secondes entre chaque tentative
+  const MAX_ATTEMPTS = 15;   // Jusqu'à 15 tentatives
+  const RETRY_DELAY  = 3000; // 3 secondes entre chaque tentative (plus rapide)
   let countdownTimer = null;
 
   // Afficher le nom de la passerelle
@@ -215,7 +217,7 @@
 
   function setPlanBadge(plan) {
     const badge = document.getElementById('plan-badge');
-    const labels = { standard: 'Plan Standard', premium: 'Plan Premium', vip: 'Plan VIP' };
+    const labels = { starter: 'Plan Starter', standard: 'Plan Standard', premium: 'Plan Premium', vip: 'Plan VIP' };
     badge.textContent = labels[plan] || 'Plan Actif';
     badge.className = 'plan-badge ' + (plan || 'standard');
   }
@@ -243,20 +245,31 @@
     }
 
     try {
-      const apiUrl = gateway === 'chariow'
-        ? `/api/chariow/verify?ref=${encodeURIComponent(ref)}`
-        : `/api/notchpay/verify?ref=${encodeURIComponent(ref)}`;
+      // Construire l'URL avec etablissement_id pour vérification Supabase directe
+      let apiUrl = '';
+      if (gateway === 'chariow') {
+        apiUrl = `/api/chariow/verify?ref=${encodeURIComponent(ref)}`;
+        if (etablissement_id) apiUrl += `&etablissement_id=${encodeURIComponent(etablissement_id)}`;
+      } else {
+        apiUrl = `/api/notchpay/verify?ref=${encodeURIComponent(ref)}`;
+        if (etablissement_id) apiUrl += `&etablissement_id=${encodeURIComponent(etablissement_id)}`;
+      }
 
       const res  = await fetch(apiUrl);
       const data = await res.json();
 
       if (data.success) {
+        // Nettoyer localStorage
+        localStorage.removeItem('pending_plan');
+
         // Afficher le plan activé
-        setPlanBadge(data.plan || 'standard');
+        const activePlan = data.plan || planFromUrl || 'standard';
+        setPlanBadge(activePlan);
         showState('success');
-        // Countdown de redirection automatique
-        startCountdown(5, () => {
-          window.location.href = 'dashboard/index.html?payment=confirmed&plan=' + (data.plan || 'standard');
+
+        // Countdown 3 secondes puis redirection
+        startCountdown(3, () => {
+          window.location.href = `dashboard/index.html?payment=confirmed&plan=${activePlan}`;
         });
         return true;
       }
@@ -292,7 +305,7 @@
     const poll = async () => {
       attempts++;
       const el = document.getElementById('attempts-msg');
-      el.textContent = `Tentative ${attempts}/${MAX_ATTEMPTS}…`;
+      el.textContent = `Vérification ${attempts}/${MAX_ATTEMPTS}…`;
 
       const done = await checkPaymentStatus();
 
@@ -304,8 +317,8 @@
       }
     };
 
-    // Attendre 2s avant la première tentative (le temps que le paiement soit traité)
-    setTimeout(poll, 2000);
+    // Première vérification rapide après 1.5s
+    setTimeout(poll, 1500);
   }
 
   // Démarrer automatiquement dès le chargement de la page
