@@ -300,99 +300,159 @@
       </div>
       
       <script>
-        document.addEventListener('DOMContentLoaded', () => {
-           const sessionStr = localStorage.getItem('edu_session');
-           if(sessionStr) {
-              const session = JSON.parse(sessionStr);
-              const plan = session.plan || 'starter';
-              const trialExp = session.trialExpired;
-              
-              const titles = {
-                 'starter': 'Plan Starter',
-                 'standard': 'Plan Standard',
-                 'premium': 'Plan Premium',
-                 'vip': 'Plan VIP'
-              };
-              const desc = {
-                 'starter': 'Jusqu\'à 300 élèves. Essai gratuit de 14 jours.',
-                 'standard': 'Jusqu\'à 1000 élèves. Abonnement mensuel de 25 000 FCFA.',
-                 'premium': 'Jusqu\'à 1500 élèves. Abonnement mensuel de 35 000 FCFA.',
-                 'vip': 'Solution personnalisée avec Application mobile. (Capacité à définir)'
-              };
-              
-              const elTitle = document.getElementById('currentPlanTitle');
-              if(elTitle) elTitle.textContent = titles[plan] || 'Plan inconnu';
-              
-              const elDesc = document.getElementById('currentPlanDesc');
-              if(elDesc) elDesc.textContent = desc[plan] || '';
-              
-              const elStatus = document.getElementById('currentPlanStatus');
-              if(elStatus) {
-                 if (trialExp) {
-                    elStatus.textContent = 'Expiré';
-                    elStatus.className = 'status-badge danger';
-                 } else {
-                    elStatus.textContent = 'Actif';
-                    elStatus.className = 'status-badge success';
-                 }
+        document.addEventListener('DOMContentLoaded', async () => {
+          const titles = {
+            starter:  'Plan Starter',
+            standard: 'Plan Standard',
+            premium:  'Plan Premium',
+            vip:      'Plan VIP'
+          };
+          const desc = {
+            starter:  "Jusqu'à 300 élèves. Essai gratuit de 14 jours.",
+            standard: "Jusqu'à 1 000 élèves. Abonnement mensuel de 25 000 FCFA.",
+            premium:  "Jusqu'à 1 500 élèves. Abonnement mensuel de 35 000 FCFA.",
+            vip:      "Solution personnalisée avec assistance sur site. (Capacité illimitée)"
+          };
+
+          // ── Récupérer l'établissement_id depuis la session ──────────────
+          let etablissement_id = null;
+          let userId = null;
+          try {
+            const s = JSON.parse(localStorage.getItem('edu_session') || '{}');
+            etablissement_id = s.etablissement_id || localStorage.getItem('etablissement_id');
+            userId = s.userId || s.user_id;
+          } catch(e) {}
+
+          // ── Lire le plan directement depuis Supabase ────────────────────
+          // (pas depuis localStorage qui peut être obsolète après un paiement)
+          let plan = 'starter';
+          let statut = 'trial';
+          let expiry = null;
+
+          if (etablissement_id && window.supabase) {
+            try {
+              const { data: etab, error } = await window.supabase
+                .from('etablissements')
+                .select('plan, statut_abonnement, abonnement_expire_le, date_fin_essai')
+                .eq('id', etablissement_id)
+                .single();
+
+              if (!error && etab) {
+                plan   = (etab.plan || 'starter').toLowerCase();
+                statut = etab.statut_abonnement || 'trial';
+                expiry = etab.abonnement_expire_le || etab.date_fin_essai;
+
+                // Mettre à jour le localStorage pour cohérence
+                try {
+                  const s = JSON.parse(localStorage.getItem('edu_session') || '{}');
+                  s.plan = plan;
+                  localStorage.setItem('edu_session', JSON.stringify(s));
+                } catch(e) {}
               }
-              
-              // Style the current plan card
-              const card = document.getElementById('card-' + plan);
-              if (card) {
-                 card.style.background = 'rgba(37,99,235,.08)';
-                 card.style.border = '2px solid var(--primary)';
-                 card.querySelector('.fw-bold').innerHTML += ' <span class="badge bg-primary ms-1" style="font-size:.65rem">Actuel</span>';
-                 const btn = document.getElementById('btn-' + plan);
-                 if (btn) {
-                    btn.className = 'btn btn-primary btn-sm rounded-pill w-100';
-                    btn.textContent = 'Plan actuel';
-                    btn.disabled = true;
-                 }
-              }
-              
-              // Upgrade buttons click listeners
-              ['standard', 'premium'].forEach(p => {
-                 const b = document.getElementById('btn-' + p);
-                 if (b && !b.disabled) {
-                    b.addEventListener('click', () => {
-                       localStorage.setItem('pending_plan', p);
-                       window.location.href = '../checkout.html';
-                    });
-                 }
+            } catch(e) {
+              console.warn('Supabase read error, fallback localStorage:', e);
+              const s = JSON.parse(localStorage.getItem('edu_session') || '{}');
+              plan = (s.plan || 'starter').toLowerCase();
+            }
+          } else {
+            // Fallback localStorage si pas de connexion Supabase
+            try {
+              const s = JSON.parse(localStorage.getItem('edu_session') || '{}');
+              plan = (s.plan || 'starter').toLowerCase();
+            } catch(e) {}
+          }
+
+          // Vérifier si l'abonnement est expiré
+          const isExpired = expiry && new Date(expiry) < new Date();
+          const isActive  = statut === 'actif' && !isExpired;
+          const isTrial   = statut === 'trial' && !isExpired;
+
+          // ── Afficher le plan courant ────────────────────────────────────
+          const elTitle  = document.getElementById('currentPlanTitle');
+          const elDesc   = document.getElementById('currentPlanDesc');
+          const elStatus = document.getElementById('currentPlanStatus');
+
+          if (elTitle)  elTitle.textContent  = titles[plan] || 'Plan ' + plan;
+          if (elDesc)   elDesc.textContent   = desc[plan]   || '';
+
+          if (elStatus) {
+            if (isExpired) {
+              elStatus.textContent = 'Expiré';
+              elStatus.className   = 'status-badge danger';
+            } else if (isTrial) {
+              elStatus.textContent = 'Essai gratuit';
+              elStatus.className   = 'status-badge warning';
+            } else {
+              elStatus.textContent = 'Actif';
+              elStatus.className   = 'status-badge success';
+            }
+          }
+
+          // ── Mettre en surbrillance la carte du plan actuel ─────────────
+          const card = document.getElementById('card-' + plan);
+          if (card) {
+            card.style.background = 'rgba(37,99,235,.08)';
+            card.style.border     = '2px solid var(--primary)';
+            const label = card.querySelector('.fw-bold');
+            if (label && !label.querySelector('.badge')) {
+              label.innerHTML += ' <span class="badge bg-primary ms-1" style="font-size:.65rem">Actuel</span>';
+            }
+            const btn = document.getElementById('btn-' + plan);
+            if (btn) {
+              btn.className   = 'btn btn-primary btn-sm rounded-pill w-100';
+              btn.textContent = 'Plan actuel';
+              btn.disabled    = true;
+            }
+          }
+
+          // ── Boutons de mise à niveau ────────────────────────────────────
+          const planOrder = ['starter', 'standard', 'premium', 'vip'];
+          const currentIndex = planOrder.indexOf(plan);
+
+          ['starter', 'standard', 'premium'].forEach(p => {
+            const b = document.getElementById('btn-' + p);
+            if (!b) return;
+            if (b.disabled) return; // déjà désactivé (plan actuel)
+
+            const targetIndex = planOrder.indexOf(p);
+            if (targetIndex < currentIndex) {
+              // Plan inférieur → désactiver
+              b.className   = 'btn btn-outline-secondary btn-sm rounded-pill w-100';
+              b.textContent = 'Plan inférieur';
+              b.disabled    = true;
+            } else {
+              // Plan supérieur → activer le bouton upgrade
+              b.addEventListener('click', () => {
+                localStorage.setItem('pending_plan', p);
+                window.location.href = '../checkout.html';
               });
-              
-              const bVip = document.getElementById('btn-vip');
-              if (bVip && !bVip.disabled) {
-                 bVip.addEventListener('click', () => {
-                    alert('Pour le plan VIP, veuillez nous contacter à contact@edumanager.com pour obtenir un devis personnalisé.');
-                 });
-              }
-              
-              // Notifications VIP Check
-              if (plan !== 'vip') {
-                 const notifEmail = document.getElementById('notif_email');
-                 const notifSms = document.getElementById('notif_sms');
-                 if (notifEmail) {
-                    notifEmail.disabled = true;
-                    notifEmail.checked = false;
-                 }
-                 if (notifSms) {
-                    notifSms.disabled = true;
-                    notifSms.checked = false;
-                 }
-                 const notifSection = document.querySelector('#tab-notifications .form-section');
-                 if (notifSection) {
-                    const alertDiv = document.createElement('div');
-                    alertDiv.className = 'alert alert-warning mt-4';
-                    alertDiv.innerHTML = '<i class=\"fas fa-crown me-2\"></i>Les notifications automatiques (Email & SMS) sont exclusivement réservées au <strong>Plan VIP</strong>. Veuillez contacter l\'assistance d\'EduManager pour passer à ce pack.';
-                    notifSection.appendChild(alertDiv);
-                 }
-                 // Disable the save button for notifications since nothing can be saved
-                 const saveNotifBtn = document.querySelector('#tab-notifications .btn-save');
-                 if (saveNotifBtn) saveNotifBtn.disabled = true;
-              }
-           }
+            }
+          });
+
+          // Bouton VIP
+          const bVip = document.getElementById('btn-vip');
+          if (bVip && !bVip.disabled) {
+            bVip.addEventListener('click', () => {
+              alert('Pour le plan VIP, contactez-nous à contact@edumanager.com pour un devis personnalisé.');
+            });
+          }
+
+          // ── Notifications (réservées VIP) ───────────────────────────────
+          if (plan !== 'vip') {
+            ['notif_email', 'notif_sms'].forEach(id => {
+              const el = document.getElementById(id);
+              if (el) { el.disabled = true; el.checked = false; }
+            });
+            const notifSection = document.querySelector('#tab-notifications .form-section');
+            if (notifSection && !notifSection.querySelector('.alert-vip')) {
+              const alertDiv = document.createElement('div');
+              alertDiv.className = 'alert alert-warning mt-4 alert-vip';
+              alertDiv.innerHTML = '<i class="fas fa-crown me-2"></i>Les notifications automatiques (Email & SMS) sont réservées au <strong>Plan VIP</strong>.';
+              notifSection.appendChild(alertDiv);
+            }
+            const saveNotifBtn = document.querySelector('#tab-notifications .btn-save');
+            if (saveNotifBtn) saveNotifBtn.disabled = true;
+          }
         });
       </script>
     </div>
