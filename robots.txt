@@ -1,10 +1,13 @@
 User-agent: *
 Disallow: /dashboard/
-Disallow: /js/
-Disallow: /css/
+Disallow: /api/
+Disallow: /scratch/
 Disallow: /1/
 Disallow: /dossierEducation/
+Disallow: /supabase/
 Disallow: /*.json$
 Disallow: /*.md$
 Disallow: /.git/
 Disallow: /.env
+
+Sitemap: https://edumanagerpower.com/sitemap.xml
