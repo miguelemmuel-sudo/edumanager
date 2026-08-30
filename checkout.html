@@ -92,8 +92,14 @@
       </div>
 
       <form id="checkoutForm">
-        <label class="form-label fw-medium mb-3">Méthode de paiement</label>
-        
+        <label class="form-label fw-medium mb-2">Méthode de paiement</label>
+
+        <!-- Bandeau guide par pays -->
+        <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 0.5rem; padding: 0.65rem 0.85rem; margin-bottom: 1rem; font-size: 0.8rem; color: #0369a1; line-height: 1.6;">
+          🇨🇲 <strong>Cameroun</strong> → Utilisez <strong>Notch Pay</strong> (MTN MoMo, Orange Money)<br>
+          🌍 <strong>International</strong> → Utilisez <strong>Chariow</strong> (Cartes Visa/Mastercard, Crypto)
+        </div>
+
         <div class="d-flex flex-column gap-3 mb-4">
           <!-- Option Notch Pay -->
           <label class="payment-opt active d-flex align-items-center justify-content-between">
@@ -101,11 +107,10 @@
               <input class="form-check-input mt-0" type="radio" name="gateway" value="notchpay" checked>
               <div>
                 <span class="d-block fw-semibold" style="color: var(--text)">Notch Pay</span>
-                <span class="d-block text-muted small" style="font-size: 0.75rem;">Mobile Money, Cartes (MTN, Orange...)</span>
+                <span class="d-block text-muted" style="font-size: 0.75rem;">🇨🇲 Cameroun — MTN MoMo, Orange Money, Cartes</span>
               </div>
             </div>
-            <!-- Vous pourrez remplacer ceci par le logo de Notch Pay -->
-            <div class="fw-bold" style="color: #2F80ED; font-size: 1.2rem; font-style: italic;">Notch Pay</div>
+            <div class="fw-bold" style="color: #2F80ED; font-size: 1.1rem; font-style: italic;">Notch Pay</div>
           </label>
 
           <!-- Option Chariow -->
@@ -114,11 +119,10 @@
               <input class="form-check-input mt-0" type="radio" name="gateway" value="chariow">
               <div>
                 <span class="d-block fw-semibold" style="color: var(--text)">Chariow</span>
-                <span class="d-block text-muted small" style="font-size: 0.75rem;">Cartes bancaires, Crypto, MoMo</span>
+                <span class="d-block text-muted" style="font-size: 0.75rem;">🌍 International — Visa, Mastercard, Crypto, MoMo</span>
               </div>
             </div>
-            <!-- Vous pourrez remplacer ceci par le logo de Chariow -->
-            <div class="fw-bold text-primary" style="font-size: 1.2rem;">Chariow</div>
+            <div class="fw-bold text-primary" style="font-size: 1.1rem;">Chariow</div>
           </label>
         </div>
         <!-- Champ téléphone pour Chariow — affiché dynamiquement dans le formulaire -->

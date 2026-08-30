@@ -9,7 +9,6 @@
   <link rel="manifest" href="manifest.json"/>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     body {
       font-family: 'Inter', sans-serif;
       background: linear-gradient(135deg, #0f2244 0%, #1e40af 60%, #3b82f6 100%);
@@ -18,109 +17,79 @@
       align-items: center;
       justify-content: center;
     }
-
     .card {
       background: #fff;
       border-radius: 1.5rem;
-      box-shadow: 0 25px 70px rgba(0,0,0,0.22);
+      box-shadow: 0 25px 70px rgba(0,0,0,.22);
       padding: 2.5rem 2rem;
       max-width: 420px;
       width: 92%;
       text-align: center;
-      animation: fadeUp 0.35s ease;
+      animation: fadeUp .35s ease;
     }
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(18px); }
       to   { opacity: 1; transform: translateY(0); }
     }
-
     .brand {
-      font-size: 1.05rem;
-      font-weight: 700;
-      color: #1d4ed8;
+      font-size: 1.05rem; font-weight: 700; color: #1d4ed8;
       margin-bottom: 1.75rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.45rem;
+      display: flex; align-items: center; justify-content: center; gap: .45rem;
     }
-
     .icon-wrap {
-      width: 80px; height: 80px;
-      border-radius: 50%;
+      width: 80px; height: 80px; border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      margin: 0 auto 1.25rem;
-      font-size: 2rem;
+      margin: 0 auto 1.25rem; font-size: 2rem;
     }
-    .icon-wrap.loading  { background: #eff6ff; }
-    .icon-wrap.success  { background: #dcfce7; color: #16a34a; animation: popIn 0.4s ease; }
-    .icon-wrap.error    { background: #fee2e2; color: #dc2626; }
-
+    .icon-wrap.loading { background: #eff6ff; }
+    .icon-wrap.success { background: #dcfce7; color: #16a34a; animation: popIn .45s ease; }
+    .icon-wrap.error   { background: #fee2e2; color: #dc2626; }
     @keyframes popIn {
-      0%   { transform: scale(0.4); opacity: 0; }
+      0%   { transform: scale(.4); opacity: 0; }
       70%  { transform: scale(1.12); }
       100% { transform: scale(1); opacity: 1; }
     }
-
     .spinner {
       width: 44px; height: 44px;
-      border: 5px solid #dbeafe;
-      border-top-color: #2563eb;
+      border: 5px solid #dbeafe; border-top-color: #2563eb;
       border-radius: 50%;
-      animation: spin 0.8s linear infinite;
+      animation: spin .8s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-
-    h2 { font-size: 1.3rem; font-weight: 700; color: #1e293b; margin-bottom: 0.5rem; }
-    p  { color: #64748b; font-size: 0.9rem; line-height: 1.65; margin-bottom: 1rem; }
-
-    .step-msg {
-      font-size: 0.82rem;
-      color: #94a3b8;
-      margin-bottom: 1rem;
-      min-height: 1.2rem;
-    }
+    h2  { font-size: 1.3rem; font-weight: 700; color: #1e293b; margin-bottom: .5rem; }
+    p   { color: #64748b; font-size: .9rem; line-height: 1.65; margin-bottom: 1rem; }
+    .step { font-size: .8rem; color: #94a3b8; margin-bottom: 1rem; min-height: 1.2rem; }
 
     .plan-badge {
-      display: inline-block;
-      padding: 0.3rem 1.1rem;
-      border-radius: 999px;
-      font-weight: 700;
-      font-size: 0.83rem;
-      margin-bottom: 1rem;
+      display: inline-block; padding: .3rem 1.1rem; border-radius: 999px;
+      font-weight: 700; font-size: .83rem; margin-bottom: 1rem;
     }
     .plan-badge.starter  { background: #f0fdf4; color: #15803d; }
     .plan-badge.standard { background: #dbeafe; color: #1d4ed8; }
     .plan-badge.premium  { background: #fef3c7; color: #b45309; }
     .plan-badge.vip      { background: #1e293b; color: #f1f5f9; }
 
-    .countdown {
-      font-size: 0.82rem;
-      color: #94a3b8;
-      margin-top: -0.5rem;
-      margin-bottom: 1rem;
-    }
+    .countdown { font-size: .82rem; color: #94a3b8; margin-top: -.5rem; margin-bottom: 1rem; }
 
     .btn {
-      display: inline-flex; align-items: center; gap: 0.4rem;
-      padding: 0.72rem 1.75rem;
-      border-radius: 999px;
-      font-weight: 600;
-      font-size: 0.92rem;
-      text-decoration: none;
-      cursor: pointer;
-      border: none;
-      transition: all 0.2s;
+      display: inline-flex; align-items: center; gap: .4rem;
+      padding: .72rem 1.75rem; border-radius: 999px;
+      font-weight: 600; font-size: .92rem;
+      text-decoration: none; cursor: pointer; border: none; transition: all .2s;
     }
     .btn-primary { background: #1d4ed8; color: #fff; }
     .btn-primary:hover { background: #1e40af; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(29,78,216,.3); }
-    .btn-outline { background: transparent; color: #1d4ed8; border: 1.5px solid #1d4ed8; }
+    .btn-outline { background: transparent; color: #1d4ed8; border: 1.5px solid #1d4ed8; font-size: .82rem; }
     .btn-outline:hover { background: #eff6ff; }
+    .btn-row { display: flex; gap: .75rem; justify-content: center; flex-wrap: wrap; }
 
-    .btn-row { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
-
-    /* Bouton manuel visible après délai */
-    #manual-btn { display: none; margin-top: 0.5rem; }
+    /* Alerte bouton secours */
+    .alert-manual {
+      background: #fffbeb; border: 1px solid #fcd34d; border-radius: .75rem;
+      padding: .85rem 1rem; margin-top: 1rem;
+      font-size: .82rem; color: #92400e; line-height: 1.6;
+    }
+    .alert-manual strong { color: #78350f; }
   </style>
 </head>
 <body>
@@ -134,46 +103,49 @@
     EduManager
   </div>
 
-  <!-- ── CHARGEMENT ── -->
-  <div id="state-loading">
+  <!-- CHARGEMENT -->
+  <div id="s-loading">
     <div class="icon-wrap loading"><div class="spinner"></div></div>
     <h2>Activation en cours…</h2>
-    <p>Votre paiement a bien été reçu. Nous activons votre compte.</p>
-    <p class="step-msg" id="step-msg">Connexion au serveur…</p>
+    <p>Votre paiement a bien été reçu. Activation de votre compte en cours.</p>
+    <p class="step" id="step-msg">Connexion au serveur…</p>
 
-    <!-- Bouton manuel visible après 8 secondes si la vérification prend du temps -->
-    <div id="manual-btn">
-      <p style="color:#f59e0b; font-size:0.83rem; margin-bottom:0.6rem;">
-        ⚠️ Votre paiement a été effectué mais la vérification prend du temps.<br>
-        Cliquez pour accéder directement à votre tableau de bord.
-      </p>
-      <div class="btn-row">
+    <!-- Bouton de secours visible après 6s si l'API est lente -->
+    <div id="manual-access" style="display:none;">
+      <div class="alert-manual">
+        ✅ <strong>Paiement validé.</strong> Si la redirection automatique n'a pas eu lieu,
+        accédez directement à votre tableau de bord :
+      </div>
+      <div class="btn-row" style="margin-top:.85rem;">
         <a href="dashboard/index.html" class="btn btn-primary">Accéder au tableau de bord</a>
-        <a href="mailto:support@edumanagerpower.com" class="btn btn-outline" style="font-size:0.8rem;">Support</a>
+        <a href="mailto:support@edumanagerpower.com" class="btn btn-outline">Support</a>
       </div>
     </div>
   </div>
 
-  <!-- ── SUCCÈS ── -->
-  <div id="state-success" style="display:none;">
+  <!-- SUCCÈS -->
+  <div id="s-success" style="display:none;">
     <div class="icon-wrap success">✓</div>
     <h2>Compte activé !</h2>
     <div class="plan-badge standard" id="plan-badge">Plan Standard</div>
-    <p>Bienvenue sur EduManager ! Votre compte est maintenant <strong>actif</strong> avec tous vos droits.</p>
+    <p>Bienvenue sur EduManager ! Votre compte est actif avec <strong>tous vos droits</strong>.</p>
     <p class="countdown">Redirection dans <strong id="countdown-val">3</strong>s…</p>
     <div class="btn-row">
-      <a href="dashboard/index.html" class="btn btn-primary">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <a id="dash-btn" href="dashboard/index.html" class="btn btn-primary">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
         Accéder au tableau de bord
       </a>
     </div>
   </div>
 
-  <!-- ── ERREUR ── -->
-  <div id="state-error" style="display:none;">
+  <!-- ERREUR -->
+  <div id="s-error" style="display:none;">
     <div class="icon-wrap error">✕</div>
     <h2 id="err-title">Paiement non abouti</h2>
-    <p id="err-msg">Le paiement n'a pas pu être confirmé. Réessayez ou contactez notre support.</p>
+    <p id="err-msg">Réessayez ou contactez notre support.</p>
     <div class="btn-row">
       <a href="checkout.html" class="btn btn-primary">↩ Réessayer</a>
       <a href="mailto:support@edumanagerpower.com" class="btn btn-outline">Support</a>
@@ -181,72 +153,67 @@
   </div>
 
 </div>
-
 <script>
-  // ─── Paramètres de l'URL ──────────────────────────────────────────────────
-  const p              = new URLSearchParams(window.location.search);
-  const ref            = p.get('ref')            || '';
-  const gateway        = (p.get('gateway')        || 'notchpay').toLowerCase();
+  // ── Lecture des paramètres URL ──────────────────────────────────────────
+  const p               = new URLSearchParams(window.location.search);
+  const gateway         = (p.get('gateway') || 'notchpay').toLowerCase();
   const etablissementId = p.get('etablissement_id') || localStorage.getItem('etablissement_id') || '';
-  const plan           = (p.get('plan')           || localStorage.getItem('pending_plan') || 'standard').toLowerCase();
+  const plan            = (p.get('plan') || localStorage.getItem('pending_plan') || 'standard').toLowerCase();
 
-  // Notch Pay ajoute parfois ses propres params dans la callback URL
-  const npStatus   = (p.get('status') || '').toLowerCase();
-  const npTrxRef   = p.get('trxref') || p.get('reference') || ref;
-
-  function showState(s) {
-    ['loading', 'success', 'error'].forEach(id =>
-      document.getElementById('state-' + id).style.display = id === s ? 'block' : 'none'
+  function show(id) {
+    ['s-loading','s-success','s-error'].forEach(s =>
+      document.getElementById(s).style.display = s === id ? 'block' : 'none'
     );
   }
-
-  function setPlanBadge(planName) {
-    const badge = document.getElementById('plan-badge');
-    const labels = { starter: 'Plan Starter', standard: 'Plan Standard', premium: 'Plan Premium', vip: 'Plan VIP' };
-    badge.textContent = labels[planName] || 'Plan Actif';
-    badge.className   = 'plan-badge ' + (planName || 'standard');
+  function setStep(msg) {
+    const el = document.getElementById('step-msg');
+    if (el) el.textContent = msg;
   }
+  function setPlanBadge(name) {
+    const b = document.getElementById('plan-badge');
+    const labels = { starter:'Plan Starter', standard:'Plan Standard', premium:'Plan Premium', vip:'Plan VIP' };
+    b.textContent = labels[name] || 'Plan Actif';
+    b.className   = 'plan-badge ' + (name || 'standard');
+  }
+  function onSuccess(activePlan) {
+    localStorage.removeItem('pending_plan');
+    const ap = activePlan || plan;
+    setPlanBadge(ap);
 
-  function startCountdown(sec) {
+    // Mettre à jour le lien du bouton avec le plan
+    const btn = document.getElementById('dash-btn');
+    if (btn) btn.href = `dashboard/index.html?payment=confirmed&plan=${ap}`;
+
+    show('s-success');
+
+    // Countdown 3 secondes
+    let n = 3;
     const el = document.getElementById('countdown-val');
-    let n = sec;
     el.textContent = n;
     const t = setInterval(() => {
       n--;
       el.textContent = n;
       if (n <= 0) {
         clearInterval(t);
-        window.location.href = `dashboard/index.html?payment=confirmed&plan=${plan}`;
+        window.location.href = `dashboard/index.html?payment=confirmed&plan=${ap}`;
       }
     }, 1000);
   }
 
-  function onSuccess(activePlan) {
-    localStorage.removeItem('pending_plan');
-    setPlanBadge(activePlan || plan);
-    showState('success');
-    startCountdown(3);
-  }
-
-  function setStep(msg) {
-    const el = document.getElementById('step-msg');
-    if (el) el.textContent = msg;
-  }
-
-  // ─── Activation directe ───────────────────────────────────────────────────
+  // ── Activation directe ──────────────────────────────────────────────────
   async function activate() {
-    setStep('Vérification du paiement…');
+    if (!etablissementId) {
+      // Pas d'ID : afficher bouton manuel directement
+      document.getElementById('manual-access').style.display = 'block';
+      setStep('ID établissement non trouvé — accédez manuellement.');
+      return false;
+    }
 
     try {
       const res  = await fetch('/api/payment/activate', {
-        method: 'POST',
+        method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          etablissement_id: etablissementId,
-          plan,
-          reference: npTrxRef || ref,
-          gateway
-        })
+        body:    JSON.stringify({ etablissement_id: etablissementId, plan, gateway })
       });
       const data = await res.json();
 
@@ -254,8 +221,6 @@
         onSuccess(data.plan || plan);
         return true;
       }
-
-      // Toujours pending → réessayer
       return false;
     } catch (err) {
       console.error('Activate error:', err);
@@ -263,41 +228,42 @@
     }
   }
 
-  // ─── Démarrage ────────────────────────────────────────────────────────────
+  // ── Séquence de démarrage ───────────────────────────────────────────────
   async function start() {
-    // Si Notch Pay a passé un statut dans l'URL et que c'est un succès connu
-    if (npStatus && ['complete','completed','successful','success','paid'].includes(npStatus)) {
-      setStep('Paiement confirmé par Notch Pay — activation…');
-      await activate();
-      return;
-    }
+    // Tentative 1 — immédiate
+    setStep('Activation du compte…');
+    const ok1 = await activate();
+    if (ok1) return;
 
-    // Sinon : 3 tentatives rapides (0s, 3s, 6s)
-    let ok = false;
-    for (let i = 1; i <= 3; i++) {
-      setStep(`Tentative ${i}/3…`);
-      ok = await activate();
-      if (ok) return;
-      if (i < 3) await new Promise(r => setTimeout(r, 3000));
-    }
+    // Tentative 2 — après 3s
+    setStep('Nouvelle tentative…');
+    await new Promise(r => setTimeout(r, 3000));
+    const ok2 = await activate();
+    if (ok2) return;
 
-    // Après 3 échecs (~9s) : afficher le bouton manuel
-    if (!ok) {
-      setStep('Vérification en cours en arrière-plan…');
-      document.getElementById('manual-btn').style.display = 'block';
+    // Tentative 3 — après 3s de plus
+    setStep('Dernière tentative…');
+    await new Promise(r => setTimeout(r, 3000));
+    const ok3 = await activate();
+    if (ok3) return;
 
-      // Continuer à vérifier en arrière-plan toutes les 5s (max 10 fois = 50s de plus)
-      let bg = 0;
-      const bgInterval = setInterval(async () => {
-        bg++;
-        const bgOk = await activate();
-        if (bgOk || bg >= 10) clearInterval(bgInterval);
-      }, 5000);
-    }
+    // Échec après 3 tentatives (~6s) :
+    // Afficher le bouton d'accès manuel immédiatement
+    // (le paiement EST validé côté passerelle, seul le serveur est lent)
+    setStep('');
+    document.getElementById('manual-access').style.display = 'block';
+
+    // Continuer en arrière-plan toutes les 8s
+    let bg = 0;
+    const interval = setInterval(async () => {
+      bg++;
+      const ok = await activate();
+      if (ok || bg >= 8) clearInterval(interval);
+    }, 8000);
   }
 
-  // Lancer après 800ms (le temps que la page Notch Pay finisse sa redirection)
-  setTimeout(start, 800);
+  // Démarrer après 600ms
+  setTimeout(start, 600);
 </script>
 </body>
 </html>
