@@ -16,44 +16,59 @@ export default async function handler(req, res) {
 
     const origin = req.headers.origin || 'https://edumanagerpower.com';
 
-    // Parse phone number loosely to separate country code if starts with + or 237
-    let country_code = "CM"; // Chariow API expects an ISO alpha-2 country code like "CM"
-    let number = phone ? phone.replace(/\s+/g, '') : "";
-    if (number) {
-      if (number.startsWith("+237")) {
-         number = number.substring(4);
-      } else if (number.startsWith("237") && number.length > 9) {
-         number = number.substring(3);
-      } else if (number.startsWith("+")) {
-         // Pour d'autres indicatifs, on extrait après le +
-         const match = number.match(/^\+(\d{1,3})(\d{8,})$/);
-         if (match) number = match[2];
+    // ─── Traitement du numéro de téléphone ───────────────────────────
+    // On normalise le numéro camerounais : on retire l'indicatif pour
+    // ne garder que les 9 chiffres locaux (ex: 677123456)
+    let phonePayload = undefined; // undefined = ne pas envoyer du tout si invalide
+    if (phone) {
+      let number = phone.replace(/[\s\-().]/g, ''); // supprimer espaces, tirets, parenth.
+      let country_code = 'CM';
+
+      if (number.startsWith('+237')) {
+        number = number.substring(4);
+      } else if (number.startsWith('237') && number.length > 9) {
+        number = number.substring(3);
+      } else if (number.startsWith('+')) {
+        // Indicatif étranger — on tente d'extraire le numéro local
+        const match = number.match(/^\+(\d{1,3})(\d{7,})$/);
+        if (match) {
+          number = match[2];
+          country_code = 'CM'; // par défaut on reste CM, Chariow gérera
+        } else {
+          number = ''; // numéro illisible, on l'ignore
+        }
       }
+
+      // Un numéro camerounais valide : 9 chiffres commençant par 6 ou 2
+      if (number.length >= 8 && /^\d+$/.test(number)) {
+        phonePayload = { number, country_code };
+      }
+      // Si le numéro est invalide on n'envoie pas le champ phone du tout
     }
 
-    // Chariow exige phone, first_name, last_name — on met des valeurs par défaut si vides
-    const safeFirstName = first_name || "Admin";
-    const safeLastName  = last_name  || "EduManager";
-    // Si aucun numéro fourni, on utilise un numéro de substitution générique
-    const safePhone = number || "600000000";
+    // Générer une référence unique pour ce paiement
+    const uniqueRef = `CW_${etablissement_id}_${Date.now()}`;
 
     const payload = {
       product_id: productId,
       store: merchantId,
-      email: email || "admin@edumanager.com",
-      first_name: safeFirstName,
-      last_name: safeLastName,
-      phone: {
-        number: safePhone,
-        country_code: country_code
-      },
+      email: email || 'admin@edumanager.com',
+      first_name: first_name || 'Admin',
+      last_name: last_name || 'EduManager',
       metadata: {
         etablissement_id: etablissement_id,
-        plan: plan
+        plan: plan,
+        reference: uniqueRef
       },
-      success_url: `${origin}/dashboard/index.html?payment=success`,
+      // Rediriger vers la page de vérification (pas directement le dashboard)
+      success_url: `${origin}/payment-verify.html?ref=${encodeURIComponent(uniqueRef)}&gateway=chariow`,
       cancel_url: `${origin}/checkout.html`
     };
+
+    // N'ajouter phone que s'il est valide
+    if (phonePayload) {
+      payload.phone = phonePayload;
+    }
 
     // Appel à l'API Chariow pour créer une session de paiement (checkout)
     const chariowRes = await fetch('https://api.chariow.com/v1/checkout', {
@@ -68,11 +83,11 @@ export default async function handler(req, res) {
     const data = await chariowRes.json();
 
     if (!chariowRes.ok) {
-      console.error("Chariow API Error:", data);
-      return res.status(400).json({ error: data.message || 'Erreur lors de la création du paiement Chariow' });
+      console.error('Chariow API Error:', data);
+      return res.status(400).json({ error: data.message || data.error || 'Erreur lors de la création du paiement Chariow' });
     }
 
-    // On s'attend à recevoir une URL de paiement de Chariow (checkout_url)
+    // Récupérer l'URL de paiement dans la réponse Chariow
     let finalUrl = data.checkout_url || data.url || data.payment_url;
     if (!finalUrl && data.data) {
       finalUrl = data.data.checkout_url || data.data.url || data.data.payment_url;
@@ -82,14 +97,14 @@ export default async function handler(req, res) {
     }
 
     if (!finalUrl) {
-      console.error("URL de paiement introuvable dans la réponse:", data);
-      return res.status(400).json({ error: "L'URL de paiement n'a pas pu être générée par Chariow. Détails: " + JSON.stringify(data) });
+      console.error('URL de paiement introuvable dans la réponse:', data);
+      return res.status(400).json({ error: "L'URL de paiement n'a pas pu être générée. Détails: " + JSON.stringify(data) });
     }
 
-    return res.status(200).json({ paymentUrl: finalUrl });
+    return res.status(200).json({ paymentUrl: finalUrl, reference: uniqueRef });
 
   } catch (error) {
-    console.error("Internal Server Error:", error);
+    console.error('Internal Server Error:', error);
     return res.status(500).json({ error: error.message });
   }
 }

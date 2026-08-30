@@ -1,6 +1,38 @@
 import { createClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
 
+/**
+ * Droits/limites par plan EduManager
+ * Ces limites sont stockées dans la table etablissements
+ * et lues par le dashboard pour restreindre les fonctionnalités.
+ */
+const PLAN_RIGHTS = {
+  standard: {
+    plan: 'standard',
+    max_eleves: 300,
+    max_enseignants: 30,
+    max_classes: 20,
+    fonctionnalites: ['eleves', 'classes', 'notes', 'paiements', 'emploi_temps', 'notifications'],
+    duree_jours: 30
+  },
+  premium: {
+    plan: 'premium',
+    max_eleves: 1000,
+    max_enseignants: 100,
+    max_classes: 60,
+    fonctionnalites: ['eleves', 'classes', 'notes', 'paiements', 'emploi_temps', 'notifications', 'messages', 'rapports', 'portail_parents', 'multi_utilisateurs'],
+    duree_jours: 30
+  },
+  vip: {
+    plan: 'vip',
+    max_eleves: 99999,
+    max_enseignants: 99999,
+    max_classes: 99999,
+    fonctionnalites: ['all'],
+    duree_jours: 365
+  }
+};
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -9,62 +41,79 @@ export default async function handler(req, res) {
   try {
     const payload = req.body;
     const signature = req.headers['chariow-signature'] || req.headers['x-chariow-signature'];
-    
     const webhookSecret = process.env.CHARIOW_WEBHOOK_SECRET;
 
-    // Facultatif : Vérification de la signature HMAC si la documentation Chariow l'exige
+    // Vérification de la signature HMAC Chariow
     if (signature && webhookSecret) {
-      // Logic de vérification standard (exemple HMAC SHA256)
-      // const hmac = crypto.createHmac('sha256', webhookSecret);
-      // const digest = Buffer.from(hmac.update(JSON.stringify(payload)).digest('hex'), 'utf8');
-      // const checksum = Buffer.from(signature, 'utf8');
-      // if (checksum.length !== digest.length || !crypto.timingSafeEqual(digest, checksum)) {
-      //   return res.status(401).json({ error: 'Invalid signature' });
-      // }
+      const hmac = crypto.createHmac('sha256', webhookSecret);
+      const digest = hmac.update(JSON.stringify(payload)).digest('hex');
+      if (!crypto.timingSafeEqual(Buffer.from(digest), Buffer.from(signature))) {
+        console.error('Invalid Chariow webhook signature');
+        return res.status(401).json({ error: 'Invalid signature' });
+      }
     }
 
-    // Vérifier que l'événement correspond à un paiement réussi
+    // Événements Chariow indiquant un paiement réussi
     const eventType = payload.type || payload.event;
-    if (eventType === 'checkout.session.completed' || eventType === 'payment.success') {
-      
-      const etablissement_id = payload.data?.metadata?.etablissement_id || payload.metadata?.etablissement_id;
+    const successEvents = [
+      'checkout.session.completed',
+      'payment.success',
+      'payment.completed',
+      'payment.paid'
+    ];
 
-      if (!etablissement_id) {
-        console.error("Missing etablissement_id in webhook payload");
-        return res.status(400).json({ error: "Missing etablissement_id" });
-      }
-
-      // Initialiser le client Supabase avec la clé Service Role (contourne la RLS)
-      const supabaseUrl = process.env.SUPABASE_URL;
-      const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-      if (!supabaseUrl || !supabaseServiceKey) {
-        console.error("Supabase credentials missing");
-        return res.status(500).json({ error: 'Server configuration error' });
-      }
-
-      const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-      // Mettre à jour le statut de l'abonnement
-      const { error } = await supabase
-        .from('etablissements')
-        .update({ statut_abonnement: 'actif' })
-        .eq('id', etablissement_id);
-
-      if (error) {
-        console.error("Error updating database:", error);
-        return res.status(500).json({ error: 'Database update failed' });
-      }
-
-      console.log(`Payment successful for etablissement ${etablissement_id}`);
+    if (!successEvents.includes(eventType)) {
+      console.log(`Chariow webhook event ignoré: ${eventType}`);
       return res.status(200).json({ received: true });
     }
 
-    // Pour les autres types d'événements
-    return res.status(200).json({ received: true });
+    // Récupérer l'établissement_id depuis les métadonnées
+    const metadata = payload.data?.metadata || payload.metadata || {};
+    const etablissement_id = metadata.etablissement_id;
+    const planChoisi = (metadata.plan || 'standard').toLowerCase();
+
+    if (!etablissement_id) {
+      console.error('Missing etablissement_id in Chariow webhook:', JSON.stringify(payload));
+      return res.status(400).json({ error: 'Missing etablissement_id' });
+    }
+
+    const rights = PLAN_RIGHTS[planChoisi] || PLAN_RIGHTS.standard;
+
+    // Initialiser Supabase avec la clé Service Role
+    const supabase = createClient(
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    );
+
+    // Calculer la date d'expiration selon le plan
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + rights.duree_jours);
+
+    // ─── Activer l'établissement avec tous ses droits ───────────────
+    const { error: updateError } = await supabase
+      .from('etablissements')
+      .update({
+        statut_abonnement: 'actif',
+        plan: rights.plan,
+        abonnement_expire_le: expiresAt.toISOString(),
+        max_eleves: rights.max_eleves,
+        max_enseignants: rights.max_enseignants,
+        max_classes: rights.max_classes,
+        fonctionnalites: rights.fonctionnalites,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', etablissement_id);
+
+    if (updateError) {
+      console.error('Supabase update error:', updateError);
+      return res.status(500).json({ error: 'Database update failed' });
+    }
+
+    console.log(`✅ Chariow: Compte activé — établissement ${etablissement_id}, plan: ${rights.plan}, expire le: ${expiresAt.toISOString()}`);
+    return res.status(200).json({ received: true, etablissement_id, plan: rights.plan });
 
   } catch (error) {
-    console.error("Webhook Error:", error);
+    console.error('Chariow Webhook Error:', error);
     return res.status(500).json({ error: 'Webhook error' });
   }
 }

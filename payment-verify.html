@@ -12,7 +12,7 @@
 
     body {
       font-family: 'Inter', sans-serif;
-      background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 60%, #3b82f6 100%);
+      background: linear-gradient(135deg, #0f2244 0%, #1e40af 55%, #3b82f6 100%);
       min-height: 100vh;
       display: flex;
       align-items: center;
@@ -21,18 +21,23 @@
 
     .card {
       background: #fff;
-      border-radius: 1.25rem;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+      border-radius: 1.5rem;
+      box-shadow: 0 25px 70px rgba(0,0,0,0.22);
       padding: 2.5rem 2rem;
-      max-width: 420px;
-      width: 90%;
+      max-width: 440px;
+      width: 92%;
       text-align: center;
+      animation: fadeUp 0.4s ease;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
 
     .brand {
       font-size: 1.1rem;
       font-weight: 700;
-      color: #2563eb;
+      color: #1d4ed8;
       margin-bottom: 2rem;
       display: flex;
       align-items: center;
@@ -41,181 +46,240 @@
     }
 
     .status-icon {
-      width: 80px;
-      height: 80px;
+      width: 82px; height: 82px;
       border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 1.5rem;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1.25rem;
       font-size: 2rem;
-      transition: all 0.3s;
+      transition: all 0.4s;
     }
-    .status-icon.loading  { background: #EFF6FF; color: #2563eb; }
-    .status-icon.success  { background: #DCFCE7; color: #16a34a; }
-    .status-icon.pending  { background: #FEF9C3; color: #ca8a04; }
-    .status-icon.error    { background: #FEE2E2; color: #dc2626; }
+    .status-icon.loading { background: #eff6ff; color: #2563eb; }
+    .status-icon.success { background: #dcfce7; color: #16a34a; animation: popIn 0.5s ease; }
+    .status-icon.pending { background: #fef9c3; color: #ca8a04; }
+    .status-icon.error   { background: #fee2e2; color: #dc2626; }
+
+    @keyframes popIn {
+      0%   { transform: scale(0.5); opacity: 0; }
+      70%  { transform: scale(1.15); }
+      100% { transform: scale(1); opacity: 1; }
+    }
 
     .spinner {
-      width: 40px; height: 40px;
+      width: 42px; height: 42px;
       border: 4px solid #dbeafe;
       border-top-color: #2563eb;
       border-radius: 50%;
-      animation: spin 0.9s linear infinite;
+      animation: spin 0.85s linear infinite;
       margin: 0 auto;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    h2 {
-      font-size: 1.4rem;
-      font-weight: 700;
-      color: #1e293b;
-      margin-bottom: 0.75rem;
-    }
-    p {
-      color: #64748b;
-      font-size: 0.95rem;
-      line-height: 1.6;
-      margin-bottom: 1.5rem;
-    }
+    h2 { font-size: 1.35rem; font-weight: 700; color: #1e293b; margin-bottom: 0.6rem; }
+    p  { color: #64748b; font-size: 0.93rem; line-height: 1.65; margin-bottom: 1.25rem; }
 
-    .progress-bar-wrap {
-      background: #e2e8f0;
+    .plan-badge {
+      display: inline-block;
+      padding: 0.3rem 1rem;
       border-radius: 999px;
-      height: 6px;
-      overflow: hidden;
-      margin-bottom: 1.5rem;
+      font-weight: 700;
+      font-size: 0.85rem;
+      margin-bottom: 1rem;
+    }
+    .plan-badge.standard { background: #dbeafe; color: #1d4ed8; }
+    .plan-badge.premium  { background: #fef3c7; color: #b45309; }
+    .plan-badge.vip      { background: #1e293b; color: #f1f5f9; }
+
+    .progress-wrap {
+      background: #e2e8f0; border-radius: 999px;
+      height: 6px; overflow: hidden; margin-bottom: 1.25rem;
     }
     .progress-bar {
       height: 100%;
-      background: linear-gradient(90deg, #2563eb, #3b82f6);
+      background: linear-gradient(90deg, #1d4ed8, #60a5fa);
       border-radius: 999px;
-      width: 0%;
-      transition: width 0.4s ease;
-      animation: progress-anim 3s ease forwards;
+      animation: prog 4s ease forwards;
     }
-    @keyframes progress-anim {
+    @keyframes prog {
       0%   { width: 0%; }
-      50%  { width: 60%; }
-      90%  { width: 85%; }
+      40%  { width: 55%; }
+      80%  { width: 82%; }
       100% { width: 90%; }
     }
 
+    .countdown {
+      font-size: 0.82rem; color: #94a3b8; margin-top: -0.75rem; margin-bottom: 1rem;
+    }
+
     .btn {
-      display: inline-block;
-      padding: 0.75rem 2rem;
-      border-radius: 999px;
-      font-weight: 600;
-      font-size: 0.95rem;
-      text-decoration: none;
-      cursor: pointer;
-      border: none;
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.7rem 1.75rem; border-radius: 999px;
+      font-weight: 600; font-size: 0.92rem;
+      text-decoration: none; cursor: pointer; border: none;
       transition: all 0.2s;
     }
-    .btn-primary { background: #2563eb; color: #fff; }
-    .btn-primary:hover { background: #1d4ed8; transform: translateY(-1px); }
-    .btn-danger  { background: #dc2626; color: #fff; }
-    .btn-danger:hover  { background: #b91c1c; }
-    .btn-warning { background: #ca8a04; color: #fff; }
-    .btn-warning:hover { background: #a16207; }
+    .btn-primary { background: #1d4ed8; color: #fff; }
+    .btn-primary:hover { background: #1e40af; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(29,78,216,0.3); }
+    .btn-warning { background: #d97706; color: #fff; }
+    .btn-warning:hover { background: #b45309; }
+    .btn-outline { background: transparent; color: #1d4ed8; border: 1.5px solid #1d4ed8; }
+    .btn-outline:hover { background: #eff6ff; }
 
-    #attempts-msg { font-size: 0.8rem; color: #94a3b8; margin-top: 0.5rem; }
+    .btn-group { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; margin-top: 0.5rem; }
+
+    #attempts-msg { font-size: 0.8rem; color: #94a3b8; margin-top: 0.3rem; }
+    .gateway-tag {
+      font-size: 0.78rem; color: #94a3b8;
+      margin-top: -1rem; margin-bottom: 1.25rem;
+    }
   </style>
 </head>
 <body>
 <div class="card">
   <div class="brand">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+      <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+    </svg>
     EduManager
   </div>
 
-  <!-- État : chargement -->
+  <!-- ── CHARGEMENT ─────────────────────────── -->
   <div id="state-loading">
-    <div class="status-icon loading">
-      <div class="spinner"></div>
-    </div>
-    <h2>Vérification en cours...</h2>
-    <p>Nous vérifions la confirmation de votre paiement auprès de Notch Pay. Merci de patienter.</p>
-    <div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+    <div class="status-icon loading"><div class="spinner"></div></div>
+    <h2>Vérification en cours…</h2>
+    <p id="loading-desc">Nous confirmons votre paiement auprès de la passerelle. Veuillez patienter.</p>
+    <div class="progress-wrap"><div class="progress-bar"></div></div>
     <p id="attempts-msg"></p>
+    <p class="gateway-tag" id="gateway-tag"></p>
   </div>
 
-  <!-- État : succès -->
+  <!-- ── SUCCÈS ─────────────────────────────── -->
   <div id="state-success" style="display:none;">
     <div class="status-icon success">✓</div>
     <h2>Paiement confirmé !</h2>
-    <p>Votre abonnement EduManager est maintenant <strong>actif</strong>. Vous allez être redirigé vers votre tableau de bord.</p>
-    <a href="dashboard/index.html" class="btn btn-primary">Accéder au tableau de bord</a>
+    <div class="plan-badge standard" id="plan-badge">Plan Standard</div>
+    <p>Votre compte EduManager est maintenant <strong>actif</strong>. Toutes les fonctionnalités de votre plan sont disponibles.</p>
+    <p class="countdown" id="redirect-countdown">Redirection automatique dans <strong id="countdown-val">5</strong>s…</p>
+    <div class="btn-group">
+      <a href="dashboard/index.html" class="btn btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Accéder au tableau de bord
+      </a>
+    </div>
   </div>
 
-  <!-- État : en attente -->
+  <!-- ── EN ATTENTE ─────────────────────────── -->
   <div id="state-pending" style="display:none;">
     <div class="status-icon pending">⏳</div>
-    <h2>Paiement en attente</h2>
-    <p>Votre paiement est en cours de traitement. Cela peut prendre quelques minutes.</p>
-    <button class="btn btn-warning" onclick="startVerification()">Vérifier à nouveau</button>
+    <h2>Paiement en cours de traitement</h2>
+    <p>Votre paiement est en attente de confirmation. Cela peut prendre 1 à 5 minutes selon le réseau.</p>
+    <div class="btn-group">
+      <button class="btn btn-warning" onclick="startVerification()">🔄 Vérifier à nouveau</button>
+      <a href="mailto:support@edumanagerpower.com" class="btn btn-outline">Contacter le support</a>
+    </div>
   </div>
 
-  <!-- État : échec -->
+  <!-- ── ÉCHEC ──────────────────────────────── -->
   <div id="state-error" style="display:none;">
     <div class="status-icon error">✕</div>
     <h2 id="error-title">Paiement non abouti</h2>
-    <p id="error-msg">Le paiement n'a pas été confirmé. Vous pouvez réessayer ou contacter le support.</p>
-    <div style="display:flex; gap:0.75rem; justify-content:center; flex-wrap:wrap;">
-      <a href="checkout.html" class="btn btn-primary">Réessayer le paiement</a>
-      <a href="mailto:support@edumanagerpower.com" class="btn btn-danger">Contacter le support</a>
+    <p id="error-msg">Le paiement n'a pas pu être confirmé. Réessayez ou contactez notre support.</p>
+    <div class="btn-group">
+      <a href="checkout.html" class="btn btn-primary">↩ Réessayer le paiement</a>
+      <a href="mailto:support@edumanagerpower.com" class="btn btn-outline">Support</a>
     </div>
   </div>
 </div>
 
 <script>
-  const params = new URLSearchParams(window.location.search);
+  const params  = new URLSearchParams(window.location.search);
   const ref     = params.get('ref');
-  const gateway = params.get('gateway') || 'notchpay';
+  const gateway = (params.get('gateway') || 'notchpay').toLowerCase();
 
   let attempts = 0;
-  const MAX_ATTEMPTS = 6;   // 6 tentatives max
+  const MAX_ATTEMPTS = 8;    // Jusqu'à 8 tentatives
   const RETRY_DELAY  = 5000; // 5 secondes entre chaque tentative
+  let countdownTimer = null;
+
+  // Afficher le nom de la passerelle
+  const gatewayLabel = gateway === 'chariow' ? 'Chariow' : 'Notch Pay';
+  document.getElementById('gateway-tag').textContent = `via ${gatewayLabel}`;
+  document.getElementById('loading-desc').textContent =
+    `Nous confirmons votre paiement auprès de ${gatewayLabel}. Veuillez patienter.`;
 
   function showState(state) {
-    ['loading','success','pending','error'].forEach(s => {
-      document.getElementById('state-' + s).style.display = s === state ? 'block' : 'none';
+    ['loading', 'success', 'pending', 'error'].forEach(s => {
+      document.getElementById('state-' + s).style.display = (s === state) ? 'block' : 'none';
     });
+  }
+
+  function setPlanBadge(plan) {
+    const badge = document.getElementById('plan-badge');
+    const labels = { standard: 'Plan Standard', premium: 'Plan Premium', vip: 'Plan VIP' };
+    badge.textContent = labels[plan] || 'Plan Actif';
+    badge.className = 'plan-badge ' + (plan || 'standard');
+  }
+
+  function startCountdown(seconds, onDone) {
+    const el = document.getElementById('countdown-val');
+    let remaining = seconds;
+    el.textContent = remaining;
+    countdownTimer = setInterval(() => {
+      remaining--;
+      el.textContent = remaining;
+      if (remaining <= 0) {
+        clearInterval(countdownTimer);
+        onDone();
+      }
+    }, 1000);
   }
 
   async function checkPaymentStatus() {
     if (!ref) {
       document.getElementById('error-title').textContent = 'Référence manquante';
-      document.getElementById('error-msg').textContent = 'Aucune référence de paiement trouvée. Veuillez réessayer depuis la page de paiement.';
+      document.getElementById('error-msg').textContent = 'Aucune référence de paiement. Revenez à la page de paiement.';
       showState('error');
-      return;
+      return true;
     }
 
     try {
-      const res = await fetch(`/api/notchpay/verify?ref=${encodeURIComponent(ref)}`);
+      const apiUrl = gateway === 'chariow'
+        ? `/api/chariow/verify?ref=${encodeURIComponent(ref)}`
+        : `/api/notchpay/verify?ref=${encodeURIComponent(ref)}`;
+
+      const res  = await fetch(apiUrl);
       const data = await res.json();
 
       if (data.success) {
+        // Afficher le plan activé
+        setPlanBadge(data.plan || 'standard');
         showState('success');
-        // Redirection automatique après 3 secondes
-        setTimeout(() => {
-          window.location.href = 'dashboard/index.html?payment=confirmed';
-        }, 3000);
-        return true; // Arrêter les tentatives
+        // Countdown de redirection automatique
+        startCountdown(5, () => {
+          window.location.href = 'dashboard/index.html?payment=confirmed&plan=' + (data.plan || 'standard');
+        });
+        return true;
       }
 
       if (data.failed) {
-        document.getElementById('error-title').textContent = 'Paiement échoué ou annulé';
-        document.getElementById('error-msg').textContent = `Le paiement a été ${data.status === 'cancelled' ? 'annulé' : 'refusé'}. Veuillez réessayer ou choisir un autre mode de paiement.`;
+        const statusLabels = {
+          cancelled : 'Le paiement a été annulé.',
+          expired   : 'Le délai de paiement a expiré.',
+          failed    : 'Le paiement a été refusé.',
+          rejected  : 'Le paiement a été rejeté par la banque.'
+        };
+        document.getElementById('error-title').textContent = 'Paiement non abouti';
+        document.getElementById('error-msg').textContent =
+          statusLabels[data.status] || `Statut : ${data.status}. Veuillez réessayer.`;
         showState('error');
-        return true; // Arrêter les tentatives
+        return true;
       }
 
-      // Paiement toujours en attente
+      // Toujours en attente
       return false;
 
     } catch (err) {
-      console.error('Erreur vérification:', err);
+      console.error('Erreur vérification paiement:', err);
       return false;
     }
   }
@@ -223,27 +287,28 @@
   async function startVerification() {
     showState('loading');
     attempts = 0;
+    if (countdownTimer) clearInterval(countdownTimer);
 
     const poll = async () => {
       attempts++;
-      const attemptsEl = document.getElementById('attempts-msg');
-      attemptsEl.textContent = `Tentative ${attempts}/${MAX_ATTEMPTS}…`;
+      const el = document.getElementById('attempts-msg');
+      el.textContent = `Tentative ${attempts}/${MAX_ATTEMPTS}…`;
 
       const done = await checkPaymentStatus();
 
       if (!done && attempts < MAX_ATTEMPTS) {
         setTimeout(poll, RETRY_DELAY);
       } else if (!done && attempts >= MAX_ATTEMPTS) {
-        // Après toutes les tentatives, afficher état en attente
+        // Toutes les tentatives épuisées → état en attente
         showState('pending');
       }
     };
 
-    // Première vérification après 2 secondes (laisser le temps à Notch Pay de traiter)
+    // Attendre 2s avant la première tentative (le temps que le paiement soit traité)
     setTimeout(poll, 2000);
   }
 
-  // Démarrer la vérification automatiquement au chargement
+  // Démarrer automatiquement dès le chargement de la page
   startVerification();
 </script>
 </body>
