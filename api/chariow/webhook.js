@@ -11,8 +11,8 @@ const PLAN_RIGHTS = {
   starter: {
     plan: 'starter',
     max_eleves: 300,
-    max_enseignants: 15,
-    max_classes: 10,
+    max_enseignants: 99999,
+    max_classes: 99999,
     fonctionnalites: ['eleves', 'classes', 'notes', 'paiements'],
     duree_jours: 14  // Essai gratuit 14 jours
   },
@@ -20,8 +20,8 @@ const PLAN_RIGHTS = {
   standard: {
     plan: 'standard',
     max_eleves: 1000,
-    max_enseignants: 50,
-    max_classes: 30,
+    max_enseignants: 99999,
+    max_classes: 99999,
     fonctionnalites: ['eleves', 'classes', 'notes', 'paiements', 'emploi_temps', 'notifications', 'messages'],
     duree_jours: 30
   },
@@ -29,8 +29,8 @@ const PLAN_RIGHTS = {
   premium: {
     plan: 'premium',
     max_eleves: 1500,
-    max_enseignants: 100,
-    max_classes: 60,
+    max_enseignants: 99999,
+    max_classes: 99999,
     fonctionnalites: ['eleves', 'classes', 'notes', 'paiements', 'emploi_temps', 'notifications', 'messages', 'rapports', 'portail_parents', 'multi_utilisateurs'],
     duree_jours: 30
   },

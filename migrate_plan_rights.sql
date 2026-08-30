@@ -7,8 +7,8 @@
 ALTER TABLE public.etablissements
   ADD COLUMN IF NOT EXISTS abonnement_expire_le   TIMESTAMPTZ,
   ADD COLUMN IF NOT EXISTS max_eleves             INTEGER DEFAULT 300,
-  ADD COLUMN IF NOT EXISTS max_enseignants        INTEGER DEFAULT 15,
-  ADD COLUMN IF NOT EXISTS max_classes            INTEGER DEFAULT 10,
+  ADD COLUMN IF NOT EXISTS max_enseignants        INTEGER DEFAULT 99999,
+  ADD COLUMN IF NOT EXISTS max_classes            INTEGER DEFAULT 99999,
   ADD COLUMN IF NOT EXISTS fonctionnalites        TEXT[]  DEFAULT ARRAY['eleves','classes','notes','paiements'];
 
 -- Commentaires
@@ -23,8 +23,8 @@ COMMENT ON COLUMN public.etablissements.fonctionnalites      IS 'Fonctionnalité
 -- STARTER : 300 élèves max, 14 jours d'essai gratuit
 UPDATE public.etablissements SET
   max_eleves      = 300,
-  max_enseignants = 15,
-  max_classes     = 10,
+  max_enseignants = 99999,
+  max_classes     = 99999,
   fonctionnalites = ARRAY['eleves','classes','notes','paiements'],
   abonnement_expire_le = COALESCE(date_fin_essai, NOW() + INTERVAL '14 days')
 WHERE plan = 'starter';
@@ -32,8 +32,8 @@ WHERE plan = 'starter';
 -- STANDARD : 1 000 élèves max, 30 jours, 25 000 FCFA/mois
 UPDATE public.etablissements SET
   max_eleves      = 1000,
-  max_enseignants = 50,
-  max_classes     = 30,
+  max_enseignants = 99999,
+  max_classes     = 99999,
   fonctionnalites = ARRAY['eleves','classes','notes','paiements','emploi_temps','notifications','messages'],
   abonnement_expire_le = NOW() + INTERVAL '30 days'
 WHERE plan = 'standard' AND statut_abonnement = 'actif';
@@ -41,8 +41,8 @@ WHERE plan = 'standard' AND statut_abonnement = 'actif';
 -- PREMIUM : 1 500 élèves max, 30 jours, 35 000 FCFA/mois
 UPDATE public.etablissements SET
   max_eleves      = 1500,
-  max_enseignants = 100,
-  max_classes     = 60,
+  max_enseignants = 99999,
+  max_classes     = 99999,
   fonctionnalites = ARRAY['eleves','classes','notes','paiements','emploi_temps','notifications','messages','rapports','portail_parents','multi_utilisateurs'],
   abonnement_expire_le = NOW() + INTERVAL '30 days'
 WHERE plan = 'premium' AND statut_abonnement = 'actif';
