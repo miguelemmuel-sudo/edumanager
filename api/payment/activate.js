@@ -12,7 +12,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { etablissement_id, plan } = req.body;
+  const { etablissement_id, plan, gateway } = req.body;
 
   if (!etablissement_id || !plan) {
     return res.status(400).json({ success: false, error: 'etablissement_id et plan requis' });
@@ -24,31 +24,41 @@ export default async function handler(req, res) {
       process.env.SUPABASE_SERVICE_ROLE_KEY
     );
 
-    // Vérifier si déjà actif (webhook déjà traité)
-    const { data: etab } = await supabase
-      .from('etablissements')
-      .select('statut_abonnement, plan, abonnement_expire_le')
-      .eq('id', etablissement_id)
-      .single();
-
-    if (etab && etab.statut_abonnement === 'actif') {
-      return res.status(200).json({
-        success: true,
-        plan: etab.plan,
-        expires: etab.abonnement_expire_le
-      });
-    }
-
-    // ─── Activation directe ─────────────────────────────────────────────────
-    // On fait confiance à la redirection de la passerelle de paiement.
-    // La passerelle ne redirige vers success_url/callback qu'après validation.
-    // Le webhook mettra aussi à jour la base, mais pour l'UX on active immédiatement.
     const planKey = (plan || 'standard').toLowerCase();
     const rights  = PLAN_RIGHTS[planKey] || PLAN_RIGHTS.standard;
 
+    // ─── Lire l'état actuel de l'établissement ────────────────────────────────
+    const { data: etab } = await supabase
+      .from('etablissements')
+      .select('statut_abonnement, plan, abonnement_expire_le, nom')
+      .eq('id', etablissement_id)
+      .single();
+
+    const previousPlan   = etab?.plan || 'starter';
+    const isUpgrade      = previousPlan !== planKey;
+    const wasExpired     = etab?.statut_abonnement === 'expired' || etab?.statut_abonnement === 'trial';
+
+    // ─── Si déjà actif avec le BON plan → retourner succès immédiatement ─────
+    if (etab && etab.statut_abonnement === 'actif' && etab.plan === planKey) {
+      return res.status(200).json({
+        success:      true,
+        upgrade:      false,
+        plan:         etab.plan,
+        previous_plan: previousPlan,
+        expires:      etab.abonnement_expire_le,
+        message:      'Compte déjà actif'
+      });
+    }
+
+    // ─── Calcul de la nouvelle date d'expiration ──────────────────────────────
+    // Pour une mise à niveau (upgrade), on repart de maintenant.
+    // Toutes les données (élèves, classes, notes, paiements) sont CONSERVÉES.
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + rights.duree_jours);
 
+    // ─── Mise à niveau / Activation ────────────────────────────────────────────
+    // UPDATE : seuls les champs du plan sont modifiés.
+    // Les données métier (élèves, classes, notes, etc.) ne sont PAS touchées.
     const { error: updateError } = await supabase
       .from('etablissements')
       .update({
@@ -59,6 +69,8 @@ export default async function handler(req, res) {
         max_enseignants:      99999,
         max_classes:          99999,
         fonctionnalites:      ['all'],
+        // Réinitialiser la date d'essai si c'était un compte trial
+        date_fin_essai:       planKey === 'starter' ? expiresAt.toISOString() : null,
         updated_at:           new Date().toISOString()
       })
       .eq('id', etablissement_id);
@@ -68,11 +80,21 @@ export default async function handler(req, res) {
       return res.status(500).json({ success: false, error: 'Activation failed' });
     }
 
-    console.log(`✅ Compte activé - établissement: ${etablissement_id}, plan: ${planKey}`);
+    const action = isUpgrade ? 'Mise à niveau' : (wasExpired ? 'Renouvellement' : 'Activation');
+    console.log(`✅ ${action} - établissement: ${etablissement_id} | ${previousPlan} → ${planKey} | expire: ${expiresAt.toISOString()}`);
+
     return res.status(200).json({
-      success: true,
-      plan: planKey,
-      expires: expiresAt.toISOString()
+      success:       true,
+      upgrade:       isUpgrade,
+      renewal:       !isUpgrade && wasExpired,
+      plan:          planKey,
+      previous_plan: previousPlan,
+      expires:       expiresAt.toISOString(),
+      message:       isUpgrade
+        ? `Mise à niveau réussie : ${previousPlan} → ${planKey}`
+        : wasExpired
+          ? `Abonnement renouvelé : ${planKey}`
+          : `Compte activé : ${planKey}`
     });
 
   } catch (error) {

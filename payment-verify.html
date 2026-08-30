@@ -126,9 +126,9 @@
   <!-- SUCCÈS -->
   <div id="s-success" style="display:none;">
     <div class="icon-wrap success">✓</div>
-    <h2>Compte activé !</h2>
+    <h2 id="success-title">Compte activé !</h2>
     <div class="plan-badge standard" id="plan-badge">Plan Standard</div>
-    <p>Bienvenue sur EduManager ! Votre compte est actif avec <strong>tous vos droits</strong>.</p>
+    <p id="success-msg">Bienvenue sur EduManager ! Votre compte est actif avec <strong>tous vos droits</strong>.</p>
     <p class="countdown">Redirection dans <strong id="countdown-val">3</strong>s…</p>
     <div class="btn-row">
       <a id="dash-btn" href="dashboard/index.html" class="btn btn-primary">
@@ -175,28 +175,38 @@
     b.textContent = labels[name] || 'Plan Actif';
     b.className   = 'plan-badge ' + (name || 'standard');
   }
-  function onSuccess(activePlan) {
+  function onSuccess(data) {
     localStorage.removeItem('pending_plan');
-    const ap = activePlan || plan;
-    setPlanBadge(ap);
+    const ap = data.plan || plan;
 
-    // Mettre à jour le lien du bouton avec le plan
+    // Titre et message selon le type d'opération
+    const title = document.getElementById('success-title');
+    const msg   = document.getElementById('success-msg');
+
+    if (data.upgrade) {
+      title.textContent = '🚀 Mise à niveau réussie !';
+      msg.innerHTML = `Votre compte a été mis à niveau vers le <strong>Plan ${ap.charAt(0).toUpperCase() + ap.slice(1)}</strong>.<br>
+        Toutes vos données (élèves, classes, notes) ont été <strong>conservées</strong>. Vos nouveaux droits sont actifs.`;
+    } else if (data.renewal) {
+      title.textContent = '✅ Abonnement renouvelé !';
+      msg.innerHTML = `Votre abonnement <strong>Plan ${ap.charAt(0).toUpperCase() + ap.slice(1)}</strong> a été renouvelé.<br>
+        Toutes vos données sont <strong>intactes</strong>. Bon retour sur EduManager !`;
+    } else {
+      title.textContent = '🎉 Compte activé !';
+      msg.innerHTML = `Bienvenue sur EduManager ! Votre compte est maintenant <strong>actif</strong> avec tous vos droits.`;
+    }
+
+    setPlanBadge(ap);
     const btn = document.getElementById('dash-btn');
     if (btn) btn.href = `dashboard/index.html?payment=confirmed&plan=${ap}`;
-
     show('s-success');
 
-    // Countdown 3 secondes
     let n = 3;
     const el = document.getElementById('countdown-val');
     el.textContent = n;
     const t = setInterval(() => {
-      n--;
-      el.textContent = n;
-      if (n <= 0) {
-        clearInterval(t);
-        window.location.href = `dashboard/index.html?payment=confirmed&plan=${ap}`;
-      }
+      n--; el.textContent = n;
+      if (n <= 0) { clearInterval(t); window.location.href = `dashboard/index.html?payment=confirmed&plan=${ap}`; }
     }, 1000);
   }
 
@@ -218,7 +228,7 @@
       const data = await res.json();
 
       if (data.success) {
-        onSuccess(data.plan || plan);
+        onSuccess(data);
         return true;
       }
       return false;
