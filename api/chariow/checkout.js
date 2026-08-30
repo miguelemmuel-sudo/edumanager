@@ -7,70 +7,67 @@ export default async function handler(req, res) {
     const { plan, etablissement_id, email, first_name, last_name, phone } = req.body;
 
     const chariowApiKey = process.env.CHARIOW_API_KEY;
-    const merchantId = process.env.CHARIOW_MERCHANT_ID;
-    
-    // Sélection du produit en fonction du plan
-    const productId = plan === 'premium' 
-      ? process.env.CHARIOW_PREMIUM_PLAN_ID
-      : process.env.CHARIOW_STANDARD_PLAN_ID;
+    const merchantId    = process.env.CHARIOW_MERCHANT_ID;
+    const origin        = req.headers.origin || 'https://edumanagerpower.com';
 
-    const origin = req.headers.origin || 'https://edumanagerpower.com';
+    // Montant selon le plan
+    const amount = plan === 'premium' ? 35000 : (plan === 'standard' ? 100 : 25000);
 
-    // ─── Traitement du numéro de téléphone ───────────────────────────
-    // On normalise le numéro camerounais : on retire l'indicatif pour
-    // ne garder que les 9 chiffres locaux (ex: 677123456)
-    let phonePayload = undefined; // undefined = ne pas envoyer du tout si invalide
-    if (phone) {
-      let number = phone.replace(/[\s\-().]/g, ''); // supprimer espaces, tirets, parenth.
-      let country_code = 'CM';
+    // ─── Normalisation du numéro de téléphone ────────────────────────────────
+    // Chariow EXIGE le phone. On normalise vers le format international +237XXXXXXXXX
+    let phoneStr = (phone || '').replace(/[\s\-().]/g, '');
 
-      if (number.startsWith('+237')) {
-        number = number.substring(4);
-      } else if (number.startsWith('237') && number.length > 9) {
-        number = number.substring(3);
-      } else if (number.startsWith('+')) {
-        // Indicatif étranger — on tente d'extraire le numéro local
-        const match = number.match(/^\+(\d{1,3})(\d{7,})$/);
-        if (match) {
-          number = match[2];
-          country_code = 'CM'; // par défaut on reste CM, Chariow gérera
-        } else {
-          number = ''; // numéro illisible, on l'ignore
-        }
-      }
-
-      // Un numéro camerounais valide : 9 chiffres commençant par 6 ou 2
-      if (number.length >= 8 && /^\d+$/.test(number)) {
-        phonePayload = { number, country_code };
-      }
-      // Si le numéro est invalide on n'envoie pas le champ phone du tout
+    // Retirer le + initial pour traitement
+    if (phoneStr.startsWith('+237')) {
+      phoneStr = phoneStr.substring(4); // garder les 9 chiffres locaux
+    } else if (phoneStr.startsWith('237') && phoneStr.length > 9) {
+      phoneStr = phoneStr.substring(3);
+    } else if (phoneStr.startsWith('+')) {
+      phoneStr = phoneStr.substring(1); // retirer le + uniquement
     }
 
-    // Générer une référence unique pour ce paiement
-    const uniqueRef = `CW_${etablissement_id}_${Date.now()}`;
+    // Validation : doit être au moins 8 chiffres
+    const phoneIsValid = phoneStr.length >= 8 && /^\d+$/.test(phoneStr);
 
-    const payload = {
-      product_id: productId,
-      store: merchantId,
-      email: email || 'admin@edumanager.com',
-      first_name: first_name || 'Admin',
-      last_name: last_name || 'EduManager',
-      metadata: {
-        etablissement_id: etablissement_id,
-        plan: plan,
-        reference: uniqueRef
-      },
-      // Rediriger vers la page de vérification (pas directement le dashboard)
-      success_url: `${origin}/payment-verify.html?ref=${encodeURIComponent(uniqueRef)}&gateway=chariow`,
-      cancel_url: `${origin}/checkout.html`
+    // Format final pour Chariow : objet { number, country_code }
+    const phonePayload = {
+      number: phoneIsValid ? phoneStr : '600000001', // fallback de test si vide
+      country_code: 'CM'
     };
 
-    // N'ajouter phone que s'il est valide
-    if (phonePayload) {
-      payload.phone = phonePayload;
-    }
+    // Générer une référence unique
+    const uniqueRef = `CW_${etablissement_id}_${Date.now()}`;
 
-    // Appel à l'API Chariow pour créer une session de paiement (checkout)
+    // URL de succès avec toutes les infos pour la vérification
+    const successUrl = `${origin}/payment-verify.html?ref=${encodeURIComponent(uniqueRef)}&gateway=chariow&etablissement_id=${encodeURIComponent(etablissement_id)}&plan=${encodeURIComponent(plan)}`;
+
+    // ─── Payload Chariow ────────────────────────────────────────────────────
+    // On envoie le montant directement (pas via product_id qui peut causer des erreurs)
+    const payload = {
+      amount:      amount,
+      currency:    'XAF',
+      email:       email      || 'admin@edumanager.com',
+      first_name:  first_name || 'Admin',
+      last_name:   last_name  || 'EduManager',
+      phone:       phonePayload,
+      description: `Abonnement EduManager – Plan ${plan}`,
+      reference:   uniqueRef,
+      metadata: {
+        etablissement_id,
+        plan,
+        reference: uniqueRef
+      },
+      success_url: successUrl,
+      cancel_url:  `${origin}/checkout.html`
+    };
+
+    // Si un product_id est configuré, l'ajouter (optionnel selon config Chariow)
+    const productId = plan === 'premium'
+      ? process.env.CHARIOW_PREMIUM_PLAN_ID
+      : process.env.CHARIOW_STANDARD_PLAN_ID;
+    if (productId) payload.product_id = productId;
+
+    // Appel API Chariow
     const chariowRes = await fetch('https://api.chariow.com/v1/checkout', {
       method: 'POST',
       headers: {
@@ -83,28 +80,36 @@ export default async function handler(req, res) {
     const data = await chariowRes.json();
 
     if (!chariowRes.ok) {
-      console.error('Chariow API Error:', data);
-      return res.status(400).json({ error: data.message || data.error || 'Erreur lors de la création du paiement Chariow' });
+      console.error('Chariow API Error:', JSON.stringify(data));
+      // Renvoyer l'erreur complète pour diagnostic
+      return res.status(400).json({
+        error: data.message || data.error || 'Erreur Chariow',
+        details: data
+      });
     }
 
-    // Récupérer l'URL de paiement dans la réponse Chariow
-    let finalUrl = data.checkout_url || data.url || data.payment_url;
-    if (!finalUrl && data.data) {
-      finalUrl = data.data.checkout_url || data.data.url || data.data.payment_url;
-      if (!finalUrl && data.data.payment) {
-        finalUrl = data.data.payment.checkout_url || data.data.payment.url;
-      }
-    }
+    // Extraire l'URL de paiement (Chariow peut la mettre à différents endroits)
+    let finalUrl = data.checkout_url
+      || data.url
+      || data.payment_url
+      || data.data?.checkout_url
+      || data.data?.url
+      || data.data?.payment_url
+      || data.data?.payment?.checkout_url
+      || data.data?.payment?.url;
 
     if (!finalUrl) {
-      console.error('URL de paiement introuvable dans la réponse:', data);
-      return res.status(400).json({ error: "L'URL de paiement n'a pas pu être générée. Détails: " + JSON.stringify(data) });
+      console.error('URL introuvable dans réponse Chariow:', JSON.stringify(data));
+      return res.status(400).json({
+        error: "URL de paiement non générée",
+        details: data
+      });
     }
 
     return res.status(200).json({ paymentUrl: finalUrl, reference: uniqueRef });
 
   } catch (error) {
-    console.error('Internal Server Error:', error);
+    console.error('Chariow checkout error:', error);
     return res.status(500).json({ error: error.message });
   }
 }

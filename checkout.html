@@ -126,6 +126,16 @@
           <i class="fas fa-lock me-2"></i>Payer de manière sécurisée
         </button>
       </form>
+
+      <!-- Champ téléphone pour Chariow (affiché dynamiquement) -->
+      <div id="chariow-phone-field" style="display:none; margin-top: -1rem; margin-bottom: 1rem;">
+        <label class="form-label fw-medium">Numéro de téléphone <span class="text-danger">*</span></label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="fas fa-phone"></i> +237</span>
+          <input type="tel" id="chariow-phone" class="form-control" placeholder="6XXXXXXXX" maxlength="9" pattern="[0-9]{8,9}"/>
+        </div>
+        <small class="text-muted">Requis par Chariow — ex : 677123456</small>
+      </div>
       
       <div id="checkoutError" style="display:none;"></div>
       <div id="checkoutSuccess" style="display:none;" class="alert alert-success d-flex align-items-center mt-3">
@@ -137,12 +147,22 @@
 
 <script src="/js/vendor/bootstrap.bundle.min.js"></script>
 <script>
-  // Gérer la sélection visuelle des options
+  // Gérer la sélection visuelle des options + afficher champ phone si Chariow
   document.querySelectorAll('input[name="gateway"]').forEach(radio => {
     radio.addEventListener('change', function() {
       document.querySelectorAll('.payment-opt').forEach(opt => opt.classList.remove('active'));
       if(this.checked) {
         this.closest('.payment-opt').classList.add('active');
+      }
+      // Afficher le champ téléphone uniquement pour Chariow
+      const phoneField = document.getElementById('chariow-phone-field');
+      const form = document.getElementById('checkoutForm');
+      if (this.value === 'chariow') {
+        phoneField.style.display = 'block';
+        // Insérer le champ AVANT le bouton
+        form.insertAdjacentElement('afterend', phoneField);
+      } else {
+        phoneField.style.display = 'none';
       }
     });
   });
@@ -192,8 +212,7 @@
         const s = JSON.parse(sessionStr);
         if (s.email) email = s.email;
         if (s.etablissement_id) etablissement_id = s.etablissement_id;
-        
-        // Fetch phone number from Supabase if authenticated
+
         if (window.supabase && s.userId) {
           const { data: prof } = await window.supabase.from('profiles').select('tel').eq('id', s.userId).single();
           if (prof && prof.tel) phone = prof.tel;
@@ -202,13 +221,30 @@
       const cuStr = localStorage.getItem('checkout_user');
       if (cuStr) {
         const cu = JSON.parse(cuStr);
-        email = cu.email || email;
+        email      = cu.email      || email;
         first_name = cu.first_name || first_name;
-        last_name = cu.last_name || last_name;
-        phone = cu.phone || phone;
+        last_name  = cu.last_name  || last_name;
+        phone      = cu.phone      || phone;
       }
     } catch(e) {
-      console.error("Erreur récupération session checkout:", e);
+      console.error('Erreur récupération session checkout:', e);
+    }
+
+    // Si Chariow : prendre le numéro saisi dans le champ dédié
+    if (gateway === 'chariow') {
+      const chariowPhone = document.getElementById('chariow-phone')?.value?.trim();
+      if (chariowPhone) {
+        phone = chariowPhone; // numéro local camerounais sans indicatif
+      }
+      // Validation : Chariow exige un numéro
+      if (!phone || phone.length < 8) {
+        errorDiv.className = 'alert alert-danger mt-3';
+        errorDiv.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i> Veuillez entrer votre numéro de téléphone pour payer via Chariow.';
+        errorDiv.style.display = 'block';
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        return;
+      }
     }
 
     if (gateway === 'chariow') {
