@@ -13,26 +13,45 @@ export default async function handler(req, res) {
     // Montant selon le plan
     const amount = plan === 'premium' ? 35000 : (plan === 'standard' ? 100 : 25000);
 
-    // ─── Normalisation du numéro de téléphone ────────────────────────────────
-    // Chariow EXIGE le phone. On normalise vers le format international +237XXXXXXXXX
+    // ─── Normalisation du numéro de téléphone ─────────────────────────────────
+    // L'utilisateur entre un numéro international complet ex: +237677123456
+    // ou local ex: 677123456. On extrait les chiffres et l'indicatif pays.
     let phoneStr = (phone || '').replace(/[\s\-().]/g, '');
 
-    // Retirer le + initial pour traitement
-    if (phoneStr.startsWith('+237')) {
-      phoneStr = phoneStr.substring(4); // garder les 9 chiffres locaux
-    } else if (phoneStr.startsWith('237') && phoneStr.length > 9) {
-      phoneStr = phoneStr.substring(3);
-    } else if (phoneStr.startsWith('+')) {
-      phoneStr = phoneStr.substring(1); // retirer le + uniquement
+    let countryCode = 'CM'; // défaut Cameroun
+    let localNumber = phoneStr;
+
+    // Si le numéro commence par +, extraire l'indicatif pays
+    if (phoneStr.startsWith('+')) {
+      const intlMap = {
+        '237': 'CM', '33': 'FR', '1': 'US', '44': 'GB',
+        '32': 'BE', '41': 'CH', '34': 'ES', '49': 'DE',
+        '225': 'CI', '221': 'SN', '223': 'ML', '229': 'BJ',
+        '224': 'GN', '228': 'TG', '242': 'CG', '243': 'CD'
+      };
+      const withoutPlus = phoneStr.substring(1);
+      for (const code of ['237','225','221','223','229','224','228','242','243','33','44','49','34','32','41','1']) {
+        if (withoutPlus.startsWith(code)) {
+          countryCode = intlMap[code] || 'CM';
+          localNumber = withoutPlus.substring(code.length);
+          break;
+        }
+      }
+      if (localNumber === phoneStr) localNumber = withoutPlus; // pas d'indicatif trouvé
+    } else if (phoneStr.startsWith('00')) {
+      localNumber = phoneStr.substring(2);
     }
 
-    // Validation : doit être au moins 8 chiffres
-    const phoneIsValid = phoneStr.length >= 8 && /^\d+$/.test(phoneStr);
+    // Garder uniquement les chiffres
+    localNumber = localNumber.replace(/\D/g, '');
+
+    // Validation minimale : 8 chiffres minimum
+    const phoneIsValid = localNumber.length >= 8;
 
     // Format final pour Chariow : objet { number, country_code }
     const phonePayload = {
-      number: phoneIsValid ? phoneStr : '600000001', // fallback de test si vide
-      country_code: 'CM'
+      number: phoneIsValid ? localNumber : '600000001',
+      country_code: countryCode
     };
 
     // Générer une référence unique
