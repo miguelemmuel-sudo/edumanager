@@ -1,4 +1,17 @@
 {
-  "cleanUrls": false,
-  "trailingSlash": false
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.edumanagerpower.com"
+        }
+      ],
+      "destination": "https://edumanagerpower.com/$1",
+      "permanent": true
+    }
+  ]
 }
