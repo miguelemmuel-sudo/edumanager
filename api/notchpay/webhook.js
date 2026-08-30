@@ -5,29 +5,41 @@ import crypto from 'crypto';
  * Droits/limites par plan EduManager (identique au webhook Chariow)
  */
 const PLAN_RIGHTS = {
+  // Starter : gratuit, 300 élèves max, 14 jours d'essai
+  starter: {
+    plan: 'starter',
+    max_eleves: 300,
+    max_enseignants: 15,
+    max_classes: 10,
+    fonctionnalites: ['eleves', 'classes', 'notes', 'paiements'],
+    duree_jours: 14  // Essai gratuit 14 jours
+  },
+  // Standard : 25 000 FCFA/mois, 1 000 élèves max, 30 jours
   standard: {
     plan: 'standard',
-    max_eleves: 300,
-    max_enseignants: 30,
-    max_classes: 20,
-    fonctionnalites: ['eleves', 'classes', 'notes', 'paiements', 'emploi_temps', 'notifications'],
+    max_eleves: 1000,
+    max_enseignants: 50,
+    max_classes: 30,
+    fonctionnalites: ['eleves', 'classes', 'notes', 'paiements', 'emploi_temps', 'notifications', 'messages'],
     duree_jours: 30
   },
+  // Premium : 35 000 FCFA/mois, 1 500 élèves max, 30 jours
   premium: {
     plan: 'premium',
-    max_eleves: 1000,
+    max_eleves: 1500,
     max_enseignants: 100,
     max_classes: 60,
     fonctionnalites: ['eleves', 'classes', 'notes', 'paiements', 'emploi_temps', 'notifications', 'messages', 'rapports', 'portail_parents', 'multi_utilisateurs'],
     duree_jours: 30
   },
+  // VIP : Sur devis, assistance sur site, 30 jours renouvelables
   vip: {
     plan: 'vip',
     max_eleves: 99999,
     max_enseignants: 99999,
     max_classes: 99999,
     fonctionnalites: ['all'],
-    duree_jours: 365
+    duree_jours: 30  // Renouvelé chaque mois sur devis
   }
 };
 
