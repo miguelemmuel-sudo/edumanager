@@ -10,8 +10,8 @@ export default async function handler(req, res) {
     const merchantId    = process.env.CHARIOW_MERCHANT_ID;
     const origin        = req.headers.origin || 'https://edumanagerpower.com';
 
-    // Montant selon le plan
-    const amount = plan === 'premium' ? 35000 : (plan === 'standard' ? 100 : 25000);
+    // Déterminer le montant en fonction du plan
+    const amount = plan === 'premium' ? 35000 : (plan === 'standard' ? 25000 : 25000);
 
     // ─── Normalisation du numéro de téléphone ─────────────────────────────────
     // L'utilisateur entre un numéro international complet ex: +237677123456
