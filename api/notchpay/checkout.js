@@ -8,8 +8,8 @@ export default async function handler(req, res) {
 
     const notchPayPublicKey = process.env.NOTCH_PAY_PUBLIC_KEY || 'pk.pS5OEv0VDdsbHJ4I9ym0u5nbHrJp2MmEr0DOGS1a4TwOAD1UBdUmeL7xHLlFkwoFD3DIj1pSKfpzuKoRIGjpQGBM2Qe3B7xQbuflDJZXd4wnX6luLOUXO3hcBvr1Q';
     
-    // Déterminer le montant en fonction du plan
-    const amount = plan === 'premium' ? 35000 : 25000;
+    // Déterminer le montant en fonction du plan (100 FCFA pour standard en test)
+    const amount = plan === 'premium' ? 35000 : (plan === 'standard' ? 100 : 25000);
     
     const origin = req.headers.origin || 'https://edumanagerpower.com';
 
