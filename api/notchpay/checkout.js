@@ -29,7 +29,13 @@ export default async function handler(req, res) {
         name: `${first_name || 'Admin'} ${last_name || 'Edu'}`.trim(),
         phone: customerPhone
       },
-      callback: `${origin}/dashboard/index.html?payment=success`
+      // Métadonnées pour le webhook (récupération de etablissement_id)
+      metadata: {
+        etablissement_id: etablissement_id,
+        plan: plan
+      },
+      // Redirige vers une page de vérification intermédiaire, pas directement le dashboard
+      callback: `${origin}/payment-verify.html?ref=${uniqueRef}&gateway=notchpay`
     };
 
     // Appel à l'API Notch Pay pour créer une session de paiement
@@ -57,7 +63,8 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "L'URL de paiement n'a pas pu être générée par Notch Pay." });
     }
 
-    return res.status(200).json({ paymentUrl: finalUrl });
+    // Retourner aussi la référence pour que le frontend puisse la stocker
+    return res.status(200).json({ paymentUrl: finalUrl, reference: uniqueRef });
 
   } catch (error) {
     console.error("Internal Server Error:", error);

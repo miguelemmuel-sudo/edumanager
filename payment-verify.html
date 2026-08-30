@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vérification du paiement – EduManager</title>
+  <link rel="icon" type="image/png" href="/img/favicon.png"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="manifest" href="manifest.json" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 60%, #3b82f6 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 1.25rem;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+      padding: 2.5rem 2rem;
+      max-width: 420px;
+      width: 90%;
+      text-align: center;
+    }
+
+    .brand {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #2563eb;
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .status-icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.5rem;
+      font-size: 2rem;
+      transition: all 0.3s;
+    }
+    .status-icon.loading  { background: #EFF6FF; color: #2563eb; }
+    .status-icon.success  { background: #DCFCE7; color: #16a34a; }
+    .status-icon.pending  { background: #FEF9C3; color: #ca8a04; }
+    .status-icon.error    { background: #FEE2E2; color: #dc2626; }
+
+    .spinner {
+      width: 40px; height: 40px;
+      border: 4px solid #dbeafe;
+      border-top-color: #2563eb;
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+      margin: 0 auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    h2 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 0.75rem;
+    }
+    p {
+      color: #64748b;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      margin-bottom: 1.5rem;
+    }
+
+    .progress-bar-wrap {
+      background: #e2e8f0;
+      border-radius: 999px;
+      height: 6px;
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+    }
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #2563eb, #3b82f6);
+      border-radius: 999px;
+      width: 0%;
+      transition: width 0.4s ease;
+      animation: progress-anim 3s ease forwards;
+    }
+    @keyframes progress-anim {
+      0%   { width: 0%; }
+      50%  { width: 60%; }
+      90%  { width: 85%; }
+      100% { width: 90%; }
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 0.75rem 2rem;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+    .btn-primary { background: #2563eb; color: #fff; }
+    .btn-primary:hover { background: #1d4ed8; transform: translateY(-1px); }
+    .btn-danger  { background: #dc2626; color: #fff; }
+    .btn-danger:hover  { background: #b91c1c; }
+    .btn-warning { background: #ca8a04; color: #fff; }
+    .btn-warning:hover { background: #a16207; }
+
+    #attempts-msg { font-size: 0.8rem; color: #94a3b8; margin-top: 0.5rem; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="brand">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+    EduManager
+  </div>
+
+  <!-- État : chargement -->
+  <div id="state-loading">
+    <div class="status-icon loading">
+      <div class="spinner"></div>
+    </div>
+    <h2>Vérification en cours...</h2>
+    <p>Nous vérifions la confirmation de votre paiement auprès de Notch Pay. Merci de patienter.</p>
+    <div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+    <p id="attempts-msg"></p>
+  </div>
+
+  <!-- État : succès -->
+  <div id="state-success" style="display:none;">
+    <div class="status-icon success">✓</div>
+    <h2>Paiement confirmé !</h2>
+    <p>Votre abonnement EduManager est maintenant <strong>actif</strong>. Vous allez être redirigé vers votre tableau de bord.</p>
+    <a href="dashboard/index.html" class="btn btn-primary">Accéder au tableau de bord</a>
+  </div>
+
+  <!-- État : en attente -->
+  <div id="state-pending" style="display:none;">
+    <div class="status-icon pending">⏳</div>
+    <h2>Paiement en attente</h2>
+    <p>Votre paiement est en cours de traitement. Cela peut prendre quelques minutes.</p>
+    <button class="btn btn-warning" onclick="startVerification()">Vérifier à nouveau</button>
+  </div>
+
+  <!-- État : échec -->
+  <div id="state-error" style="display:none;">
+    <div class="status-icon error">✕</div>
+    <h2 id="error-title">Paiement non abouti</h2>
+    <p id="error-msg">Le paiement n'a pas été confirmé. Vous pouvez réessayer ou contacter le support.</p>
+    <div style="display:flex; gap:0.75rem; justify-content:center; flex-wrap:wrap;">
+      <a href="checkout.html" class="btn btn-primary">Réessayer le paiement</a>
+      <a href="mailto:support@edumanagerpower.com" class="btn btn-danger">Contacter le support</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const ref     = params.get('ref');
+  const gateway = params.get('gateway') || 'notchpay';
+
+  let attempts = 0;
+  const MAX_ATTEMPTS = 6;   // 6 tentatives max
+  const RETRY_DELAY  = 5000; // 5 secondes entre chaque tentative
+
+  function showState(state) {
+    ['loading','success','pending','error'].forEach(s => {
+      document.getElementById('state-' + s).style.display = s === state ? 'block' : 'none';
+    });
+  }
+
+  async function checkPaymentStatus() {
+    if (!ref) {
+      document.getElementById('error-title').textContent = 'Référence manquante';
+      document.getElementById('error-msg').textContent = 'Aucune référence de paiement trouvée. Veuillez réessayer depuis la page de paiement.';
+      showState('error');
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/notchpay/verify?ref=${encodeURIComponent(ref)}`);
+      const data = await res.json();
+
+      if (data.success) {
+        showState('success');
+        // Redirection automatique après 3 secondes
+        setTimeout(() => {
+          window.location.href = 'dashboard/index.html?payment=confirmed';
+        }, 3000);
+        return true; // Arrêter les tentatives
+      }
+
+      if (data.failed) {
+        document.getElementById('error-title').textContent = 'Paiement échoué ou annulé';
+        document.getElementById('error-msg').textContent = `Le paiement a été ${data.status === 'cancelled' ? 'annulé' : 'refusé'}. Veuillez réessayer ou choisir un autre mode de paiement.`;
+        showState('error');
+        return true; // Arrêter les tentatives
+      }
+
+      // Paiement toujours en attente
+      return false;
+
+    } catch (err) {
+      console.error('Erreur vérification:', err);
+      return false;
+    }
+  }
+
+  async function startVerification() {
+    showState('loading');
+    attempts = 0;
+
+    const poll = async () => {
+      attempts++;
+      const attemptsEl = document.getElementById('attempts-msg');
+      attemptsEl.textContent = `Tentative ${attempts}/${MAX_ATTEMPTS}…`;
+
+      const done = await checkPaymentStatus();
+
+      if (!done && attempts < MAX_ATTEMPTS) {
+        setTimeout(poll, RETRY_DELAY);
+      } else if (!done && attempts >= MAX_ATTEMPTS) {
+        // Après toutes les tentatives, afficher état en attente
+        showState('pending');
+      }
+    };
+
+    // Première vérification après 2 secondes (laisser le temps à Notch Pay de traiter)
+    setTimeout(poll, 2000);
+  }
+
+  // Démarrer la vérification automatiquement au chargement
+  startVerification();
+</script>
+</body>
+</html>

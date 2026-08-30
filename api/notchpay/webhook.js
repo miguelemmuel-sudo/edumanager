@@ -28,13 +28,28 @@ export default async function handler(req, res) {
     // Vérifier que l'événement correspond à un paiement réussi
     if (eventType === 'payment.complete' || eventType === 'payment.success') {
       
-      // Le reference est l'etablissement_id passé lors de l'initialisation
-      const etablissement_id = payload.data?.reference || payload.data?.metadata?.etablissement_id;
+      // 1. Priorité aux métadonnées (plus fiable avec la nouvelle référence unique)
+      let etablissement_id = payload.data?.metadata?.etablissement_id;
+
+      // 2. Fallback : extraire depuis la référence unique "etabId_timestamp_random"
+      if (!etablissement_id) {
+        const ref = payload.data?.reference || '';
+        // La référence est au format: {etablissement_id}_{timestamp}_{random}
+        // On extrait la partie avant le premier underscore suivi de chiffres
+        const refParts = ref.split('_');
+        if (refParts.length >= 1) {
+          // L'établissement_id peut lui-même contenir des underscores, on prend tout sauf les 2 dernières parties
+          etablissement_id = refParts.slice(0, refParts.length - 2).join('_') || refParts[0];
+        }
+      }
 
       if (!etablissement_id) {
-        console.error("Missing etablissement_id (reference) in Notch Pay webhook payload");
+        console.error("Missing etablissement_id in Notch Pay webhook payload", payload);
         return res.status(400).json({ error: "Missing etablissement_id" });
       }
+
+      // Récupérer le plan depuis les métadonnées
+      const plan = payload.data?.metadata?.plan || 'standard';
 
       // Initialiser le client Supabase avec la clé Service Role (contourne la RLS)
       const supabaseUrl = process.env.SUPABASE_URL;
@@ -47,10 +62,18 @@ export default async function handler(req, res) {
 
       const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+      // Calculer la date d'expiration (30 jours)
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 30);
+
       // Mettre à jour le statut de l'abonnement
       const { error } = await supabase
         .from('etablissements')
-        .update({ statut_abonnement: 'actif' })
+        .update({
+          statut_abonnement: 'actif',
+          plan_abonnement: plan,
+          abonnement_expire_le: expiresAt.toISOString()
+        })
         .eq('id', etablissement_id);
 
       if (error) {
@@ -58,11 +81,15 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: 'Database update failed' });
       }
 
-      console.log(`Notch Pay: Payment successful for etablissement ${etablissement_id}`);
+      console.log(`Notch Pay: Payment successful for etablissement ${etablissement_id}, plan: ${plan}`);
       return res.status(200).json({ received: true });
     }
 
     // Pour les autres types d'événements (payment.failed, payment.expired, etc.)
+    if (eventType === 'payment.failed' || eventType === 'payment.cancelled') {
+      console.log(`Notch Pay webhook: payment failed/cancelled - ${eventType}`);
+    }
+
     console.log(`Notch Pay webhook event received: ${eventType}`);
     return res.status(200).json({ received: true });
 
